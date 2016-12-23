@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Javascript and DOM abstractions for smaller minifiable code",
   "main": "src/index.js",
+  "jsnext:main": "src/index.js",
   "files": [
     "dist",
     "src"
