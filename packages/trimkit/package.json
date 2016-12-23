@@ -1,0 +1,41 @@
+{
+  "name": "trimkit",
+  "version": "1.0.0",
+  "description": "Javascript and DOM abstractions for smaller minifiable code",
+  "main": "src/index.js",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "lint": "eslint src",
+    "clean": "rimraf dist",
+    "build:umd": "NODE_ENV=production rollup -c",
+    "build:umd:min": "npm run build:umd && uglifyjs -m --screw-ie8 -c -o dist/trimkit.min.js dist/trimkit.js",
+    "build:umd:gzip": "npm run build:umd:min && gzip -c9 dist/trimkit.min.js > dist/trimkit.min.js.gz",
+    "build": "npm run build:umd:gzip && ls -l dist/",
+    "prepublish": "npm run clean && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/explorigin/trimkit.git"
+  },
+  "keywords": [
+    "javascript"
+  ],
+  "author": "Timothy Farrell <tim@thecookiejar.me> (https://github.com/explorigin)",
+  "license": "Apache 2.0",
+  "bugs": {
+    "url": "https://gitlab.com/explorigin/trimkit/issues"
+  },
+  "homepage": "https://gitlab.com/explorigin/trimkit",
+  "devDependencies": {
+    "babel-eslint": "^7.1.1",
+    "eslint": "3.2.0",
+    "eslint-plugin-flow-vars": "0.5.0",
+    "eslint-plugin-flowtype": "2.4.0",
+    "rimraf": "2.5.2",
+    "rollup-plugin-json": "2.0.1",
+    "uglifyjs": "2.4.10"
+  }
+}
