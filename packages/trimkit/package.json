@@ -1,6 +1,6 @@
 {
   "name": "trimkit",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Javascript and DOM abstractions for smaller minifiable code",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
