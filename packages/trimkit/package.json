@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "lint": "eslint src",
-    "clean": "rimraf dist",
+    "clean": "rimraf dist lib",
     "build:lib": "NODE_ENV=production babel src --presets=\"stage-0,es2015\" --out-dir lib",
     "build:umd": "npm run build:lib && NODE_ENV=production rollup -c",
     "build:umd:min": "npm run build:umd && uglifyjs -m --screw-ie8 -c -o dist/trimkit.min.js dist/trimkit.js",
@@ -27,7 +27,7 @@
     "javascript"
   ],
   "author": "Timothy Farrell <tim@thecookiejar.me> (https://github.com/explorigin)",
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://gitlab.com/explorigin/trimkit/issues"
   },
