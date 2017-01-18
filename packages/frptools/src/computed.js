@@ -1,8 +1,8 @@
 export function computed(fn, dependencies = []) {
     const subscribers = new Set();
     const dependents = new Set();
-    let val = undefined;
     let isDirty = true;
+    let val;
 
     function _computedDirtyReporter() {
         if (!isDirty) {
