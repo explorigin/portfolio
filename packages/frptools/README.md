@@ -90,6 +90,7 @@ inViewport(true);  // showDialog marked as dirty but does not recompute its stor
 shouldShow(true);  // showDialog is already marked as dirty. Nothing else happens.
 showDialog();  // showDialog recomputes its stored result and unsets the dirty flag.
 
+// adding a subscription will change showDialog's internal behavior
 showDialog.subscribe(console.log.bind(console));
 
 inViewport(false);  // showDialog result recomputed and `false` is written to the console.
