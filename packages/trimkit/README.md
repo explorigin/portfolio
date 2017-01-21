@@ -48,8 +48,3 @@ NOTE: TrimKit will help you obsess about Javascript file sizes but that does not
  - `obj === undefined`
  - `obj === null`
  - `fn.apply(context, params)`
-
-
-## Credit
-
-Created by [Timothy Farrell](https://github.com/explorigin)
