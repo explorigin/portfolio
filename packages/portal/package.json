@@ -1,7 +1,7 @@
 {
   "name": "worker-portal",
   "version": "0.8.0",
-  "description": "Expose an API to a Web Worker",
+  "description": "Expose an API to a web worker and its parent",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
   "files": [
@@ -45,7 +45,6 @@
     "babel-preset-es2015-rollup": "3.0.0",
     "babel-preset-stage-0": "6.16.0",
     "eslint": "3.12.2",
-    "eslint-plugin-flowtype": "2.29.1",
     "rimraf": "2.5.4",
     "rollup-plugin-babel": "^2.7.1",
     "rollup-plugin-json": "2.1.0",
