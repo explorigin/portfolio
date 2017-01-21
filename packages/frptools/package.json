@@ -13,7 +13,7 @@
     "reactive"
   ],
   "author": "Timothy Farrell <tim@thecookiejar.me> (https://github.com/explorigin)",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "devDependencies": {
     "babel-cli": "6.18.0",
     "babel-core": "6.21.0",
