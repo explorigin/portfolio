@@ -2,9 +2,7 @@ import { isFunction, isUndefined, Null, ObjectKeys,  } from 'trimkit';
 
 function nop() {}
 
-export function Router(baseUrl: string,
-                       routes: RouteSpecType,
-                       unmatched: UnmatchedFunctionType): RouterApiType {
+export function Router(baseUrl, routes, unmatched) {
     let listening = false;
     let currentRoute = Null;
     let reEnterHook = Null;
@@ -27,7 +25,7 @@ export function Router(baseUrl: string,
         };
     });
 
-    function goto(urlOrName: string, vars?: RouteVarsType) {
+    function goto(urlOrName, vars) {
         const url = urlOrName.startsWith(baseUrl) ? urlOrName : href(urlOrName, vars);
 
         if (listening && _location() !== url) {
@@ -89,7 +87,7 @@ export function Router(baseUrl: string,
         }
     };
 
-    function href(routeName: string, vars: RouteVarsType = {}): string {
+    function href(routeName, vars) {
         const route = routes[routeName];
         if (!route) {
             throw new Error(`Invalid route ${routeName}.`);
@@ -111,11 +109,11 @@ export function Router(baseUrl: string,
         return `${baseUrl}${path}`;
     };
 
-    function _location(): string {
+    function _location() {
         return location.hash;
     };
 
-    function listen(initialRoute: string): void {
+    function listen(initialRoute) {
         if (listening) {
             return;
         }
@@ -125,7 +123,7 @@ export function Router(baseUrl: string,
         goto(_location() || initialRoute);
     };
 
-    function current(): RouteInfoType | null {
+    function current() {
         return currentRoute;
     }
 

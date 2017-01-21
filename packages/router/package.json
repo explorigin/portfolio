@@ -42,6 +42,10 @@
     "eslint": "3.2.0",
     "rimraf": "2.5.4",
     "rollup-plugin-json": "2.1.0",
+    "rollup-plugin-babel": "^2.7.1",
     "uglifyjs": "2.4.10"
+  },
+  "dependencies": {
+    "trimkit": "^1.0.2"
   }
 }
