@@ -14,7 +14,7 @@ A utility to expose an asynchronous API between a web worker and its parent.
 
 ## [Router](./packages/router/README.md)
 
-A slim and unopinionated router.
+A slim and unopinionated hash router.
 
 ## [Trimkit](./packages/trimkit/README.md)
 

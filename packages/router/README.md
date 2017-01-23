@@ -17,7 +17,7 @@ onUnmatched (optional function(api, badPath, lastGoodRoute))
 returns an api object:
     goto(path) - match the path to a route and navigate there
     href(pathName, vars) - build a path based on the name and supplied vars
-    listen() - listen to window.onhashchange for route changes
+    start(initialRoute) - listen to window.onhashchange for route changes
     current() - get the current route descriptor object
 
 Example:
@@ -51,4 +51,5 @@ const router = Router(
         r.goto(lastGoodRoute.path || 'home');
     }
 );
+router.start('/');
 ```

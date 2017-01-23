@@ -1,6 +1,6 @@
 {
   "name": "router",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A slim and unopinionated router",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
@@ -17,7 +17,8 @@
     "build:umd:min": "npm run build:umd && uglifyjs -m --screw-ie8 -c -o dist/router.min.js dist/router.js",
     "build:umd:gzip": "npm run build:umd:min && gzip -c9 dist/router.min.js > dist/router.min.js.gz",
     "build": "npm run build:umd:gzip && ls -l dist/",
-    "prepublish": "npm run clean && npm run build"
+    "prepublish": "npm run clean && npm run build",
+    "test": "npm run build:lib && jasmine --verbose"
   },
   "repository": {
     "type": "git",
@@ -46,6 +47,7 @@
     "uglifyjs": "2.4.10"
   },
   "dependencies": {
+    "jasmine": "^2.5.3",
     "trimkit": "^1.0.2"
   }
 }
