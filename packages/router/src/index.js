@@ -5,8 +5,7 @@ const VARMATCH_RE = /:([^\/]+)/g;
 const ROUTEELEMENT_RE = /^[^\/]+$/;
 const nop = () => 1;
 const digestRoutes = (routes, baseUrl) => (
-    ObjectKeys(routes).map(name => {
-        const route = routes[name];
+    routes.map((route, i) => {
         const reg = route.path.replace(VARMATCH_RE, (m, varName) => {
             const varDef = route.vars || {};
             const regExStr = '' + (varDef[varName] || /[^\/]+/);
@@ -15,20 +14,23 @@ const digestRoutes = (routes, baseUrl) => (
 
         return {
             matcher: new RegExp(`^${baseUrl}${reg}$`),
-            name,
+            _i: i,
             ...route,
         };
     })
 );
 
-export function Router(baseUrl, routes, unmatched) {
+export function Router(routes, baseUrl='#') {
     let listening = false;
     let currentRoute = Null;
     let reEnterHook = Null;
 
     let routeMatcher = digestRoutes(routes, baseUrl);
+    let routeByName = routeMatcher.reduce((obj, route) => (
+        route.name ? Object.assign(obj, {[route.name]: route}) : obj
+    ), {});
 
-    function goto(urlOrName, vars) {
+    function goto(urlOrName, vars, fromLocation) {
         const url = urlOrName.startsWith(baseUrl) ? urlOrName : href(urlOrName, vars);
 
         if (listening && _location() !== url) {
@@ -53,7 +55,7 @@ export function Router(baseUrl, routes, unmatched) {
             if (path.indexOf(':') !== -1) {
                 match.shift();
                 path.replace(VARMATCH_RE, (_, varName) => {
-                    // We're abusing RegExp.replace here.
+                    // We're abusing RegExp.replace here and it's awesome!
                     routeVars[varName] = match.shift();
                 });
             }
@@ -66,33 +68,33 @@ export function Router(baseUrl, routes, unmatched) {
                 name: routeMatch.name,
                 vars: routeVars,
                 path: url,
+                _i: routeMatch._i
             };
-            if (currentRoute && currentRoute.name === newRoute.name && isFunction(reEnterHook)) {
-                reEnterHook(newRoute);
+            if (currentRoute && currentRoute._i === newRoute._i && isFunction(reEnterHook)) {
+                const result = reEnterHook(newRoute);
                 currentRoute = newRoute;
+                return Promise.resolve(result);
             } else {
-                let onexit = (currentRoute && currentRoute.name)
-                    ? routes[currentRoute.name].onexit || nop
+                let exit = (currentRoute && currentRoute._i)
+                    ? routes[currentRoute._i].exit || nop
                     : nop;
-                return Promise.resolve(onexit(api, currentRoute, newRoute)).catch(()=>{
+                return Promise.resolve(exit(api, currentRoute, newRoute)).catch(()=>{
                 }).then(() => {
-                    reEnterHook = routes[routeMatch.name].onenter(api, newRoute);
+                    reEnterHook = routes[routeMatch._i].enter(api, newRoute);
                     currentRoute = newRoute;
                 });
             }
-        } else if (unmatched) {
-            unmatched(api, url, currentRoute);
-        } else {
-            if (currentRoute && listening) {
-                location.hash = currentRoute.path;
-                return;
-            }
-            throw new Error(`No route for "${url}"`);
+        } else if (currentRoute && fromLocation) {
+            // If we are listening and we receive an unmatched path, go back.
+            location.hash = currentRoute.path;
+            return;
         }
+        // Either we received a goto call or a start call to in invalid path.
+        throw new Error(`No route for "${url}"`);
     };
 
     function href(routeName, vars) {
-        const route = routes[routeName];
+        const route = routeByName[routeName];
         if (!route) {
             throw new Error(`Invalid route ${routeName}.`);
         }
@@ -117,7 +119,7 @@ export function Router(baseUrl, routes, unmatched) {
         return location.hash;
     };
 
-    function _handler() { goto(_location()); }
+    function _handler() { goto(_location(), Null, true); }
 
     function start(initialRoute) {
         if (listening) {
