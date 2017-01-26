@@ -20,27 +20,17 @@
     "prepublish": "npm run clean && npm run build",
     "test": "npm run build:lib && jasmine --verbose"
   },
-  "repository": {
-    "type": "git",
-    "url": "https://gitlab.com/explorigin/router.git"
-  },
   "keywords": [
-    "javascript"
+    "router"
   ],
   "author": "Timothy Farrell <tim@thecookiejar.me> (https://github.com/explorigin)",
   "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://gitlab.com/explorigin/router/issues"
-  },
-  "homepage": "https://gitlab.com/explorigin/router",
   "devDependencies": {
     "babel-cli": "6.18.0",
     "babel-core": "6.21.0",
-    "babel-eslint": "7.1.1",
     "babel-preset-es2015": "6.18.0",
     "babel-preset-es2015-rollup": "3.0.0",
     "babel-preset-stage-0": "6.16.0",
-    "eslint": "3.2.0",
     "jasmine": "^2.5.3",
     "rimraf": "2.5.4",
     "rollup-plugin-json": "2.1.0",
