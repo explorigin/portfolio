@@ -1,0 +1,3 @@
+self = window = {
+    location: {}
+};
