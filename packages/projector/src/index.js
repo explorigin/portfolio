@@ -5,13 +5,15 @@ import { sanitizeObject, supportsPassive } from './utils.js';
 
 const OVERRIDING_EVENTS = ['contextmenu','dragover','drop'];
 function getEventList(element) {
-    return (element.getAttribute('evl') || '').split(';');
+    const evtString = element.getAttribute('evl');
+    return evtString ? evtString.split(';') : [];
 }
 
 export function Projector(domRoot) {
     const elementMap = new Map();
     const pendingFrames = [];
     const eventCallbacks = [];
+    const eventMap = new Map();
     let runningNextFrame;
 
     function eventHandler(evt) {
@@ -34,7 +36,7 @@ export function Projector(domRoot) {
     }
 
     function setAttributes(element, props) {
-        Object.entries((name, value) => {
+        Object.entries(props).forEach(([name, value]) => {
             if (name in element) {
                 if (name.startsWith('on')) {
                     const eventName = name.substr(2);
@@ -76,11 +78,11 @@ export function Projector(domRoot) {
     }
 
     function createElement({
-        t as type,
-        n as name,
-        p as props,
-        i as id,
-        c as children
+        t: type,
+        n: name,
+        p: props,
+        i: id,
+        c: children
     }) {
         let element;
         if (type === 3) {
@@ -94,40 +96,36 @@ export function Projector(domRoot) {
         for (let i=0; i<children.length; i++) {
             element.appendChild(createElement(children[i]));
         }
+        return element;
     }
 
-    function _removeElement(parent, childrenToRemove) {
-        childrenToRemove.forEach(function (id) {
-            const child = getElement(id);
-            _removeElement(child, asArray(child.childNodes).map(c => c._id)))
+    function removeElement(element) {
+        Array.from(element.childNodes).forEach(removeElement)
 
-            getEventList(child).forEach(eventName => {
-                removeEvent(
-                    eventMap.get(eventName),
-                    child._id,
-                    eventName
-                );
-            });
-
-            parent.removeChild(child);
+        getEventList(element).forEach(eventName => {
+            removeEvent(
+                eventMap.get(eventName),
+                element._id,
+                eventName
+            );
         });
+
+        element.parentNode.removeChild(element);
+        elementMap.delete(element._id);
     }
 
     const ACTION_METHODS = [
-        function addElement(parentId, data, nextSiblingId) {
-            getElement(parentId)
-                .insertBefore(
-                    createElement(data),
-                    getElement(nextSiblingId)
-                );
+        function addElement(parent, data, nextSiblingId) {
+            parent.insertBefore(
+                createElement(data),
+                getElement(nextSiblingId)
+            );
         },
         setAttributes,
-        function removeElement(parentId, childrenToRemove) {
-            _removeElement(getElement(parentId), childrenToRemove);
-        },
+        removeElement,
     ];
 
-    const queuePatch = (patchFrame) => {
+    const queueFrame = (patchFrame) => {
         if (!patchFrame || !patchFrame.length) {
             return;
         }
@@ -139,29 +137,31 @@ export function Projector(domRoot) {
 
     const updateFrame = () => {
         const patches = pendingFrames.pop();
+        if (!patches) {
+            runningNextFrame = null;
+            return;
+        }
         // console.group('PatchSet');
         let patch;
-        while (patch = patchSet.shift()) {
+        while (patch = patches.shift()) {
             // console.log(ACTION_METHODS[patch[0]].name, JSON.stringify(patch));
-            ACTION_METHODS[patch[0]](patchParams[1], patchParams[2], patchParams[3]);
+            ACTION_METHODS[patch[0]](getElement(patch[1]), patch[2], patch[3]);
         }
-
-        while(postProcessing.length) { postProcessing.pop()(); }
         // console.groupEnd('PatchSet');
 
-        if (pendingFrames.length) {
-            runningNextFrame = requestAnimationFrame(updateFrame, domRoot);
-        } else {
-            runningNextFrame = null;
-        }
+        runningNextFrame = requestAnimationFrame(updateFrame, domRoot);
     };
 
     function getElement(id) {
-        return elementMap.get(id);
+        return id === null ? domRoot : elementMap.get(id);
+    }
+
+    function subscribe(fn) {
+        eventCallbacks.push(fn);
     }
 
     return {
-        queuePatch,
+        queueFrame,
         getElement,
         subscribe,
     };
