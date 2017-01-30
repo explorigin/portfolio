@@ -17,17 +17,27 @@ export function Projector(domRoot) {
     let runningNextFrame;
 
     function eventHandler(evt) {
+        const eventName = evt.type;
+        const eventSet = eventMap.get(eventName);
+        if (!eventSet || (evt.target && !eventSet.has(evt.target._id))) {
+            return;
+        }
+
         if (OVERRIDING_EVENTS.includes(eventName)) {
             evt.preventDefault();
         };
 
+        evt.stopPropagation();
 
         eventCallbacks.forEach(cb => cb(evt));
     }
+
     function removeEvent(eventSet, id, eventName) {
-        eventSet.remove(element._id);
+        eventSet.delete(id);
         if (!eventSet.size) {
             domRoot.removeEventListener(eventName, eventHandler);
+            // Probably unnecessary to remove the eventSet from the map.
+            // eventMap.delete(eventName);
         }
     }
 
@@ -86,8 +96,8 @@ export function Projector(domRoot) {
         } else if (type === 1) {
             element = document.createElement(name);
         }
-        setAttributes(element, props);
         elementMap.set(element._id = id, element);
+        setAttributes(element, props);
 
         for (let i=0; i<children.length; i++) {
             element.appendChild(createElement(children[i]));

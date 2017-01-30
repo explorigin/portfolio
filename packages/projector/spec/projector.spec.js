@@ -69,7 +69,7 @@ describe('Projector', () => {
     });
 
     describe('queueFrame', () => {
-        describe('patch to add elements', () => {
+        describe('add elements patch', () => {
             it('patch to add a basic element with a class', () => {
                 expect(container.childNodes.length).toBe(0);
 
@@ -123,9 +123,22 @@ describe('Projector', () => {
                 expect(document.querySelector('.child')).toBe(child);
                 expect(projector.getElement(child._id)).toBe(child);
             });
+
+            it('patch to add an eventHandler', (done) => {
+                function eventHandler(evt) {
+                    expect(evt.target._id).toBe(id);
+                    done();
+                }
+                projector.subscribe(eventHandler);
+
+                const id = add(h('input', { type: 'text', value: 'test', onclick: true}));
+                waitForNextFrame().then(() => {
+                    projector.getElement(id).click();
+                }).catch(console.error.bind(console));
+            });
         });
 
-        describe('patch to update elements', () => {
+        describe('update element patch', () => {
             it('patch to change a class', (done) => {
                 const id = add(h('div', { className: 'first' }));
                 waitForNextFrame().then(() => {
@@ -161,10 +174,47 @@ describe('Projector', () => {
                     expect(newEl.textContent).toBe('pardner');
                 }).then(done).catch(console.error.bind(console));
             });
+
+            it('patch to add an eventHandler', (done) => {
+                function eventHandler(evt) {
+                    expect(evt.target._id).toBe(id);
+                    done();
+                }
+                projector.subscribe(eventHandler);
+
+                const id = add(h('input', { type: 'text', value: 'test' }));
+                waitForNextFrame().then(() => {
+                    patch(id, { onclick: true });
+                    return waitForNextFrame();
+                }).then(() => {
+                    projector.getElement(id).click();
+                }).catch(console.error.bind(console));
+            });
+
+            it('patch to remove an eventHandler', (done) => {
+                let callCount = 1;
+                function eventHandler(evt) {
+                    expect(evt.target._id).toBe(id);
+                    patch(id, { onclick: null });
+                    if (0 === callCount--) {
+                        fail('Should not be called twice.');
+                    }
+                }
+                projector.subscribe(eventHandler);
+
+                const id = add(h('input', { type: 'text', value: 'test', onclick: true}));
+                waitForNextFrame().then(() => {
+                    projector.getElement(id).click();
+                    return waitForNextFrame();
+                }).then(() => {
+                    projector.getElement(id).click();
+                    return waitForNextFrame();
+                }).then(done).catch(console.error.bind(console));
+            });
         });
 
-        describe('patch to remove an element', () => {
-            it('', (done) => {
+        describe('remove element patch', () => {
+            it('remove an element', (done) => {
                 const id = add(h('div', {}, [
                     h('span', { className: 'child' })
                 ]));
@@ -178,6 +228,31 @@ describe('Projector', () => {
                     expect(projector.getElement(child._id)).toBe(undefined);
                 }).then(done).catch(console.error.bind(console));
             });
+        });
+    });
+
+    describe('subscribe', () => {
+        it('do not propagate a removed sibling event', (done) => {
+            let callCount = 1;
+            function eventHandler(evt) {
+                expect(evt.target._id).toBe(Bid);
+                patch(Bid, { onclick: null });
+                if (0 === callCount--) {
+                    fail('Should not be called twice.');
+                }
+            }
+            projector.subscribe(eventHandler);
+
+            const Aid = add(h('input', { type: 'text', value: 'A', onclick: true}));
+            const Bid = add(h('input', { type: 'text', value: 'B', onclick: true}));
+            waitForNextFrame().then(() => {
+                projector.getElement(Bid).click();
+                return waitForNextFrame();
+            }).then(() => {
+                // debugger;
+                projector.getElement(Bid).click();
+                return waitForNextFrame();
+            }).then(done).catch(console.error.bind(console));
         });
     });
 });
