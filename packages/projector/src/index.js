@@ -1,6 +1,6 @@
 import { isFunction } from 'trimkit';
 
-import { sanitizeObject, supportsPassive } from './utils.js';
+import { supportsPassive } from './utils.js';
 
 
 const OVERRIDING_EVENTS = ['contextmenu','dragover','drop'];
@@ -21,12 +21,8 @@ export function Projector(domRoot) {
             evt.preventDefault();
         };
 
-        const fakeEvt = sanitizeObject(evt);
-        if (evt.target) {
-            fakeEvt.target = evt.target._id;
-        }
 
-        eventCallbacks.forEach(cb => cb(fakeEvt));
+        eventCallbacks.forEach(cb => cb(evt));
     }
     function removeEvent(eventSet, id, eventName) {
         eventSet.remove(element._id);
