@@ -2,7 +2,7 @@ import { isFunction } from 'trimkit';
 
 import { supportsPassive } from './utils.js';
 
-
+const ALLOWED_SETTABLE_PROPERTIES = 'style lang dataset dir tabIndex title scrollTop scrollLeft className width height'.split(' ');
 const OVERRIDING_EVENTS = ['contextmenu','dragover','drop'];
 function getEventList(element) {
     const evtString = element.getAttribute('evl');
@@ -72,7 +72,7 @@ export function Projector(domRoot) {
                         }
                     }
                     element.setAttribute('evl', eventList.join(';'));
-                } else {
+                } else if (ALLOWED_SETTABLE_PROPERTIES.includes(name)) {
                     element[name] = value;
                 }
             } else if (value === null) {
@@ -166,9 +166,30 @@ export function Projector(domRoot) {
         eventCallbacks.push(fn);
     }
 
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#Properties
+    function setElementProperty(id, propertyPath, value) {
+        let ptr = getElement(id);
+        let path = propertyPath.split('.');
+        if (!ALLOWED_SETTABLE_PROPERTIES.includes(path[0])) {
+            throw new Error('Access Denied');
+        }
+
+        do {
+            ptr = ptr[path.pop()];
+        } while (path.length > 1);
+        return ptr[path[0]] = value;
+    }
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#Methods
+    function runElementMethod(id, method) {
+        getElement(id)[method]();
+    }
+
     return {
         queueFrame,
         getElement,
         subscribe,
+        setElementProperty,
+        runElementMethod,
     };
 }
