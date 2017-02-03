@@ -1,9 +1,12 @@
 import { isFunction } from 'trimkit';
 
 import { supportsPassive } from './utils.js';
+import {
+    ALLOWED_SETTABLE_PROPERTIES,
+    DISALLOWED_ELEMENTS,
+    OVERRIDING_EVENTS
+} from './constants.js';
 
-const ALLOWED_SETTABLE_PROPERTIES = 'style lang dataset dir tabIndex title scrollTop scrollLeft className width height'.split(' ');
-const OVERRIDING_EVENTS = ['contextmenu','dragover','drop'];
 function getEventList(element) {
     const evtString = element.getAttribute('evl');
     return evtString ? evtString.split(';') : [];
@@ -94,7 +97,11 @@ export function Projector(domRoot) {
         if (type === 3) {
             element = document.createTextNode(props.textContent);
         } else if (type === 1) {
-            element = document.createElement(name);
+            if (DISALLOWED_ELEMENTS.includes(name)) {
+                element = document.createElement('div');
+            } else {
+                element = document.createElement(name);
+            }
         }
         elementMap.set(element._id = id, element);
         setAttributes(element, props);
