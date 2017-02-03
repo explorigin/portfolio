@@ -58,11 +58,11 @@ describe('Projector', () => {
     }
 
     describe('getElement', () => {
-        it('getElement(null) method should to return the container.', () => {
+        it('should to return the container from a null id.', () => {
             expect(projector.getElement(null)).toBe(container);
         });
 
-        it('getElement(id) method should to return the patched node.', () => {
+        it('should to return the patched node from an integer id.', () => {
             const id = add(h('div', { className: 'first' }));
             expect(projector.getElement(id)._id).toBe(id);
         });
@@ -235,10 +235,14 @@ describe('Projector', () => {
         it('do not propagate a removed sibling event', (done) => {
             let callCount = 1;
             function eventHandler(evt) {
-                expect(evt.target._id).toBe(Bid);
-                patch(Bid, { onclick: null });
-                if (0 === callCount--) {
-                    fail('Should not be called twice.');
+                if (evt.target._id === Bid) {
+                    patch(Bid, { onclick: null });
+                    if (0 === callCount--) {
+                        fail('Should not be called twice.');
+                    }
+                } else {
+                    expect(evt.target._id).toBe(Aid);
+                    expect(callCount).toBe(0);
                 }
             }
             projector.subscribe(eventHandler);
@@ -249,10 +253,58 @@ describe('Projector', () => {
                 projector.getElement(Bid).click();
                 return waitForNextFrame();
             }).then(() => {
-                // debugger;
+                projector.getElement(Aid).click();
+                return waitForNextFrame();
+            }).then(() => {
                 projector.getElement(Bid).click();
                 return waitForNextFrame();
             }).then(done).catch(console.error.bind(console));
         });
     });
+
+    describe('setElementProperty', () => {
+        it('Can set element properties', () => {
+            const id = add(h('div', { className: 'first' }));
+            const el = projector.getElement(id);
+            expect(el.className).toBe('first');
+            projector.setElementProperty(id, 'className', 'second');
+            expect(el.className).toBe('second');
+        });
+
+        it('Can set pathed element properties', () => {
+            const id = add(h('div', { className: 'first' }));
+            const el = projector.getElement(id);
+            expect(el.className).toBe('first');
+            projector.setElementProperty(id, 'style.backgroundColor', 'blue');
+            expect(el.style.backgroundColor).toBe('blue');
+        });
+
+        it('Cannot set innerHTML', () => {
+            const id = add(h('div', { className: 'first' }));
+            const el = projector.getElement(id);
+            expect(el.className).toBe('first');
+            try {
+                projector.setElementProperty(id, 'innerHTML', '<hr>');
+            } catch (e) {
+                expect(el.innerHTML).not.toBe('<hr>');
+                expect(e.message).toBe('Access Denied');
+                return;
+            }
+            fail('Setting innerHTML should fail.');
+        });
+    });
+
+    describe('runElementMethod', () => {
+        it('Can click', (done) => {
+            function eventHandler(evt) {
+                expect(evt.target._id).toBe(id);
+                done();
+            }
+            projector.subscribe(eventHandler);
+
+            const id = add(h('input', { type: 'text', value: 'test', onclick: true}));
+            projector.runElementMethod(id, 'click');
+        });
+    });
+
 });

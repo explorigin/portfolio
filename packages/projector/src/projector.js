@@ -181,9 +181,9 @@ export function Projector(domRoot) {
             throw new Error('Access Denied');
         }
 
-        do {
-            ptr = ptr[path.pop()];
-        } while (path.length > 1);
+        while (path.length > 1) {
+            ptr = ptr[path.shift()];
+        }
         return ptr[path[0]] = value;
     }
 

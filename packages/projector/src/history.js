@@ -9,7 +9,7 @@ export function history(onChange) {
 					return (...args) => onChange([6, 'history', name, args]);
 				}
 				// return undefined;
-			}
+			},
 
 			set(target, name, value) {
 				throw new Error(`Cannot set ${name} on history.`);
