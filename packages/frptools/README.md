@@ -97,3 +97,42 @@ inViewport(false);  // showDialog result recomputed and `false` is written to th
 shouldShow(false);  // showDialog result recomputed, console.log is not called.
 showDialog();  // showDialog does not recompute, console.log is not called. `false` is returned.
 ```
+
+
+# [bundle](./src/bundle.js)
+
+`bundle` is a wrapper around a group of `observables` for the purpose of applying changes to all of them at once without having to trigger a subscription that may depend on more than observable in the group.
+
+Another way to think of a `bundle` is an `observable` that takes an object and exposes the properties as individual observables.
+
+## Behavior
+A `bundle` wraps observables to intercept dependency hooks in such a way that updating all observables can happen at once before any downstream `computeds` are evaluated. A bundle returns a function that can be called with an object to set values for the mapped member observables.
+
+## Usage
+
+### Creation
+
+```js
+const layoutEventBundle = bundle({
+    width: observable(1),
+    height: observable(2),
+});
+const ratio = computed((a, b) => a / b, [layoutEventBundle.width, layoutEventBundle.height]);
+ratio.subscribe(render);
+```
+
+### Change Member Observables atomically
+```js
+layoutEventBundle({width: 640, height: 480});
+```
+
+`ratio` would normally be evaluated twice and `render` would be called after each intermediate change.  But bundle allows both values to change and `ratio` will only be evaluated once and `render` called once.
+
+
+### Change Member Observables individually
+```js
+layoutEventBundle.width(640);
+layoutEventBundle.height(480);
+```
+
+The observables exposed by the bundle can also be updated apart from their grouping.

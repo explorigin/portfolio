@@ -4,13 +4,13 @@ export function computed(fn, dependencies = []) {
     let isDirty = true;
     let val;
 
-    function _computedDirtyReporter() {
+    function _computedDirtyReporter(_, skipPropagation) {
         if (!isDirty) {
             isDirty = true;
+            dependents.forEach(d => d(_, skipPropagation));
         }
-        dependents.forEach(runParam);
 
-        if (subscribers.size) {
+        if (subscribers.size && !skipPropagation) {
             accessor();
         }
     }
