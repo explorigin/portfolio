@@ -136,4 +136,100 @@ describe('Document', () => {
             expect(changes[2]).toEqual([1, doc.body._id + 2, { name: 'class', value: null }]);
         });
     });
+
+    describe('element eventHandlers', () => {
+        it('are called', () => {
+            let callCount = 0;
+            function incrementCallCount(evt) {
+                callCount++;
+            }
+            const el1 = doc.createElement('div');
+            const el2 = doc.createElement('span');
+            el1.appendChild(el2);
+            el2.addEventListener('click', incrementCallCount)
+            expect(changes).toEqual([]);
+            doc.body.appendChild(el1)
+            expect(changes).toEqual([[0, doc.body._id, {
+                t: 1,
+                n: 'DIV',
+                p: [],
+                i: doc.body._id + 1,
+                c: [{
+                    t: 1,
+                    n: 'SPAN',
+                    p: [{name: 'onclick', value: true}],
+                    i: doc.body._id + 2,
+                    c: []
+                }]
+            }, undefined]]);
+            expect(changes.length).toEqual(1);
+
+            expect(callCount).toEqual(0);
+            el2.dispatchEvent(new doc.Event('click'));
+            expect(callCount).toEqual(1);
+        });
+        it('are not called after removed', () => {
+            let callCount = 0;
+            function incrementCallCount(evt) {
+                callCount++;
+            }
+            const el1 = doc.createElement('div');
+            const el2 = doc.createElement('span');
+            el1.appendChild(el2);
+            el2.addEventListener('click', incrementCallCount)
+            expect(changes).toEqual([]);
+            doc.body.appendChild(el1)
+            expect(changes).toEqual([[0, doc.body._id, {
+                t: 1,
+                n: 'DIV',
+                p: [],
+                i: doc.body._id + 1,
+                c: [{
+                    t: 1,
+                    n: 'SPAN',
+                    p: [{name: 'onclick', value: true}],
+                    i: doc.body._id + 2,
+                    c: []
+                }]
+            }, undefined]]);
+            expect(changes.length).toEqual(1);
+
+            expect(callCount).toEqual(0);
+            el2.dispatchEvent(new doc.Event('click'));
+            expect(callCount).toEqual(1);
+            el2.removeEventListener('click', incrementCallCount)
+            el2.dispatchEvent(new doc.Event('click'));
+            expect(callCount).toEqual(1);
+        });
+        it('handle bubbled events', () => {
+            let callCount = 0;
+            function incrementCallCount(evt) {
+                callCount++;
+            }
+            const el1 = doc.createElement('div');
+            const el2 = doc.createElement('span');
+            el1.appendChild(el2);
+            el1.addEventListener('click', incrementCallCount)
+            expect(changes).toEqual([]);
+            doc.body.appendChild(el1)
+            expect(changes).toEqual([[0, doc.body._id, {
+                t: 1,
+                n: 'DIV',
+                p: [{name: 'onclick', value: true}],
+                i: doc.body._id + 1,
+                c: [{
+                    t: 1,
+                    n: 'SPAN',
+                    p: [],
+                    i: doc.body._id + 2,
+                    c: []
+                }]
+            }, undefined]]);
+            expect(changes.length).toEqual(1);
+
+            expect(callCount).toEqual(0);
+            el2.dispatchEvent(new doc.Event('click', { bubbles: true }));
+            expect(callCount).toEqual(1);
+        });
+    });
 });

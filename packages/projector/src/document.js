@@ -154,10 +154,13 @@ export function CreateDocument(onChange) {
 		}
 
 		_toDataObj() {
+			const p = Object.keys(this.__handlers).map(key => ({ name: `on${key}`, value: true }))
+				.concat(this.attributes);
+
 			return {
 				t: this.nodeType,
 				n: this.nodeName,
-				p: this.attributes,
+				p,
 				i: this._id,
 				c: this.childNodes.map(n => n._toDataObj())
 			};
@@ -193,10 +196,17 @@ export function CreateDocument(onChange) {
 		}
 
 		addEventListener(type, handler) {
-			(this.__handlers[toLower(type)] || (this.__handlers[toLower(type)] = [])).push(handler);
+			const evtName = toLower(type);
+			(this.__handlers[evtName] || (this.__handlers[evtName] = [])).push(handler);
+			if (this._attached) {
+				onChange([1, this._id, { name: `on${evtName}`, value: true }]);
+			}
 		}
 		removeEventListener(type, handler) {
-			splice(this.__handlers[toLower(type)], handler, 0, true);
+			const evtName = toLower(type);
+			if (splice(this.__handlers[evtName], handler, 0, true) !== -1 && this._attached) {
+				onChange([1, this._id, { name: `on${evtName}`, value: null }]);
+			}
 		}
 		dispatchEvent(event) {
 			let t = event.currentTarget = this,
@@ -222,7 +232,7 @@ export function CreateDocument(onChange) {
 
 
 	class Event {
-		constructor(type, opts) {
+		constructor(type, opts = {}) {
 			this.type = type;
 			this.bubbles = !!opts.bubbles;
 			this.cancelable = !!opts.cancelable;
