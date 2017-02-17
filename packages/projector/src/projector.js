@@ -45,7 +45,7 @@ export function Projector(domRoot) {
     }
 
     function setAttributes(element, props) {
-        Object.entries(props).forEach(([name, value]) => {
+        props.forEach(({name, value}) => {
             if (name in element) {
                 if (name.startsWith('on')) {
                     const eventName = name.substr(2);

@@ -15,6 +15,8 @@ const NODE_TYPES = {
 };
 */
 
+let COUNTER = 0;
+
 function toLower(str) {
 	return String(str).toLowerCase();
 }
@@ -38,7 +40,7 @@ function createAttributeFilter(ns, name) {
 /** Create a minimally viable DOM Document
  *	@returns {Document} document
  */
-export function CreateDocument() {
+export function CreateDocument(onChange) {
 
 	function isElement(node) {
 		return node.nodeType===1;
@@ -49,6 +51,8 @@ export function CreateDocument() {
 			this.nodeType = nodeType;
 			this.nodeName = nodeName;
 			this.childNodes = [];
+			this._id = COUNTER++;
+			this._attached = false;
 		}
 		get nextSibling() {
 			let p = this.parentNode;
@@ -64,14 +68,35 @@ export function CreateDocument() {
 		get lastChild() {
 			return this.childNodes[this.childNodes.length-1];
 		}
+		_attach(attach) {
+			this._attached = attach;
+			this.childNodes.forEach(n => n._attach(attach));
+		}
+		_toDataObj() {
+			return {
+		        t: this.nodeType,
+		        n: this.nodeName,
+		        p: {},
+		        i: this._id,
+		        c: this.childNodes.map(n => n._toDataObj())
+		    };
+		}
 		appendChild(child) {
 			this.insertBefore(child);
 		}
 		insertBefore(child, ref) {
 			child.remove();
 			child.parentNode = this;
-			if (!ref) this.childNodes.push(child);
-			else splice(this.childNodes, ref, child);
+			if (!ref) {
+				this.childNodes.push(child)
+			} else {
+				splice(this.childNodes, ref, child)
+			}
+
+			if (this._attached) {
+				child._attach(true);
+				onChange([0, this._id, child._toDataObj(), ref && ref._id]);
+			}
 		}
 		replaceChild(child, ref) {
 			if (ref.parentNode===this) {
@@ -81,9 +106,15 @@ export function CreateDocument() {
 		}
 		removeChild(child) {
 			splice(this.childNodes, child);
+			if (this._attached) {
+				child._attach(false);
+				onChange([2, child._id]);
+			}
 		}
 		remove() {
-			if (this.parentNode) this.parentNode.removeChild(this);
+			if (this.parentNode) {
+				this.parentNode.removeChild(this);
+			}
 		}
 	}
 
@@ -92,6 +123,15 @@ export function CreateDocument() {
 		constructor(text) {
 			super(3, '#text');					// TEXT_NODE
 			this.nodeValue = text;
+		}
+		_toDataObj() {
+			return {
+				t: this.nodeType,
+				n: this.nodeName,
+				p: { textContent: this.nodeValue },
+				i: this._id,
+				c: []
+			};
 		}
 		set textContent(text) {
 			this.nodeValue = text;
@@ -113,6 +153,16 @@ export function CreateDocument() {
 			return this.childNodes.filter(isElement);
 		}
 
+		_toDataObj() {
+			return {
+				t: this.nodeType,
+				n: this.nodeName,
+				p: this.attributes,
+				i: this._id,
+				c: this.childNodes.map(n => n._toDataObj())
+			};
+		}
+
 		setAttribute(key, value) {
 			this.setAttributeNS(null, key, value);
 		}
@@ -127,6 +177,9 @@ export function CreateDocument() {
 			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
 			if (!attr) this.attributes.push(attr = { ns, name });
 			attr.value = String(value);
+			if (this._attached) {
+				onChange([1, this._id, attr]);
+			}
 		}
 		getAttributeNS(ns, name) {
 			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
@@ -134,6 +187,9 @@ export function CreateDocument() {
 		}
 		removeAttributeNS(ns, name) {
 			splice(this.attributes, createAttributeFilter(ns, name));
+			if (this._attached) {
+				onChange([1, this._id, { name: name, value: null }]);
+			}
 		}
 
 		addEventListener(type, handler) {
@@ -160,6 +216,7 @@ export function CreateDocument() {
 	class Document extends Element {
 		constructor() {
 			super(9, '#document');			// DOCUMENT_NODE
+			this._attached = true;
 		}
 	}
 
@@ -206,7 +263,6 @@ export function CreateDocument() {
 		document.appendChild(document.body = createElement('body'));
 		return document;
 	}
-
 
 	return createDocument();
 }
