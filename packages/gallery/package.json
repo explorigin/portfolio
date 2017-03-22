@@ -1,0 +1,30 @@
+{
+  "name": "Gallery",
+  "version": "0.0.1",
+  "description": "Personal photo gallery",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
+  "keywords": [
+    "javascript"
+  ],
+  "author": "Timothy Farrell <tim@thecookiejar.me> (https://github.com/explorigin)",
+  "license": "Apache-2.0",
+  "scripts": {
+    "start": "webpack --config webpack.config.js",
+    "dev": "webpack-dev-server"
+  },
+  "dependencies": {
+    "exif-parser": "~0.1.9",
+    "pica": "~2.0.8",
+    "pouchdb-adapter-http": "~6.1.2",
+    "pouchdb-adapter-idb": "~6.1.2",
+    "pouchdb-adapter-websql": "~6.1.2",
+    "pouchdb-binary-utils": "~6.1.2",
+    "pouchdb-core": "~6.1.2",
+    "pouchdb-replication": "~6.1.2",
+    "webpack": "~2.3.0"
+  },
+  "devDependencies": {
+    "webpack-dev-server": "~2.4.2"
+  }
+}
