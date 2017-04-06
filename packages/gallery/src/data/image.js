@@ -1,6 +1,6 @@
 import ExifParser from 'exif-parser';
 
-import { PouchDB, generateAttachmentUrl } from '../services/db.js'
+import { getDatabase, generateAttachmentUrl } from '../services/db.js';
 import { log, error } from '../services/console.js';
 import { sha256 } from '../utils/crypto.js';
 import { blobToArrayBuffer, deepAssign } from '../utils/conversion.js';
@@ -8,9 +8,8 @@ import { Event, backgroundTask } from '../utils/event.js'
 
 
 export const DB_NAME = 'gallery-images'
-export const db = new PouchDB(DB_NAME); // FIXME - don't export
-const subscribers = [];
-const IMPORT_PREFIX = 'importing';
+const db = getDatabase(DB_NAME);
+const PROCESS_PREFIX = 'importing';
 
 // Events
 export const imported = new Event('Image.imported');
@@ -26,7 +25,7 @@ export async function find(keys, options={}) {
 
 export async function add(imageFileList) {
     const docs = Array.prototype.map.call(imageFileList, f => ({
-        _id: `${IMPORT_PREFIX}_${f.name}`,
+        _id: `${PROCESS_PREFIX}_${f.name}`,
         name: f.name,
         mimetype: f.type,
         size: f.size,
@@ -54,7 +53,7 @@ export async function remove(ids, rev) {
             return true;
         } catch (e) {
             if (e.status !== 404) {
-                error(`Error removing Image import placeholder ${_id}`, e);
+                error(`Error removing Image ${_id}`, e);
             }
             return false;
         }
@@ -84,8 +83,8 @@ export async function addAttachment(doc, key, blob) {
 // Internal Functions
 const processImportables = backgroundTask(async function _processImportables() {
     const result = await db.allDocs({
-        startkey: `${IMPORT_PREFIX}_0`,
-        endkey: `${IMPORT_PREFIX}_z`,
+        startkey: `${PROCESS_PREFIX}_0`,
+        endkey: `${PROCESS_PREFIX}_z`,
         include_docs: true,
         attachments: true,
         binary: true,
