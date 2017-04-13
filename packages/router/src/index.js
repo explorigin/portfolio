@@ -1,10 +1,9 @@
 import { isFunction, isUndefined, Null, ObjectKeys } from 'trimkit';
 
-
 const VARMATCH_RE = /:([^\/]+)/g;
 const ROUTEELEMENT_RE = /^[^\/]+$/;
 const nop = () => 1;
-const digestRoutes = (routes, baseUrl) => (
+const digestRoutes = (routes, baseUrl) =>
     routes.map((route, i) => {
         const reg = route.path.replace(VARMATCH_RE, (m, varName) => {
             const varDef = route.vars || {};
@@ -15,23 +14,26 @@ const digestRoutes = (routes, baseUrl) => (
         return {
             matcher: new RegExp(`^${baseUrl}${reg}$`),
             _i: i,
-            ...route,
+            ...route
         };
-    })
-);
+    });
 
-export function Router(routes, baseUrl='#') {
+export function Router(routes, baseUrl = '#') {
     let listening = false;
     let currentRoute = Null;
     let reEnterHook = Null;
 
     let routeMatcher = digestRoutes(routes, baseUrl);
-    let routeByName = routeMatcher.reduce((obj, route) => (
-        route.name ? Object.assign(obj, {[route.name]: route}) : obj
-    ), {});
+    let routeByName = routeMatcher.reduce(
+        (obj, route) =>
+            (route.name ? Object.assign(obj, { [route.name]: route }) : obj),
+        {}
+    );
 
     function goto(urlOrName, vars, fromLocation) {
-        const url = urlOrName.startsWith(baseUrl) ? urlOrName : href(urlOrName, vars);
+        const url = urlOrName.startsWith(baseUrl)
+            ? urlOrName
+            : href(urlOrName, vars);
 
         if (listening && _location() !== url) {
             // If we're not there make the change and exit.
@@ -70,19 +72,27 @@ export function Router(routes, baseUrl='#') {
                 path: url,
                 _i: routeMatch._i
             };
-            if (currentRoute && currentRoute._i === newRoute._i && isFunction(reEnterHook)) {
+            if (
+                currentRoute &&
+                currentRoute._i === newRoute._i &&
+                isFunction(reEnterHook)
+            ) {
                 const result = reEnterHook(newRoute);
                 currentRoute = newRoute;
                 return Promise.resolve(result);
             } else {
-                let exit = (currentRoute && currentRoute._i)
+                let exit = currentRoute && currentRoute._i
                     ? routes[currentRoute._i].exit || nop
                     : nop;
-                return Promise.resolve(exit(api, currentRoute, newRoute)).catch(()=>{
-                }).then(() => {
-                    reEnterHook = routes[routeMatch._i].enter(api, newRoute);
-                    currentRoute = newRoute;
-                });
+                return Promise.resolve(exit(api, currentRoute, newRoute))
+                    .catch(() => {})
+                    .then(() => {
+                        reEnterHook = routes[routeMatch._i].enter(
+                            api,
+                            newRoute
+                        );
+                        currentRoute = newRoute;
+                    });
             }
         } else if (currentRoute && fromLocation) {
             // If we are listening and we receive an unmatched path, go back.
@@ -91,7 +101,7 @@ export function Router(routes, baseUrl='#') {
         }
         // Either we received a goto call or a start call to in invalid path.
         throw new Error(`No route for "${url}"`);
-    };
+    }
 
     function href(routeName, vars) {
         const route = routeByName[routeName];
@@ -109,17 +119,21 @@ export function Router(routes, baseUrl='#') {
                     return value;
                 }
 
-                throw new Error(`Invalid value for route ${path} var ${varName}: ${value}.`);
+                throw new Error(
+                    `Invalid value for route ${path} var ${varName}: ${value}.`
+                );
             });
         }
         return `${baseUrl}${path}`;
-    };
+    }
 
     function _location() {
         return location.hash;
-    };
+    }
 
-    function _handler() { goto(_location(), Null, true); }
+    function _handler() {
+        goto(_location(), Null, true);
+    }
 
     function start(initialRoute) {
         if (listening) {
@@ -129,7 +143,7 @@ export function Router(routes, baseUrl='#') {
         self.addEventListener('hashchange', _handler, false);
         listening = true;
         goto(_location() || initialRoute);
-    };
+    }
 
     function stop() {
         self.removeEventListener('hashchange', _handler);
@@ -144,7 +158,7 @@ export function Router(routes, baseUrl='#') {
         href,
         start,
         stop,
-        current,
+        current
     };
 
     return api;

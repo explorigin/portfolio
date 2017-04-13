@@ -29,21 +29,22 @@ function splice(arr, item, add, byValueOnly) {
 
 function findWhere(arr, fn, returnIndex, byValueOnly) {
 	let i = arr.length;
-	while (i--) if (typeof fn==='function' && !byValueOnly ? fn(arr[i]) : arr[i]===fn) break;
+	while (i--)
+		if (typeof fn === 'function' && !byValueOnly ? fn(arr[i]) : arr[i] === fn)
+			break;
 	return returnIndex ? i : arr[i];
 }
 
 function createAttributeFilter(ns, name) {
-	return o => o.ns===ns && toLower(o.name)===toLower(name);
+	return o => o.ns === ns && toLower(o.name) === toLower(name);
 }
 
 /** Create a minimally viable DOM Document
  *	@returns {Document} document
  */
 export function CreateDocument(onChange) {
-
 	function isElement(node) {
-		return node.nodeType===1;
+		return node.nodeType === 1;
 	}
 
 	class Node {
@@ -66,7 +67,7 @@ export function CreateDocument(onChange) {
 			return this.childNodes[0];
 		}
 		get lastChild() {
-			return this.childNodes[this.childNodes.length-1];
+			return this.childNodes[this.childNodes.length - 1];
 		}
 		_attach(attach) {
 			this._attached = attach;
@@ -74,12 +75,12 @@ export function CreateDocument(onChange) {
 		}
 		_toDataObj() {
 			return {
-		        t: this.nodeType,
-		        n: this.nodeName,
-		        p: {},
-		        i: this._id,
-		        c: this.childNodes.map(n => n._toDataObj())
-		    };
+				t: this.nodeType,
+				n: this.nodeName,
+				p: {},
+				i: this._id,
+				c: this.childNodes.map(n => n._toDataObj())
+			};
 		}
 		appendChild(child) {
 			this.insertBefore(child);
@@ -88,9 +89,9 @@ export function CreateDocument(onChange) {
 			child.remove();
 			child.parentNode = this;
 			if (!ref) {
-				this.childNodes.push(child)
+				this.childNodes.push(child);
 			} else {
-				splice(this.childNodes, ref, child)
+				splice(this.childNodes, ref, child);
 			}
 
 			if (this._attached) {
@@ -99,7 +100,7 @@ export function CreateDocument(onChange) {
 			}
 		}
 		replaceChild(child, ref) {
-			if (ref.parentNode===this) {
+			if (ref.parentNode === this) {
 				this.insertBefore(child, ref);
 				ref.remove();
 			}
@@ -118,10 +119,9 @@ export function CreateDocument(onChange) {
 		}
 	}
 
-
 	class Text extends Node {
 		constructor(text) {
-			super(3, '#text');					// TEXT_NODE
+			super(3, '#text'); // TEXT_NODE
 			this.nodeValue = text;
 		}
 		_toDataObj() {
@@ -141,10 +141,9 @@ export function CreateDocument(onChange) {
 		}
 	}
 
-
 	class Element extends Node {
 		constructor(nodeType, nodeName) {
-			super(nodeType || 1, nodeName);		// ELEMENT_NODE
+			super(nodeType || 1, nodeName); // ELEMENT_NODE
 			this.attributes = [];
 			this.__handlers = {};
 		}
@@ -154,7 +153,8 @@ export function CreateDocument(onChange) {
 		}
 
 		_toDataObj() {
-			const p = Object.keys(this.__handlers).map(key => ({ name: `on${key}`, value: true }))
+			const p = Object.keys(this.__handlers)
+				.map(key => ({ name: `on${key}`, value: true }))
 				.concat(this.attributes);
 
 			return {
@@ -178,7 +178,7 @@ export function CreateDocument(onChange) {
 
 		setAttributeNS(ns, name, value) {
 			let attr = findWhere(this.attributes, createAttributeFilter(ns, name));
-			if (!attr) this.attributes.push(attr = { ns, name });
+			if (!attr) this.attributes.push((attr = { ns, name }));
 			attr.value = String(value);
 			if (this._attached) {
 				onChange([1, this._id, attr]);
@@ -197,39 +197,42 @@ export function CreateDocument(onChange) {
 
 		addEventListener(type, handler) {
 			const evtName = toLower(type);
-			(this.__handlers[evtName] || (this.__handlers[evtName] = [])).push(handler);
+			(this.__handlers[evtName] || (this.__handlers[evtName] = []))
+				.push(handler);
 			if (this._attached) {
 				onChange([1, this._id, { name: `on${evtName}`, value: true }]);
 			}
 		}
 		removeEventListener(type, handler) {
 			const evtName = toLower(type);
-			if (splice(this.__handlers[evtName], handler, 0, true) !== -1 && this._attached) {
+			if (
+				splice(this.__handlers[evtName], handler, 0, true) !== -1 &&
+				this._attached
+			) {
 				onChange([1, this._id, { name: `on${evtName}`, value: null }]);
 			}
 		}
 		dispatchEvent(event) {
-			let t = event.currentTarget = this,
-				c = event.cancelable,
-				l, i;
+			let t = (event.currentTarget = this), c = event.cancelable, l, i;
 			do {
 				l = t.__handlers[toLower(event.type)];
-				if (l) for (i=l.length; i--; ) {
-					if ((l[i](event)===false || event._end) && c) break;
-				}
-			} while (event.bubbles && !(c && event._stop) && (event.target=t=t.parentNode));
+				if (l)
+					for (i = l.length; i--; ) {
+						if ((l[i](event) === false || event._end) && c) break;
+					}
+			} while (event.bubbles &&
+				!(c && event._stop) &&
+				(event.target = t = t.parentNode));
 			return !event.defaultPrevented;
 		}
 	}
 
-
 	class Document extends Element {
 		constructor() {
-			super(9, '#document');			// DOCUMENT_NODE
+			super(9, '#document'); // DOCUMENT_NODE
 			this._attached = true;
 		}
 	}
-
 
 	class Event {
 		constructor(type, opts = {}) {
@@ -248,11 +251,9 @@ export function CreateDocument(onChange) {
 		}
 	}
 
-
 	function createElement(type) {
 		return new Element(null, String(type).toUpperCase());
 	}
-
 
 	function createElementNS(ns, type) {
 		let element = createElement(type);
@@ -260,17 +261,31 @@ export function CreateDocument(onChange) {
 		return element;
 	}
 
-
 	function createTextNode(text) {
 		return new Text(text);
 	}
 
-
 	function createDocument() {
 		let document = new Document();
-		Object.assign(document, document.defaultView = { document, Document, Node, Text, Element, SVGElement:Element, Event });
-		Object.assign(document, { documentElement:document, createElement, createElementNS, createTextNode });
-		document.appendChild(document.body = createElement('body'));
+		Object.assign(
+			document,
+			(document.defaultView = {
+				document,
+				Document,
+				Node,
+				Text,
+				Element,
+				SVGElement: Element,
+				Event
+			})
+		);
+		Object.assign(document, {
+			documentElement: document,
+			createElement,
+			createElementNS,
+			createTextNode
+		});
+		document.appendChild((document.body = createElement('body')));
 		return document;
 	}
 

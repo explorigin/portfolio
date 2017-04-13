@@ -6,8 +6,10 @@ export function bundle(observables) {
         const result = {};
         activeUpdate = true;
         Object.keys(values)
-            .filter(k => (typeof observables[k] === 'function'))
-            .forEach(k => { result[k] = observables[k](values[k]); });
+            .filter(k => typeof observables[k] === 'function')
+            .forEach(k => {
+                result[k] = observables[k](values[k]);
+            });
 
         const subscribers = Array.from(activeSubscribers);
         // Set them dirty but don't propagate.
@@ -20,14 +22,14 @@ export function bundle(observables) {
     };
 
     const subscriptionFactory = obsFn => fn => {
-        return obsFn((v) => {
+        return obsFn(v => {
             if (activeUpdate) {
                 activeSubscribers.add(fn);
             } else {
                 fn(v);
-            };
+            }
             return v;
-        })
+        });
     };
 
     Object.keys(observables).forEach(k => {

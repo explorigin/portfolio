@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
 function tryJSON(type, destination, id, data) {
     const packet = [type, destination, id, data];
     try {
@@ -23,27 +22,27 @@ function tryJSON(type, destination, id, data) {
 }
 
 function getPaths(obj, prefix = '') {
-    return Object.keys(obj).map(key => {
-        const prop = obj[key];
-        const path = `${prefix}${key}`;
-        if (typeof prop === 'function') {
-            return path;
-        }
-        return getPaths(prop, path + '.');
-    }).reduce((a, b) => a.concat(b), []);
+    return Object.keys(obj)
+        .map(key => {
+            const prop = obj[key];
+            const path = `${prefix}${key}`;
+            if (typeof prop === 'function') {
+                return path;
+            }
+            return getPaths(prop, path + '.');
+        })
+        .reduce((a, b) => a.concat(b), []);
 }
 
 function traverseObj(obj, pathStr, assignValue) {
     const path = pathStr.split('.');
     const last = path.pop();
     const ptr = path.reduce(
-        (acc, next) => (
-            acc[next] === undefined ? (acc[next] = {}) : acc[next]
-        ),
+        (acc, next) => (acc[next] === undefined ? (acc[next] = {}) : acc[next]),
         obj
     );
     if (assignValue) {
-        return ptr[last] = assignValue;
+        return (ptr[last] = assignValue);
     }
     return ptr[last];
 }
@@ -53,11 +52,10 @@ export function WorkerPortal(context, worker, isSlave, serialize) {
     const _worker = worker || self;
     const contextIndex = getPaths(context);
     const methods = contextIndex.map(path => traverseObj(context, path));
-    const _serialize = (
-        serialize
-        ? (type, destination, id, params) => serialize(type, destination, id, params, tryJSON)
-        : tryJSON
-    );
+    const _serialize = serialize
+        ? (type, destination, id, params) =>
+              serialize(type, destination, id, params, tryJSON)
+        : tryJSON;
     let callCount = 0;
     let enabled = false;
 
@@ -80,7 +78,11 @@ export function WorkerPortal(context, worker, isSlave, serialize) {
             post(1, id, 0, value);
         }
         function _reject(e) {
-            post(1, id, 1, { message: e.message, name: e.name, stack: e.stack });
+            post(1, id, 1, {
+                message: e.message,
+                name: e.name,
+                stack: e.stack
+            });
         }
 
         // If we have received an RPC response, satisfy the promise.
@@ -115,13 +117,10 @@ export function WorkerPortal(context, worker, isSlave, serialize) {
                 }
                 const id = callCount;
                 callCount += 1;
-                responseMap.set(
-                    id,
-                    [
-                        callbackFactory ? callbackFactory(resolve) : resolve,
-                        reject
-                    ]
-                );
+                responseMap.set(id, [
+                    callbackFactory ? callbackFactory(resolve) : resolve,
+                    reject
+                ]);
                 post(0, id, fnId, args);
             });
         };
@@ -131,7 +130,11 @@ export function WorkerPortal(context, worker, isSlave, serialize) {
         return (linkedFunctionNames, ...rest) => {
             const externalInterface = {};
             linkedFunctionNames.forEach((pathStr, index) => {
-                traverseObj(externalInterface, pathStr, injectionPointFactory(index));
+                traverseObj(
+                    externalInterface,
+                    pathStr,
+                    injectionPointFactory(index)
+                );
             });
             enabled = true;
             resolve(externalInterface);
@@ -154,12 +157,20 @@ export function WorkerPortal(context, worker, isSlave, serialize) {
     if (isSlave) {
         return new Promise(resolve => {
             contextIndex.splice(0, 0, '__init', '__cleanupSlave');
-            methods.splice(0, 0, resolveExternalInterfaceFactory(resolve), cleanup);
+            methods.splice(
+                0,
+                0,
+                resolveExternalInterfaceFactory(resolve),
+                cleanup
+            );
         });
     }
 
-    return injectionPointFactory(0, resolveExternalInterfaceFactory)(contextIndex)
-        .then(api => Object.assign(api, {
-            _cleanup: injectionPointFactory(1, resolve => resolve(cleanup())),
-        }));
+    return injectionPointFactory(0, resolveExternalInterfaceFactory)(
+        contextIndex
+    ).then(api =>
+        Object.assign(api, {
+            _cleanup: injectionPointFactory(1, resolve => resolve(cleanup()))
+        })
+    );
 }

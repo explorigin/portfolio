@@ -3,7 +3,7 @@
 // License: MIT
 
 export function Location(onChange) {
-	const settables = 'href hash search pathname'
+	const settables = 'href hash search pathname';
 	let url = '/';
 
 	return new Proxy(
@@ -20,7 +20,7 @@ export function Location(onChange) {
 			},
 			get hash() {
 				return (url.match(/#(.*)$/) || [])[1];
-			},
+			}
 		},
 		{
 			set(target, name, value) {

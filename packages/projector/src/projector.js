@@ -28,7 +28,7 @@ export function Projector(domRoot) {
 
         if (OVERRIDING_EVENTS.includes(eventName)) {
             evt.preventDefault();
-        };
+        }
 
         evt.stopPropagation();
 
@@ -45,7 +45,7 @@ export function Projector(domRoot) {
     }
 
     function setAttributes(element, props) {
-        props.forEach(({name, value}) => {
+        props.forEach(({ name, value }) => {
             if (name in element) {
                 if (name.startsWith('on')) {
                     const eventName = name.substr(2);
@@ -61,11 +61,10 @@ export function Projector(domRoot) {
                             domRoot.addEventListener(
                                 eventName,
                                 eventHandler,
-                                (
-                                    (supportsPassive && !OVERRIDING_EVENTS.includes(eventName))
+                                supportsPassive &&
+                                    !OVERRIDING_EVENTS.includes(eventName)
                                     ? { passive: true, capture: false }
                                     : false
-                                )
                             );
                         }
                         eventList.push(eventName);
@@ -86,13 +85,7 @@ export function Projector(domRoot) {
         });
     }
 
-    function createElement({
-        t: type,
-        n: name,
-        p: props,
-        i: id,
-        c: children
-    }) {
+    function createElement({ t: type, n: name, p: props, i: id, c: children }) {
         let element;
         if (type === 3) {
             element = document.createTextNode(props.textContent);
@@ -103,24 +96,20 @@ export function Projector(domRoot) {
                 element = document.createElement(name);
             }
         }
-        elementMap.set(element._id = id, element);
+        elementMap.set((element._id = id), element);
         setAttributes(element, props);
 
-        for (let i=0; i<children.length; i++) {
+        for (let i = 0; i < children.length; i++) {
             element.appendChild(createElement(children[i]));
         }
         return element;
     }
 
     function removeElement(element) {
-        Array.from(element.childNodes).forEach(removeElement)
+        Array.from(element.childNodes).forEach(removeElement);
 
         getEventList(element).forEach(eventName => {
-            removeEvent(
-                eventMap.get(eventName),
-                element._id,
-                eventName
-            );
+            removeEvent(eventMap.get(eventName), element._id, eventName);
         });
 
         element.parentNode.removeChild(element);
@@ -129,16 +118,13 @@ export function Projector(domRoot) {
 
     const ACTION_METHODS = [
         function addElement(parent, data, nextSiblingId) {
-            parent.insertBefore(
-                createElement(data),
-                getElement(nextSiblingId)
-            );
+            parent.insertBefore(createElement(data), getElement(nextSiblingId));
         },
         setAttributes,
-        removeElement,
+        removeElement
     ];
 
-    const queueFrame = (patchFrame) => {
+    const queueFrame = patchFrame => {
         if (!patchFrame || !patchFrame.length) {
             return;
         }
@@ -156,7 +142,7 @@ export function Projector(domRoot) {
         }
         // console.group('PatchSet');
         let patch;
-        while (patch = patches.shift()) {
+        while ((patch = patches.shift())) {
             // console.log(ACTION_METHODS[patch[0]].name, JSON.stringify(patch));
             ACTION_METHODS[patch[0]](getElement(patch[1]), patch[2], patch[3]);
         }
@@ -184,7 +170,7 @@ export function Projector(domRoot) {
         while (path.length > 1) {
             ptr = ptr[path.shift()];
         }
-        return ptr[path[0]] = value;
+        return (ptr[path[0]] = value);
     }
 
     // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement#Methods
@@ -197,6 +183,6 @@ export function Projector(domRoot) {
         getElement,
         subscribe,
         setElementProperty,
-        runElementMethod,
+        runElementMethod
     };
 }

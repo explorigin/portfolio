@@ -15,9 +15,9 @@ export function computed(fn, dependencies = []) {
         }
     }
 
-    const dependentSubscriptions = Array.from(dependencies).map(d => (
+    const dependentSubscriptions = Array.from(dependencies).map(d =>
         d._d(_computedDirtyReporter)
-    ));
+    );
 
     const accessor = function _computed() {
         if (isDirty) {
@@ -44,8 +44,8 @@ export function computed(fn, dependencies = []) {
     accessor.detach = () => {
         subscribers.clear();
         dependents.clear();
-        dependentSubscriptions.forEach(runParam)
-    }
+        dependentSubscriptions.forEach(runParam);
+    };
 
     return accessor;
 }
