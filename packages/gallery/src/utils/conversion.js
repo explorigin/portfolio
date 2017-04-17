@@ -26,6 +26,8 @@ export function deepAssign(to, ...rest) {
             const value = src[prop];
             if (typeof value === 'object' && !Array.isArray(value)) {
                 to[prop] = deepAssign(to[prop] || {}, value);
+            } else if (value === undefined && to[prop] !== undefined){
+                delete to[prop];
             } else {
                 to[prop] = value;
             }
