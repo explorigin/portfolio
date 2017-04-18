@@ -10,17 +10,23 @@ export const hashString = name => name.trim().replace(/[ \-~!@#$%^&]/g, '_').toL
 const getId = (id) => id.startsWith(PREFIX) ? id : `${PREFIX}_${hashString(id)}`;
 
 export async function find(keys, options={}) {
-    return await db.allDocs(Object.assign(
-        { include_docs: true },
-        options,
-        { keys: keys.map(getId) }
-    ));
+    let opts = { include_docs: true };
+    if (Array.isArray(keys)) {
+        Object.assign(opts, options);
+        opts.keys = keys.map(getId);
+    } else {
+        Object.assign(opts, keys);
+        opts.startkey =`${PREFIX}_`;
+        opts.endkey =`${PREFIX}_\ufff0`;
+    }
+    return await db.allDocs(opts);
 }
 
-export async function add(id, members = []) {
+export async function add(id, props={}, members=[]) {
     const _id = getId(id);
     const [results, created] = await getOrCreate({
         _id,
+        props,
         members: []
     });
 

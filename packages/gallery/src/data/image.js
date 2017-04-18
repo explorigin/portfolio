@@ -9,17 +9,26 @@ import { Event, backgroundTask } from '../utils/event.js'
 
 const db = getDatabase();
 const PROCESS_PREFIX = 'importing';
+const PREFIX = 'image';
 
 // Events
 export const imported = new Event('Image.imported');
+export const removed = new Event('Image.removed');
 
 // Methods
+const getId = (id) => id.startsWith(PREFIX) ? id : `${PREFIX}_${id}`;
+
 export async function find(keys, options={}) {
-    return await db.allDocs(Object.assign(
-        { include_docs: true },
-        options,
-        { keys }
-    ));
+    let opts = { include_docs: true };
+    if (Array.isArray(keys)) {
+        Object.assign(opts, options);
+        opts.keys = keys.map(getId);
+    } else {
+        Object.assign(opts, keys);
+        opts.startkey =`${PREFIX}_0`;
+        opts.endkey =`${PREFIX}_\ufff0`;
+    }
+    return await db.allDocs(opts);
 }
 
 export async function add(imageFileList) {
@@ -50,6 +59,9 @@ export async function remove(ids, rev) {
         try {
             const doc = rev ? { _id: ids, _rev: rev } : await db.get(ids)
             await db.remove(doc);
+            if (doc._id.startsWith(PREFIX)) {
+                removed.fire(doc);
+            }
             return true;
         } catch (e) {
             if (e.status !== 404) {
@@ -83,8 +95,8 @@ export async function addAttachment(doc, key, blob) {
 // Internal Functions
 const processImportables = backgroundTask(async function _processImportables() {
     const result = await db.allDocs({
-        startkey: `${PROCESS_PREFIX}_0`,
-        endkey: `${PROCESS_PREFIX}_z`,
+        startkey: `${PROCESS_PREFIX}_`,
+        endkey: `${PROCESS_PREFIX}_\ufff0`,
         include_docs: true,
         attachments: true,
         binary: true,
@@ -106,7 +118,7 @@ const processImportables = backgroundTask(async function _processImportables() {
         : doc.modifiedDate
     );
     const { _id, _rev } = doc;
-    const id = `image_${originalDate.getTime().toString(36)}_${digest.substr(0, 6)}`;
+    const id = `${PREFIX}_${originalDate.getTime().toString(36)}_${digest.substr(0, 6)}`;
 
     let continueProcessing = true;
     try {

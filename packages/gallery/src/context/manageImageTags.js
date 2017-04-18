@@ -6,6 +6,7 @@ export async function add(title, imageId, visible=true) {
     const trimmedTitle = title.trim();
     await index.add(
         trimmedTitle,
+        { title: trimmedTitle },
         [imageId]
     );
     return image.update(
@@ -21,3 +22,7 @@ export async function remove(title, imageId) {
     await image.update(imageId, {tags: {[title]: undefined} });
     await index.removeMember(title, imageId);
 }
+
+image.removed.subscribe(image => {
+    Object.keys(image.tags).forEach(t => index.removeMember(t, image._id));
+})
