@@ -30,6 +30,7 @@ export async function add(imageFileList) {
         size: f.size,
         modifiedDate: (new Date(f.lastModified)).toISOString(),
         uploadedDate: (new Date()).toISOString(),
+        tags: {},
         _attachments: {
             image: {
                 content_type: f.type,

@@ -15,3 +15,16 @@ export function getDatabase(name='gallery') {
     }
     return dbs.get(name);
 }
+
+export async function getOrCreate(doc) {
+    try {
+        const results = await db.get(doc._id)
+        return [results, false];
+    } catch (e) {
+        if (e.status === 404) {
+            const results = db.put(doc);
+            return [results, true];
+        }
+        throw e;
+    }
+}
