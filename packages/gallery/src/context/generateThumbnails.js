@@ -1,7 +1,7 @@
 import pica from 'pica/dist/pica';
 
-import { generateAttachmentUrl } from '../services/db.js'
-import { imported, find, update, addAttachment, DB_NAME } from '../data/image.js';
+import { generateAttachmentUrl, getDatabase } from '../services/db.js'
+import { imported, find, update, addAttachment } from '../data/image.js';
 
 
 export function maxLinearSize(width, height, max) {
@@ -56,7 +56,7 @@ export async function generateThumbnailForImage(id) {
     const mimetype = attachment.content_type;
     const { width, height } = maxLinearSize(doc.width, doc.height, 320);
     const resizedBlob = await resizeImage(attachment.data, mimetype, width, height);
-    const url = generateAttachmentUrl(DB_NAME, id, 'thumbnail');
+    const url = generateAttachmentUrl(getDatabase().name, id, 'thumbnail');
 
     await addAttachment(doc, 'thumbnail', resizedBlob)
     await update(

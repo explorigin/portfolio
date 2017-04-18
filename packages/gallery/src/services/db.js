@@ -9,9 +9,9 @@ export function generateAttachmentUrl(dbName, docId, attachmentKey) {
 }
 
 const dbs = new Map();
-export function getDatabase(name) {
+export function getDatabase(name='gallery') {
     if (!dbs.has(name)) {
         dbs.set(name, new PouchDB(name));
     }
-    return dbs.get(name)
+    return dbs.get(name);
 }

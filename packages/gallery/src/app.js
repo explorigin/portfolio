@@ -9,7 +9,7 @@ document.querySelector('#fInput').onchange = async (evt) => {
 }
 
 window.__DEV__ = true;
-window.imagedb = getDatabase('gallery-images');
+window.db = getDatabase();
 
 image.imported.subscribe(refresh);
 

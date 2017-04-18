@@ -7,8 +7,7 @@ import { blobToArrayBuffer, deepAssign } from '../utils/conversion.js';
 import { Event, backgroundTask } from '../utils/event.js'
 
 
-export const DB_NAME = 'gallery-images'
-const db = getDatabase(DB_NAME);
+const db = getDatabase();
 const PROCESS_PREFIX = 'importing';
 
 // Events
@@ -132,7 +131,7 @@ const processImportables = backgroundTask(async function _processImportables() {
                 flash: !!tags.Flash,
                 ISO: tags.ISO,
                 attachmentUrls: {
-                    image: generateAttachmentUrl(DB_NAME, id, 'image'),
+                    image: generateAttachmentUrl(db.name, id, 'image'),
                 },
                 gps: {
                     latitude: tags.GPSLatitude,
