@@ -1,5 +1,3 @@
-import ExifParser from 'exif-parser';
-
 import { getDatabase, generateAttachmentUrl } from '../services/db.js';
 import { log, error } from '../services/console.js';
 import { sha256 } from '../utils/crypto.js';
@@ -106,6 +104,8 @@ const processImportables = backgroundTask(async function _processImportables() {
     if (!result.rows.length) {
         return;
     }
+
+    const ExifParser = await import('exif-parser');
 
     const doc = result.rows[0].doc;
     const buffer = await blobToArrayBuffer(doc._attachments.image.data);

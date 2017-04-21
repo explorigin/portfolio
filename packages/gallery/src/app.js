@@ -2,14 +2,14 @@ import * as image from './data/image.js';
 import * as index from './data/indexType.js';
 import { getDatabase } from './services/db.js';
 import * as imageTag from './context/manageImageTags.js';
-
-import './context/generateThumbnails.js';
+import generateThumbnails from './contextLoaders/generateThumbnails.js';
 
 
 window.__DEV__ = true;
 window.db = getDatabase();
 
 image.imported.subscribe(refresh);
+image.imported.subscribe(generateThumbnails);
 const header = document.querySelector('h1');
 const container = document.querySelector('#app');
 const displaySelector = document.querySelector('#display');

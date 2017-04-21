@@ -71,4 +71,5 @@ export async function generateThumbnailForImage(id) {
     return resizedBlob;
 }
 
-imported.subscribe(generateThumbnailForImage);
+
+export const invoke = generateThumbnailForImage;
