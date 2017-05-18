@@ -53,18 +53,27 @@ if (!global.requestIdleCallback) {
     };
 }
 
-export function backgroundTask(fn) {
+export function backgroundTask(fn, initialDelay=500) {
     let id = null;
     let reRunCount = 0;
+    let params = [];
 
-    function runTask({ didTimeout, timeRemaining }) {
+    async function runTask({ didTimeout }) {
         if (didTimeout) {
             id = requestIdleCallback(runTask);
             return;
         }
         const start = Date.now();
-        fn();
-        if (reRunCount && Date.now() - start < timeRemaining()) {
+        group(fn.name);
+        if (params.length) {
+            log(`${fn.name} params: `, ...params);
+        }
+        await fn(...params);
+        const executionTime = Date.now() - start;
+        log(`${fn.name} execution time: ${executionTime}ms`);
+        groupEnd(fn.name);
+        params = [];
+        if (reRunCount) {
             reRunCount -= 1;
             id = requestIdleCallback(runTask);
         } else {
@@ -72,12 +81,19 @@ export function backgroundTask(fn) {
         }
     }
 
-    return () => {
+    const wrapper = (...args) => {
         if (id !== null) {
             reRunCount += 1;
-            return;
+            return false;
         }
+        params = args;
         id = requestIdleCallback(runTask);
-        return;
+        return true;
     };
+
+    if (initialDelay) {
+        setTimeout(wrapper, initialDelay);
+    }
+
+    return wrapper;
 }

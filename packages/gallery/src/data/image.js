@@ -170,6 +170,3 @@ const processImportables = backgroundTask(async function _processImportables() {
     remove(_id, _rev);
     processImportables();
 });
-
-// Check if we have any unimported images.
-processImportables();
