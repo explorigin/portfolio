@@ -5,7 +5,7 @@ import * as index from './data/indexType.js';
 import { getDatabase } from './services/db.js';
 import * as imageTag from './context/manageImageTags.js';
 import generateThumbnails from './contextLoaders/generateThumbnails.js';
-import { ThumbnailView } from './interface/thumbnail.js';
+import { ImageView } from './interface/image.js';
 
 
 window.__DEV__ = true;
@@ -16,6 +16,7 @@ image.imported.subscribe(generateThumbnails);
 const header = document.querySelector('h1');
 const container = document.querySelector('#app');
 const displaySelector = document.querySelector('#display');
+image.removed.subscribe(refresh);
 
 // Events
 displaySelector.onchange = refresh;
@@ -28,22 +29,6 @@ function refresh() {
     setTimeout(render, 100);
 }
 
-function renderImage(imageRow, imageContainer, showTags=true) {
-    for(let aName in imageRow.doc._attachments) {
-        if (aName !== 'thumbnail') {
-            continue;
-        }
-        createView(ThumbnailView, {
-            id: imageRow.doc._id,
-            name: aName,
-            doc: imageRow.doc._attachments[aName],
-            tags: showTags ? imageRow.doc.tags : [],
-            remove: image.remove,
-            removeTag: imageTag.remove
-        }).mount(imageContainer);
-    }
-}
-
 async function renderAlbum(indexRow) {
     const doc = indexRow.doc;
     const l = document.createElement('h2');
@@ -54,7 +39,17 @@ async function renderAlbum(indexRow) {
     container.appendChild(albumContainer);
 
     const results = await image.find(doc.members, { attachments: true });
-    results.rows.filter(i => i.doc).forEach(i => renderImage(i, albumContainer, false));
+    results.rows
+        .filter(i => i.doc)
+        .forEach(i => {
+            createView(ImageView, {
+                imageRow: i,
+                imageContainer: albumContainer,
+                showTags: false,
+                remove: image.remove,
+                removeTag: imageTag.remove
+            }).mount(albumContainer);
+        });
 }
 
 async function render() {
@@ -63,7 +58,15 @@ async function render() {
     if (displaySelector.value === 'i') {
         header.innerText = 'Images';
         const results = await image.find({ attachments: true });
-        results.rows.forEach(i => renderImage(i, container));
+        results.rows.forEach(i => {
+            createView(ImageView, {
+                imageRow: i,
+                imageContainer: container,
+                showTags: true,
+                remove: image.remove,
+                removeTag: imageTag.remove
+            }).mount(container);
+        });
     } else {
         header.innerText = 'Albums';
         const results = await index.find({ attachments: true });
