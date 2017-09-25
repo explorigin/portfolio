@@ -14,6 +14,7 @@
     "dev": "webpack-dev-server"
   },
   "dependencies": {
+    "domvm": "~3.2.0",
     "exif-parser": "~0.1.9",
     "pica": "~2.0.8",
     "pouchdb-adapter-http": "~6.1.2",

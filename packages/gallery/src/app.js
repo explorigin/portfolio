@@ -1,8 +1,11 @@
+import { createView } from 'domvm';
+
 import * as image from './data/image.js';
 import * as index from './data/indexType.js';
 import { getDatabase } from './services/db.js';
 import * as imageTag from './context/manageImageTags.js';
 import generateThumbnails from './contextLoaders/generateThumbnails.js';
+import { ThumbnailView } from './interface/thumbnail.js';
 
 
 window.__DEV__ = true;
@@ -25,41 +28,19 @@ function refresh() {
     setTimeout(render, 100);
 }
 
-function renderThumbnail(id, name, doc, tags) {
-    const c = document.createElement('div');
-    const e = document.createElement('img');
-
-    c.appendChild(e);
-    c.id = id;
-    c.className = 'image';
-    e.title = `${id} ${name}`;
-    e.src = `data:${doc.content_type};base64,${doc.data}`;
-    e.dataset.id = id;
-    e.onclick = evt => (image.remove(evt.currentTarget.dataset.id).then(refresh));
-
-    Object.entries(tags).filter(([_, visible]) => visible).forEach(([title, _]) => {
-        const t = document.createElement('span');
-        t.textContent = title;
-        t.className = 'tag';
-        t.onclick = evt => imageTag.remove(title, id).then(refresh);
-        c.appendChild(t);
-    });
-    return c;
-}
-
 function renderImage(imageRow, imageContainer, showTags=true) {
     for(let aName in imageRow.doc._attachments) {
         if (aName !== 'thumbnail') {
             continue;
         }
-        imageContainer.appendChild(
-            renderThumbnail(
-                imageRow.doc._id,
-                aName,
-                imageRow.doc._attachments[aName],
-                showTags ? imageRow.doc.tags : []
-            )
-        );
+        createView(ThumbnailView, {
+            id: imageRow.doc._id,
+            name: aName,
+            doc: imageRow.doc._attachments[aName],
+            tags: showTags ? imageRow.doc.tags : [],
+            remove: image.remove,
+            removeTag: imageTag.remove
+        }).mount(imageContainer);
     }
 }
 
