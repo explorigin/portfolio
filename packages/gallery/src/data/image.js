@@ -52,28 +52,14 @@ export async function add(imageFileList) {
     return docs.filter((d, i) => results[i].ok);
 }
 
-export async function remove(ids, rev) {
-    if (!Array.isArray(ids)) {
-        try {
-            const doc = rev ? { _id: ids, _rev: rev } : await db.get(ids)
-            await db.remove(doc);
-            if (doc._id.startsWith(PREFIX)) {
-                removed.fire(doc);
-            }
-            return true;
-        } catch (e) {
-            if (e.status !== 404) {
-                error(`Error removing Image ${_id}`, e);
-            }
-            return false;
-        }
-    }
-
-    const docs = await find(ids);
-    const result = await db.bulkDocs(docs.rows.map(r => (
+export async function remove(ids) {
+    const docs = await find(Array.isArray(ids) ? ids : [ids]);
+    const foundDocs = docs.rows.filter(r => !r.error);
+    const result = await db.bulkDocs(foundDocs.map(r => (
         Object.assign(r.doc, { _deleted: true })
     )));
-    return result.map(r => r.ok);
+    foundDocs.filter((_, i) => result[i].ok).map(r => removed.fire(r.doc));
+    return result.reduce((a, r) => a && r.ok, true);
 }
 
 export async function update(id, properties) {
@@ -167,6 +153,6 @@ const processImportables = backgroundTask(async function _processImportables() {
         imported.fire(id, _id, false);
     }
 
-    remove(_id, _rev);
+    await db.remove({ _id, _rev });
     processImportables();
 });

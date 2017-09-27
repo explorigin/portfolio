@@ -1,9 +1,14 @@
 import { log, error } from '../services/console.js';
 import { getDatabase, getOrCreate } from '../services/db.js';
+import { Event } from '../utils/event.js'
 
 
 const db = getDatabase();
 const PREFIX = 'index';
+
+// Events
+export const added = new Event('Index.added');
+export const removed = new Event('Index.removed');
 
 // Methods
 export const hashString = name => name.trim().replace(/[ \-~!@#$%^&]/g, '_').toLowerCase();
@@ -44,6 +49,7 @@ export async function addMember(id, member) {
     if (doc.members.indexOf(member) === -1) {
         doc.members.push(member);
         await db.put(doc);
+        added.fire(doc._id, member);
     }
 
     return doc;
@@ -58,8 +64,10 @@ export async function removeMember(id, member) {
         if (doc.members.length > 1) {
             doc.members.splice(idx, 1);
             await db.put(doc);
+            removed.fire(doc._id, member);
         } else {
             await db.remove(doc);
+            removed.fire(doc._id, member);
         }
     }
 }
