@@ -9,9 +9,10 @@ export function AlbumView(vm, model) {
     const title = props.title;
     let images = [];
 
+    // FIXME - If the album is updated, this does not properly refresh.
     image.find(members, { attachments: true }).then(res => {
         images = res.rows.filter(i => i.doc);
-        vm.redraw(true);
+        vm.redraw();
     });
 
     function removeImageFromAlbum(id, rev) {
@@ -26,7 +27,8 @@ export function AlbumView(vm, model) {
                     imageRow: i,
                     showTags: false,
                     remove: removeImageFromAlbum
-                })
+                },
+                i._id)
             })
         ]);
     };

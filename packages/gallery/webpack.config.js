@@ -14,5 +14,10 @@ module.exports = {
   devServer: {
     contentBase: path.resolve(__dirname, './src'),
   },
+  plugins: [
+    new webpack.DefinePlugin({
+      __DEV__: true,
+    })
+  ],
   devtool: 'source-map',
 };

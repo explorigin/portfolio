@@ -23,6 +23,7 @@
     "pouchdb-binary-utils": "~6.1.2",
     "pouchdb-core": "~6.1.2",
     "pouchdb-replication": "~6.1.2",
+    "router": "2.0.0",
     "webpack": "^2.3.3"
   },
   "devDependencies": {

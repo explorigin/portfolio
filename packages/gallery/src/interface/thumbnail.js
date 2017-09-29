@@ -2,10 +2,8 @@ import { defineElement as el } from 'domvm';
 
 
 export function ThumbnailView(vm, model) {
-    const { remove, removeTag } = model;
-
     return function(vm, model, key, opts) {
-        const { id, rev, name, doc, tags } = model;
+        const { id, rev, name, doc, tags, remove, removeTag } = model;
         const filteredTags = Object.entries(tags).filter(([_, visible]) => visible);
 
         return el(
