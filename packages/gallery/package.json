@@ -17,14 +17,15 @@
     "domvm": "~3.2.0",
     "exif-parser": "~0.1.9",
     "pica": "~2.0.8",
-    "pouchdb-adapter-http": "~6.1.2",
-    "pouchdb-adapter-idb": "~6.1.2",
-    "pouchdb-adapter-websql": "~6.1.2",
-    "pouchdb-binary-utils": "~6.1.2",
-    "pouchdb-core": "~6.1.2",
-    "pouchdb-replication": "~6.1.2",
+    "pouchdb-adapter-http": "~6.3.4",
+    "pouchdb-adapter-idb": "~6.3.4",
+    "pouchdb-adapter-websql": "~6.3.4",
+    "pouchdb-binary-utils": "~6.3.4",
+    "pouchdb-core": "~6.3.4",
+    "pouchdb-replication": "~6.3.4",
     "router": "2.0.0",
-    "webpack": "^2.3.3"
+    "webpack": "~3.8.1",
+    "webpack-dev-server": "~2.9.2"
   },
   "devDependencies": {
     "webpack-dev-server": "~2.4.2"

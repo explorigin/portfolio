@@ -1,8 +1,10 @@
-const PouchDB = require('pouchdb-core')
-    .plugin(require('pouchdb-adapter-websql'))
-    .plugin(require('pouchdb-adapter-idb'))
-    .plugin(require('pouchdb-adapter-http'))
-    .plugin(require('pouchdb-replication'));
+import core from 'pouchdb-core';
+import idb from 'pouchdb-adapter-idb';
+import http from 'pouchdb-adapter-http';
+import replication from 'pouchdb-replication';
+import find from 'pouchdb-find';
+
+const PouchDB = core.plugin(idb).plugin(http).plugin(replication).plugin(find);
 
 export function generateAttachmentUrl(dbName, docId, attachmentKey) {
     return `/_doc_attachments/${dbName}/${docId}/${attachmentKey}`;
