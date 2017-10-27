@@ -55,8 +55,7 @@ if (!global.requestIdleCallback) {
 
 export function backgroundTask(fn, initialDelay=500) {
     let id = null;
-    let reRunCount = 0;
-    let params = [];
+    const params = [];
 
     async function runTask({ didTimeout }) {
         if (didTimeout) {
@@ -65,16 +64,15 @@ export function backgroundTask(fn, initialDelay=500) {
         }
         const start = Date.now();
         group(fn.name);
-        if (params.length) {
-            log(`${fn.name} params: `, ...params);
+        const p = params.shift();
+        if (p.length) {
+            log(`${fn.name} params: `, ...p);
         }
-        await fn(...params);
+        await fn(...p);
         const executionTime = Date.now() - start;
         log(`${fn.name} execution time: ${executionTime}ms`);
         groupEnd(fn.name);
-        params = [];
-        if (reRunCount) {
-            reRunCount -= 1;
+        if (params.length) {
             id = requestIdleCallback(runTask);
         } else {
             id = null;
@@ -82,11 +80,10 @@ export function backgroundTask(fn, initialDelay=500) {
     }
 
     const wrapper = (...args) => {
+        params.push(args);
         if (id !== null) {
-            reRunCount += 1;
             return false;
         }
-        params = args;
         id = requestIdleCallback(runTask);
         return true;
     };
