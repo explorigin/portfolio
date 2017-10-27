@@ -3,15 +3,32 @@ import { log, error } from '../services/console.js';
 import { sha256 } from '../utils/crypto.js';
 import { blobToArrayBuffer, deepAssign } from '../utils/conversion.js';
 import { Event, backgroundTask } from '../utils/event.js'
+import { Watcher } from '../utils/watcher.js';
+
 
 
 const db = getDatabase();
 const PROCESS_PREFIX = 'importing';
 const PREFIX = 'image';
+const SELECTOR = {
+    _id: {
+        $gt:`${PREFIX}_`,
+        $lt:`${PREFIX}_\ufff0`,
+    }
+};
+const IMPORT_SELECTOR = {
+    _id: {
+        $gt:`${PROCESS_PREFIX}_`,
+        $lt:`${PROCESS_PREFIX}_\ufff0`,
+    }
+};
 
 // Events
 export const imported = new Event('Image.imported');
 export const removed = new Event('Image.removed');
+
+// Watchers
+export const watcher = Watcher(db, SELECTOR);
 
 // Methods
 const getId = (id) => id.startsWith(PREFIX) ? id : `${PREFIX}_${id}`;
@@ -79,12 +96,7 @@ export async function addAttachment(doc, key, blob) {
 // Internal Functions
 const processImportables = backgroundTask(async function _processImportables() {
     const result = await db.find({
-        selector: {
-            _id: {
-                $gt:`${PROCESS_PREFIX}_`,
-                $lt:`${PROCESS_PREFIX}_\ufff0`,
-            }
-        },
+        selector: IMPORT_SELECTOR,
         limit: 1,
     });
 

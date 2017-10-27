@@ -31,7 +31,7 @@ async function update(route) {
 function redraw() { update(router.current()); }
 function onRouteChange(router, route) { update(route); }
 
-image.imported.subscribe(generateThumbnails);
+image.watcher(generateThumbnails);
 image.imported.subscribe(redraw);
 image.removed.subscribe(redraw);
 index.added.subscribe(redraw);
