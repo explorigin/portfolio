@@ -78,45 +78,49 @@ export async function addAttachment(doc, key, blob) {
 
 // Internal Functions
 const processImportables = backgroundTask(async function _processImportables() {
-    const result = await db.allDocs({
-        startkey: `${PROCESS_PREFIX}_`,
-        endkey: `${PROCESS_PREFIX}_\ufff0`,
-        include_docs: true,
-        attachments: true,
-        binary: true,
+    const result = await db.find({
+        selector: {
+            _id: {
+                $gt:`${PROCESS_PREFIX}_`,
+                $lt:`${PROCESS_PREFIX}_\ufff0`,
+            }
+        },
         limit: 1,
     });
 
-    if (!result.rows.length) {
+    if (!result.docs.length) {
         return;
     }
 
+    const doc = result.docs[0];
+    const { _id, _rev } = doc;
+    const imageData = await db.getAttachment(_id, "image")
+
     const ExifParser = await import('exif-parser');
 
-    const doc = result.rows[0].doc;
-    const buffer = await blobToArrayBuffer(doc._attachments.image.data);
+    const buffer = await blobToArrayBuffer(imageData);
     const digest = await sha256(buffer);
-    const exifData = ExifParser.create(buffer).parse();
-    const { tags, imageSize } = exifData;
-    const originalDate = new Date(
-        tags.DateTimeOriginal
-        ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
-        : doc.modifiedDate
-    );
-    const { _id, _rev } = doc;
-    const id = `${PREFIX}_${originalDate.getTime().toString(36)}_${digest.substr(0, 6)}`;
 
-    let continueProcessing = true;
-    try {
-        const existingRecord = await find([id]);
-        if (existingRecord.rows[0].doc.digest === digest) {
-            continueProcessing = false;
-        }
-    } catch (e) {
-        // Basically this means there are no existing records
-    }
+    // Check if this image already exists
+    // TODO - Create an image.digest index
+    const digestQuery = await db.find({
+        selector: { digest },
+        fields: ["_id"],
+        limit: 1,
+    });
 
-    if (continueProcessing) {
+    if (digestQuery.docs.length) {
+        imported.fire(digestQuery.docs[0]._id, _id, false);
+    } else {
+        const exifData = ExifParser.create(buffer).parse();
+        const { tags, imageSize } = exifData;
+        const originalDate = new Date(
+            tags.DateTimeOriginal
+            ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
+            : doc.modifiedDate
+        );
+        const id = `${PREFIX}_${originalDate.getTime().toString(36)}_${digest.substr(0, 6)}`;
+
         const newDoc = Object.assign(
             {},
             doc,
@@ -149,8 +153,6 @@ const processImportables = backgroundTask(async function _processImportables() {
         } catch (e) {
             error(`Error processing Image ${id}`, e);
         }
-    } else {
-        imported.fire(id, _id, false);
     }
 
     await db.remove({ _id, _rev });
