@@ -29,6 +29,7 @@ export const removed = new Event('Image.removed');
 
 // Watchers
 export const watcher = Watcher(db, SELECTOR);
+export const importWatcher = Watcher(db, IMPORT_SELECTOR);
 
 // Methods
 const getId = (id) => id.startsWith(PREFIX) ? id : `${PREFIX}_${id}`;
@@ -63,9 +64,6 @@ export async function add(imageFileList) {
         }
     }));
     const results = await db.bulkDocs(docs);
-
-    processImportables();
-
     return docs.filter((d, i) => results[i].ok);
 }
 
@@ -94,15 +92,15 @@ export async function addAttachment(doc, key, blob) {
 }
 
 // Internal Functions
-const processImportables = backgroundTask(async function _processImportables() {
+importWatcher(backgroundTask(async function _processImportables(changeId, deleted) {
+    if (deleted) { return; }
+    const selector = changeId ? { _id: changeId } : IMPORT_SELECTOR;
     const result = await db.find({
-        selector: IMPORT_SELECTOR,
-        limit: 1,
+        selector,
+        limit: 1
     });
 
-    if (!result.docs.length) {
-        return;
-    }
+    if (!result.docs.length) { return; }
 
     const doc = result.docs[0];
     const { _id, _rev } = doc;
@@ -168,5 +166,4 @@ const processImportables = backgroundTask(async function _processImportables() {
     }
 
     await db.remove({ _id, _rev });
-    processImportables();
-});
+}));
