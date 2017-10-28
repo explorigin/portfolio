@@ -33,7 +33,10 @@ export function computed(fn, dependencies = []) {
 
     accessor.subscribe = fn => {
         subscribers.add(fn);
-        return () => subscribers.delete(fn);
+        return () => {
+            subscribers.delete(fn);
+            return subscribers.size;
+        }
     };
 
     accessor._d = fn => {

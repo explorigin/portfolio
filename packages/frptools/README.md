@@ -34,10 +34,12 @@ inViewport(false);
 
 ### Subscribe to changes
 
-Call the `subscribe` method with a callback that will be called when the observable is changed to a different value.  The returned function can be called to unsubscribe from the observable.
+Call the `subscribe` method with a callback that will be called when the observable is changed to a different value.  The returned function can be called to unsubscribe from the observable. When called
+it will provide the count of remaining subscriptions.
 
 ```js
 const unsubscribe = inViewport.subscribe(console.log.bind(console))
+const remainingSubscriptionCount = unsubscribe();
 ```
 
 
@@ -69,10 +71,12 @@ Call it to receive the stored value, recomputing if necessary.
 
 ### Subscribe to changes
 
-Call the subscribe method with a callback that will be called when the computed result changes to a different value.  The returned function can be called to unsubscribe from the observable.
+Call the subscribe method with a callback that will be called when the computed result changes to a different value.  The returned function can be called to unsubscribe from the observable. When called
+it will provide the count of remaining subscriptions.
 
 ```js
 const unsubscribe = inViewport.subscribe(console.log.bind(console))
+const remainingSubscriptionCount = unsubscribe();
 ```
 
 **NOTE**: Subscribing to a computed forces it to recompute every time an upstream dependency changes.  This could negatively performance if it depends on multiple values that change sequentially and the computation function is non-trivial.  For example:

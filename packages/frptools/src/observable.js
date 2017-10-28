@@ -11,7 +11,10 @@ export function observable(store) {
 
     accessor.subscribe = accessor._d = fn => {
         subscribers.add(fn);
-        return () => subscribers.delete(fn);
+        return () => {
+            subscribers.delete(fn);
+            return subscribers.size;
+        }
     };
 
     accessor.unsubscribeAll = () => subscribers.clear();
