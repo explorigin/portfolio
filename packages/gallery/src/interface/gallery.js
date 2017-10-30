@@ -6,18 +6,7 @@ import { ImageView } from './image.js';
 import { AlbumView } from './album.js';
 import { router, routeChanged } from '../services/router.js';
 import { LiveArray } from '../utils/livearray.js';
-
-
-const NAV_OPTIONS = {
-    images: {
-        selector: image.SELECTOR,
-        title: 'Images'
-    },
-    albums: {
-        selector: index.SELECTOR,
-        title: 'Albums'
-    }
-};
+import { Watcher } from '../utils/watcher.js';
 
 
 function uploadImages(evt) {
@@ -25,6 +14,20 @@ function uploadImages(evt) {
 }
 
 export function GalleryView(vm, model) {
+    const { db } = model;
+    const NAV_OPTIONS = {
+        images: {
+            selector: image.SELECTOR,
+            watcher: image.watcher,
+            title: 'Images'
+        },
+        albums: {
+            selector: index.SELECTOR,
+            watcher: Watcher(db, index.SELECTOR),
+            title: 'Albums'
+        }
+    };
+
     let data = null;
     let title = "";
 
@@ -33,7 +36,7 @@ export function GalleryView(vm, model) {
             data.cleanup();
         }
         const o = NAV_OPTIONS[route.name];
-        data = LiveArray(db, o.selector);
+        data = LiveArray(db, o.selector, o.watcher);
         title = o.title;
         data.subscribe(() => vm.redraw());
     });

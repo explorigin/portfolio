@@ -2,8 +2,8 @@ import { observable, computed } from 'frptools';
 import { group, groupEnd, log } from '../services/console.js';
 import { Watcher } from './watcher.js';
 
-export function LiveArray(db, selector) {
-    const watcher = Watcher(db, selector);
+export function LiveArray(db, selector, watcher) {
+    const _watcher = watcher || Watcher(db, selector);
     const data = observable({docs: []});
     const docs = computed(r => r.docs, [data]);
     let changeSub = null;
@@ -28,7 +28,7 @@ export function LiveArray(db, selector) {
     }
 
     refresh().then(() => {
-        changeSub = watcher(refresh);
+        changeSub = _watcher(refresh);
         accessor.ready(true);
     })
     return accessor;

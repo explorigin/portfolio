@@ -12,7 +12,7 @@ EventEmitter.defaultMaxListeners = 1000;  // https://github.com/pouchdb/pouchdb/
 window.db = getDatabase();
 
 // Attach our root view to the DOM
-createView(GalleryView, {}).mount(document.querySelector('#app'));
+createView(GalleryView, {db: getDatabase()}).mount(document.querySelector('#app'));
 
 // Start the router
 router.start('home');
