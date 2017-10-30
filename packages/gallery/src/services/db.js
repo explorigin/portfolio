@@ -19,6 +19,7 @@ export function getDatabase(name='gallery') {
 }
 
 export async function getOrCreate(doc) {
+    const db = getDatabase();
     try {
         const results = await db.get(doc._id)
         return [results, false];

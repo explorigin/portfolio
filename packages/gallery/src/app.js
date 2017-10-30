@@ -9,7 +9,6 @@ import { getDatabase } from './services/db.js';
 import { EventEmitter } from 'events';
 
 EventEmitter.defaultMaxListeners = 1000;  // https://github.com/pouchdb/pouchdb/issues/6123
-window.db = getDatabase();
 
 // Attach our root view to the DOM
 createView(GalleryView, {db: getDatabase()}).mount(document.querySelector('#app'));

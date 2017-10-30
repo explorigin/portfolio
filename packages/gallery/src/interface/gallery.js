@@ -74,6 +74,7 @@ export function GalleryView(vm, model) {
                 : members.map(a => {
                     return defineView(AlbumView, {
                         doc: a,
+                        db,
                         addTag: imageTag.add,
                         remove: imageTag.remove
                     },
