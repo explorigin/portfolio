@@ -1,35 +1,51 @@
 import { defineView, defineElement as el } from 'domvm';
+import { observable, computed } from 'frptools';
 
+import * as image from '../data/image.js';
 
 export function ImageView(vm, model) {
     const { addTag } = model;
+    const imageData = observable(null);
+    let imageId = null;
 
     function onAddTag(image_id) {
         addTag(prompt('Tag Name'), image_id);
     }
 
     return function(vm, model, key, opts) {
-        const { imageRow, showTags, remove, addTag, removeTag } = model;
-        const { doc } = imageRow;
+        const { doc, showTags, remove, removeTag } = model;
         const { _id: id, _rev: rev, tags } = doc;
-        const { thumbnail } = doc._attachments;
         const _showTags = showTags !== undefined ? showTags : true;
         const filteredTags = (
             _showTags
             ? Object.entries(doc.tags).filter(([_, visible]) => visible)
             : []
         );
+        if (imageId !== id) {
+            image.getAttachment(id, "thumbnail")
+            .then(thumbnail => {
+                if (imageData()) {
+                    URL.revokeObjectURL(imageData());
+                }
+                imageData(URL.createObjectURL(thumbnail));
+                vm.redraw();
+            }).catch(err => {
+                // Probably hasn't created the thumbnail yet.
+                console.log("Probably hasn't created the thumbnail yet.", err);
+                imageId = null;
+            });
+            imageId = id;
+        }
 
-        if (thumbnail) {
-            return el('div', [
+        if (imageData()) {
+            return el('div', {_key: id}, [
                 el(
                     `figure#${doc._id}.image`,
                     [
                         el('img',
                             {
-                                src: `data:${thumbnail.content_type};base64,${thumbnail.data}`,
+                                src: imageData(),
                                 title: `${id} ${name}`,
-                                "data-id": id,
                                 onclick: [remove, id, rev]
                             }
                         ),

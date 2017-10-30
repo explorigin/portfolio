@@ -1,30 +1,76 @@
 import { defineView, defineElement as el } from 'domvm';
 import * as image from '../data/image.js';
 import { ImageView } from './image.js';
+import { LiveArray } from '../utils/livearray.js';
 
+
+// Warn if overriding existing method
+if(Array.prototype.equals)
+    console.warn("Overriding existing Array.prototype.equals. Possible causes: New API defines the method, there's a framework conflict or you've got double inclusions in your code.");
+// attach the .equals method to Array's prototype to call it on any array
+Array.prototype.equals = function (array) {
+    // if the other array is a falsy value, return
+    if (!array)
+        return false;
+
+    // compare lengths - can save a lot of time
+    if (this.length != array.length)
+        return false;
+
+    for (var i = 0, l=this.length; i < l; i++) {
+        // Check if we have nested arrays
+        if (this[i] instanceof Array && array[i] instanceof Array) {
+            // recurse into the nested arrays
+            if (!this[i].equals(array[i]))
+                return false;
+        }
+        else if (this[i] != array[i]) {
+            // Warning - two different object instances will never be equal: {x:20} != {x:20}
+            return false;
+        }
+    }
+    return true;
+}
+// Hide method from for-in loops
+Object.defineProperty(Array.prototype, "equals", {enumerable: false});
 
 export function AlbumView(vm, model) {
-    const { albumRow, remove } = model;
-    const { props, members } = albumRow.doc;
-    const title = props.title;
-    let images = [];
-
-    // FIXME - If the album is updated, this does not properly refresh.
-    image.find(members, { attachments: true }).then(res => {
-        images = res.rows.filter(i => i.doc);
-        vm.redraw();
-    });
+    const { remove } = model;
+    let data = null;
+    let currentMembers = [];
+    let title = null;
 
     function removeImageFromAlbum(id, rev) {
         remove(title, id);
     }
 
     return function(vm, model, key, opts) {
+        const { doc, remove } = model;
+        const { props, members } = doc;
+
+        if (title !== props.title || currentMembers.length !== members.length) {
+            if (data) {
+                data.cleanup();
+            }
+            title = props.title;
+            currentMembers = members;
+            const SELECTOR = {
+                $or: [
+                    Object.assign({[`tags.${title}`]: {$eq: true}}, image.SELECTOR),
+                    { _id: { $in: members } }
+                ]
+            };
+
+            data = LiveArray(db, SELECTOR);
+            data.subscribe(() => vm.redraw());
+        }
+        const images = data();
+
         return el('.album', [
             el('h2', [ title ]),
             ...images.map(i => {
                 return defineView(ImageView, {
-                    imageRow: i,
+                    doc: i,
                     showTags: false,
                     remove: removeImageFromAlbum
                 },

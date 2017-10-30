@@ -1,18 +1,49 @@
 import { defineView, defineElement as el } from 'domvm';
 import * as image from '../data/image.js';
+import * as index from '../data/indexType.js';
 import * as imageTag from '../context/manageImageTags.js';
 import { ImageView } from './image.js';
 import { AlbumView } from './album.js';
-import { router } from '../services/router.js';
+import { router, routeChanged } from '../services/router.js';
+import { LiveArray } from '../utils/livearray.js';
 
+
+const NAV_OPTIONS = {
+    images: {
+        selector: image.SELECTOR,
+        title: 'Images'
+    },
+    albums: {
+        selector: index.SELECTOR,
+        title: 'Albums'
+    }
+};
+
+
+function uploadImages(evt) {
+    image.add(evt.currentTarget.files);
+}
 
 export function GalleryView(vm, model) {
-    function uploadImages(evt) {
-        image.add(evt.currentTarget.files);
-    }
+    let data = null;
+    let title = "";
+
+    routeChanged.subscribe(function onRouteChange(router, route) {
+        if (data) {
+            data.cleanup();
+        }
+        const o = NAV_OPTIONS[route.name];
+        data = LiveArray(db, o.selector);
+        title = o.title;
+        data.subscribe(() => vm.redraw());
+    });
 
     return function(vm, model, key, opts) {
-        const { title, members } = model;
+        if (!data || !data.ready()) {
+            return el('h1', "Loading...");
+        }
+
+        const members = data();
 
         return el('.gallery', [
             el('input#fInput',
@@ -29,7 +60,7 @@ export function GalleryView(vm, model) {
                 title === 'Images'
                 ? members.map(i => {
                     return defineView(ImageView, {
-                        imageRow: i,
+                        doc: i,
                         showTags: true,
                         addTag: imageTag.add,
                         remove: image.remove,
@@ -39,7 +70,7 @@ export function GalleryView(vm, model) {
                 })
                 : members.map(a => {
                     return defineView(AlbumView, {
-                        albumRow: a,
+                        doc: a,
                         addTag: imageTag.add,
                         remove: imageTag.remove
                     },

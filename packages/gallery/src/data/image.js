@@ -10,7 +10,7 @@ import { Watcher } from '../utils/watcher.js';
 const db = getDatabase();
 const PROCESS_PREFIX = 'importing';
 const PREFIX = 'image';
-const SELECTOR = {
+export const SELECTOR = {
     _id: {
         $gt:`${PREFIX}_`,
         $lt:`${PREFIX}_\ufff0`,
@@ -45,6 +45,10 @@ export async function find(keys, options={}) {
         opts.endkey =`${PREFIX}_\ufff0`;
     }
     return await db.allDocs(opts);
+}
+
+export async function getAttachment(id, attName) {
+    return await db.getAttachment(id, attName);
 }
 
 export async function add(imageFileList) {

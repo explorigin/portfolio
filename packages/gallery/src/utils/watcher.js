@@ -24,7 +24,7 @@ export function Watcher(db, selector) {
             });
         }
         return () => {
-            this.subscribers.delete(fn);
+            subscribers.delete(fn);
             if (subscribers.size === 0 && changes) {
                 log('Unwatching:', db, selector);
                 changes.cancel();

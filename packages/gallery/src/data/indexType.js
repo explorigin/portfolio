@@ -5,6 +5,12 @@ import { Event } from '../utils/event.js'
 
 const db = getDatabase();
 const PREFIX = 'index';
+export const SELECTOR = {
+    _id: {
+        $gt:`${PREFIX}_`,
+        $lt:`${PREFIX}_\ufff0`,
+    }
+};
 
 // Events
 export const added = new Event('Index.added');
