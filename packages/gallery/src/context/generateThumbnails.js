@@ -1,7 +1,7 @@
 import pica from 'pica/dist/pica';
 
 import { generateAttachmentUrl, getDatabase } from '../services/db.js'
-import { imported, find, update, addAttachment } from '../data/image.js';
+import { find, update, addAttachment } from '../data/image.js';
 
 
 export function maxLinearSize(width, height, max) {
