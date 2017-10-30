@@ -28,7 +28,7 @@ export const imported = new Event('Image.imported');
 export const removed = new Event('Image.removed');
 
 // Watchers
-export const watcher = Watcher(db, SELECTOR);
+export const watcher = Watcher(db, SELECTOR, true);
 export const importWatcher = Watcher(db, IMPORT_SELECTOR);
 
 // Methods

@@ -1,6 +1,6 @@
 import { log, error } from '../services/console.js';
 
-export function Watcher(db, selector) {
+export function Watcher(db, selector, include_docs) {
     const subscribers = new Set();
     let changes = null;
 
@@ -12,11 +12,13 @@ export function Watcher(db, selector) {
             changes = db.changes({
                 since: 'now',
                 live: true,
+                include_docs,
                 selector
             })
             .on("change", change => {
                 log('changed:', change);
-                subscribers.forEach(s => s(change.id, !!change.deleted));
+                const { id, deleted, doc } = change;
+                subscribers.forEach(s => s(id, !!deleted, doc));
             })
             .on("error", err => {
                 error(err);
