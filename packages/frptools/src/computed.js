@@ -1,4 +1,5 @@
-export function computed(fn, dependencies = []) {
+
+export function computed(fn, dependencies = [], comparator=eq) {
     const subscribers = new Set();
     const dependents = new Set();
     let isDirty = true;
@@ -23,7 +24,7 @@ export function computed(fn, dependencies = []) {
         if (isDirty) {
             const newVal = fn.apply(null, dependencies.map(runParam));
             isDirty = false;
-            if (newVal !== val) {
+            if (!comparator(newVal, val)) {
                 val = newVal;
                 subscribers.forEach(s => s(val));
             }

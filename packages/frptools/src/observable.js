@@ -1,8 +1,10 @@
-export function observable(store) {
+import { eq } from './util.js';
+
+export function observable(store, comparator=eq) {
     const subscribers = new Set();
 
     const accessor = function _observable(newVal) {
-        if (newVal !== undefined && store !== newVal) {
+        if (newVal !== undefined && !comparator(store, newVal)) {
             store = newVal;
             subscribers.forEach(s => s(store));
         }
