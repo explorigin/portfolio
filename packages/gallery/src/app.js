@@ -1,5 +1,5 @@
 // import { createView } from 'domvm/dist/dev/domvm.dev.js';
-import { createView } from 'domvm/dist/full/domvm.full.js';
+import { createView } from 'domvm/dist/micro/domvm.micro.js';
 
 import generateThumbnails from './contextLoaders/generateThumbnails.js';
 import { GalleryView } from './interface/gallery.js';
