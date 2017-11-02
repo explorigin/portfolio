@@ -1,5 +1,6 @@
 import { log, error } from '../services/console.js';
 
+
 export function Watcher(db, selector, include_docs) {
     const subscribers = new Set();
     let changes = null;

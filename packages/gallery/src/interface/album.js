@@ -7,7 +7,6 @@ import { LiveArray } from '../utils/livearray.js';
 export function AlbumView(vm, model) {
     const { remove, db } = model;
     let data = null;
-    let currentMemberLen = -1;
     let title = null;
 
     function removeImageFromAlbum(id, rev) {
@@ -16,14 +15,13 @@ export function AlbumView(vm, model) {
 
     return function(vm, model, key, opts) {
         const { doc, remove } = model;
-        const { props, members } = doc;
+        const { props } = doc;
 
-        if (title !== props.title || currentMemberLen !== members.length) {
+        if (title !== props.title) {
             if (data) {
                 data.cleanup();
             }
             title = props.title;
-            currentMemberLen = members.length;
             const SELECTOR = Object.assign({
                 [`tags.${title}`]: {$eq: true}},
                 image.SELECTOR
