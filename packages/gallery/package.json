@@ -14,7 +14,7 @@
     "dev": "webpack-dev-server"
   },
   "dependencies": {
-    "domvm": "~3.2.0",
+    "domvm": "~3.2.1",
     "exif-parser": "~0.1.9",
     "frptools": "1.1.0",
     "pica": "~2.0.8",
