@@ -5,6 +5,7 @@ export function computed(fn, dependencies = [], comparator=eq) {
     let isDirty = true;
     let val;
 
+    // Receive dirty flag from parent logic node (dependency).  Pass it down.
     function _computedDirtyReporter(_, skipPropagation) {
         if (!isDirty) {
             isDirty = true;
@@ -20,6 +21,7 @@ export function computed(fn, dependencies = [], comparator=eq) {
         d._d(_computedDirtyReporter)
     );
 
+    // Compute new value, call subscribers if changed.
     const accessor = function _computed() {
         if (isDirty) {
             const newVal = fn.apply(null, dependencies.map(runParam));
@@ -32,6 +34,7 @@ export function computed(fn, dependencies = [], comparator=eq) {
         return val;
     };
 
+    // Add child nodes to the logic graph (value-based)
     accessor.subscribe = fn => {
         subscribers.add(fn);
         return () => {
@@ -40,16 +43,24 @@ export function computed(fn, dependencies = [], comparator=eq) {
         }
     };
 
+    // Add child nodes to the logic graph (dirty-based)
     accessor._d = fn => {
         dependents.add(fn);
         return () => dependents.delete(fn);
     };
 
+    // Remove this node from the logic graph completely
     accessor.detach = () => {
         subscribers.clear();
         dependents.clear();
         dependentSubscriptions.forEach(runParam);
     };
+
+    // Remove child nodes from the logic graph
+    accessor.unsubscribeAll = () => {
+        subscribers.clear();
+        dependents.clear();
+    }
 
     return accessor;
 }
