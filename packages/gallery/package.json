@@ -16,7 +16,7 @@
   "dependencies": {
     "domvm": "~3.2.1",
     "exif-parser": "~0.1.9",
-    "frptools": "1.1.0",
+    "frptools": "1.2.0",
     "pica": "~2.0.8",
     "pouchdb-adapter-http": "~6.3.4",
     "pouchdb-adapter-idb": "~6.3.4",
