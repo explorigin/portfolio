@@ -1,3 +1,4 @@
+import { eq } from './util.js';
 
 export function computed(fn, dependencies = [], comparator=eq) {
     const subscribers = new Set();
@@ -26,7 +27,7 @@ export function computed(fn, dependencies = [], comparator=eq) {
         if (isDirty) {
             const newVal = fn.apply(null, dependencies.map(runParam));
             isDirty = false;
-            if (!comparator(newVal, val)) {
+            if (!comparator(val, newVal)) {
                 val = newVal;
                 subscribers.forEach(s => s(val));
             }
@@ -60,7 +61,7 @@ export function computed(fn, dependencies = [], comparator=eq) {
     accessor.unsubscribeAll = () => {
         subscribers.clear();
         dependents.clear();
-    }
+    };
 
     return accessor;
 }

@@ -60,6 +60,28 @@ describe('observable', () => {
         currentValue = 4;
         expect(a(4)).toEqual(4);
         expect(runCount).toEqual(3);
+    });
 
+
+    it('uses a comparator', () => {
+        function setEquals(a, b) {
+            return (
+                a instanceof Set
+                && b instanceof Set
+                && [...a].reduce((acc, d) => acc && b.has(d), true)
+                && [...b].reduce((acc, d) => acc && a.has(d), true)
+            );
+        }
+
+        let runCount = 0
+
+        const a = observable(new Set([1, 2]), setEquals);
+        a.subscribe(() => runCount += 1);
+        expect([...a()]).toEqual([1, 2]);
+        expect(runCount).toEqual(0);
+        expect([...a(new Set([2, 1]))]).toEqual([1, 2]);
+        expect(runCount).toEqual(0);
+        expect([...a(new Set([3, 2, 1]))]).toEqual([3, 2, 1]);
+        expect(runCount).toEqual(1);
     });
 });

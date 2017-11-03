@@ -147,4 +147,37 @@ describe('computed', () => {
         expect(b()).toEqual(4);
         expect(c()).toEqual(7);
     });
+
+    it('uses a comparator', () => {
+        function setEquals(a, b) {
+            return (
+                a instanceof Set
+                && b instanceof Set
+                && [...a].reduce((acc, d) => acc && b.has(d), true)
+                && [...b].reduce((acc, d) => acc && a.has(d), true)
+            );
+        }
+
+        let runCount = 0;
+
+        function intersection(a, b) {
+            runCount += 1;
+            return new Set([...a].filter(x => b.has(x)));
+        }
+
+        const a = observable(new Set([1, 2]), setEquals);
+        const b = observable(new Set([2, 3]), setEquals);
+        const ABintersection = computed(intersection, [a, b], setEquals);
+
+        expect(runCount).toEqual(0);
+        expect([...ABintersection()]).toEqual([2]);
+        expect(runCount).toEqual(1);
+        b(new Set([3, 2]));
+        expect([...ABintersection()]).toEqual([2]);
+        expect(runCount).toEqual(1);
+        b(new Set([3, 2, 1]));
+        expect(runCount).toEqual(1);
+        expect([...ABintersection()]).toEqual([1, 2]);
+        expect(runCount).toEqual(2);
+    });
 });

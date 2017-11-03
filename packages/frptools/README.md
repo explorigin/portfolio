@@ -40,8 +40,26 @@ it will provide the count of remaining subscriptions.
 ```js
 const unsubscribe = inViewport.subscribe(console.log.bind(console))
 const remainingSubscriptionCount = unsubscribe();
+
+inViewport.unsubscribeAll(); // Call unsubscribeAll to remove child observables/computeds.
 ```
 
+### Provide a comparator for complex types
+
+When storing a type that is not determined to be equal with simple equality (===), provide a function to determine in the new provided value should be propagated to dependents.
+
+```js
+    function setEquals(a, b) {
+        return (
+            a instanceof Set
+            && b instanceof Set
+            && [...a].reduce((acc, d) => acc && b.has(d), true)
+            && [...b].reduce((acc, d) => acc && a.has(d), true)
+        );
+    }
+
+    const a = observable(new Set([1, 2]), setEquals);
+```
 
 # [computed](./src/computed.js)
 
@@ -100,8 +118,33 @@ showDialog.subscribe(console.log.bind(console));
 inViewport(false);  // showDialog result recomputed and `false` is written to the console.
 shouldShow(false);  // showDialog result recomputed, console.log is not called.
 showDialog();  // showDialog does not recompute, console.log is not called. `false` is returned.
+
+showDialog.detach(); // Call detach to remove this computed from the logic tree.
+showDialog.unsubscribeAll(); // Call unsubscribeAll to remove child observables/computeds.
 ```
 
+### Provide a comparator for complex types
+
+When the computed result is a type that is not determined to be equal with simple equality (===), provide a function to determine in the new provided value should be propagated to dependents.
+
+```js
+    function setEquals(a, b) {
+        return (
+            a instanceof Set
+            && b instanceof Set
+            && [...a].reduce((acc, d) => acc && b.has(d), true)
+            && [...b].reduce((acc, d) => acc && a.has(d), true)
+        );
+    }
+
+    function _intersection(a, b) {
+        return new Set([...a].filter(x => b.has(x)));
+    }
+
+    const a = observable(new Set([1, 2]), setEquals);
+    const b = observable(new Set([2, 3]), setEquals);
+    const intersection = computed(_intersection, [a, b], setEquals);
+```
 
 # [bundle](./src/bundle.js)
 
