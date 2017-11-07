@@ -20,7 +20,7 @@ export function el(sig, ...attrsOrChildren) {
         children = attrsOrChildren.slice(1);
         if (isObject(attrs.css)) {
             const className = injectStyle(Object.assign(attrs.css, attrs.styles || {}));
-            attrs.className = `${className} ${attrs.className || ''}`.trim();
+            attrs.class = `${className} ${attrs.class || ''}`.trim();
             delete attrs.css;
             delete attrs.styles;
         }
