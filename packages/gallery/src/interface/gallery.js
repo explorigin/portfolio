@@ -5,9 +5,9 @@ import * as imageTag from '../context/manageImageTags.js';
 import { ImageView } from './image.js';
 import { AlbumView } from './album.js';
 import { router, routeChanged } from '../services/router.js';
+import { styled, el } from '../services/style.js';
 import { LiveArray } from '../utils/livearray.js';
 import { Watcher } from '../utils/watcher.js';
-import { styled, el } from '../utils/styletron.js';
 
 
 function uploadImages(evt) {

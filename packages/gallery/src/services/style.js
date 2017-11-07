@@ -4,8 +4,8 @@ import { defineElement } from 'domvm';
 
 const styletronSingleton = new Styletron();
 
-export function injectStyle(styles) {
-    return _injectStyle(styletronSingleton, styles);
+export function injectStyle(...styles) {
+    return _injectStyle(styletronSingleton, Object.assign({}, ...styles));
 }
 
 function isObject(obj) {
