@@ -24,8 +24,15 @@ export function el(sig, ...attrsOrChildren) {
             delete attrs.css;
             delete attrs.styles;
         }
+        if (isObject(attrs.class)) {
+            const oldClassObj = attrs.class;
+            attrs.class = Object.entries(oldClassObj).reduce((acc, [key, value]) => {
+                if (value) { acc.push(key) }
+                return acc;
+            }, []).join(' ');
+        }
     }
-    return defineElement(sig, attrs, ...children);
+    return defineElement(sig, attrs, children);
 }
 
 export function styled(styles, tagName='div') {
