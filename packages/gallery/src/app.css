@@ -1,0 +1,7 @@
+@import '../node_modules/semantic-ui-reset/reset.css';
+@import '../node_modules/semantic-ui-site/site.css';
+
+body {
+    display: flex;
+    flex-direction: column;
+}

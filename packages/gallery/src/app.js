@@ -1,6 +1,7 @@
 // import { createView } from 'domvm/dist/dev/domvm.dev.js';
 import { createView } from 'domvm/dist/micro/domvm.micro.js';
 
+import * as styles from './app.css';
 import generateThumbnails from './contextLoaders/generateThumbnails.js';
 import { GalleryView } from './interface/gallery.js';
 import { router } from './services/router.js';
