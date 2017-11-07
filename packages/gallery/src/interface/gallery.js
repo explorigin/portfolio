@@ -1,4 +1,4 @@
-import { defineView, defineElement as el } from 'domvm';
+import { defineView } from 'domvm';
 import * as image from '../data/image.js';
 import * as index from '../data/indexType.js';
 import * as imageTag from '../context/manageImageTags.js';
@@ -7,6 +7,7 @@ import { AlbumView } from './album.js';
 import { router, routeChanged } from '../services/router.js';
 import { LiveArray } from '../utils/livearray.js';
 import { Watcher } from '../utils/watcher.js';
+import { styled, el } from '../utils/styletron.js';
 
 
 function uploadImages(evt) {
@@ -49,13 +50,17 @@ export function GalleryView(vm, model) {
         const members = data();
 
         return el('.gallery', [
-            el('input#fInput',
-                {
-                    type: "file",
-                    multiple: true,
-                    accept: "image/jpeg",
-                    onchange: uploadImages
-                }),
+            header([
+                el('div', { css: { fontSize: '20pt' } }, 'Gallery'),
+                el('input#fInput',
+                    {
+                        type: "file",
+                        multiple: true,
+                        accept: "image/jpeg",
+                        onchange: uploadImages
+                    }
+                )
+            ]),
             el('a', { href: router.href('images') }, 'Images'),
             el('a', { href: router.href('albums') }, 'Albums'),
             el('h1', title),
@@ -84,3 +89,11 @@ export function GalleryView(vm, model) {
         ]);
     };
 }
+
+const header = styled({
+    justifyContent: 'space-between',
+    padding: '1em',
+    zIndex: 1,
+    display: 'flex',
+    alignItems: 'center',
+});
