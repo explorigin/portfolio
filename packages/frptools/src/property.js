@@ -1,9 +1,9 @@
 import { eq } from './util.js';
 
-export function observable(store, comparator=eq) {
+export function prop(store, comparator=eq) {
     const subscribers = new Set();
 
-    const accessor = function _observable(newVal) {
+    const accessor = function _prop(newVal) {
         if (newVal !== undefined && !comparator(store, newVal)) {
             store = newVal;
             subscribers.forEach(s => s(store));

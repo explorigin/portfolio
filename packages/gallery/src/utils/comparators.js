@@ -3,7 +3,7 @@ import { equals } from './set.js';
 
 
 export function pouchDocArrayComparator(a, b) {
-    if (!Array.isArray(b)) {
+    if (!Array.isArray(a)) {
         return false;
     }
     const aIDs = a.map(extractID);

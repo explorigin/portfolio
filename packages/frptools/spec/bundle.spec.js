@@ -1,4 +1,4 @@
-const { observable, computed, bundle } = require('../lib/index.js');
+const { prop, computed, bundle } = require('../lib/index.js');
 
 describe('bundle', () => {
     const methods = {
@@ -13,10 +13,10 @@ describe('bundle', () => {
         spyOn(methods, 'getVal').and.callThrough();
     });
 
-    it('bundles observable changes together', () => {
+    it('bundles property changes together', () => {
         const a = bundle({
-            a: observable(0),
-            b: observable(10),
+            a: prop(0),
+            b: prop(10),
         });
         const b = computed(methods.square, [a.a]);
         const c = computed(methods.add, [a.a, a.b]);
@@ -47,8 +47,8 @@ describe('bundle', () => {
     });
 
     it('unbundled changes are less efficient', () => {
-        const a = observable(0);
-        const _b = observable(10);
+        const a = prop(0);
+        const _b = prop(10);
         const b = computed(methods.square, [a]);
         const c = computed(methods.add, [a, _b]);
 
@@ -80,8 +80,8 @@ describe('bundle', () => {
 
     it('allows individual members to be updated', () => {
         const a = bundle({
-            a: observable(0),
-            b: observable(10),
+            a: prop(0),
+            b: prop(10),
         });
         const b = computed(methods.square, [a.a]);
         const c = computed(methods.add, [a.a, a.b]);

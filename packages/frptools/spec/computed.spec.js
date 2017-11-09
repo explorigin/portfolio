@@ -1,11 +1,11 @@
-const { observable, computed } = require('../lib/index.js');
+const { prop, computed } = require('../lib/index.js');
 
 describe('computed', () => {
     const add = (a, b) => a + b;
     const square = a => a * a;
 
     it('returns the value computed from its dependencies', () => {
-        const a = observable(0);
+        const a = prop(0);
         const b = computed(square, [a]);
         const c = computed(add, [a, b]);
 
@@ -28,7 +28,7 @@ describe('computed', () => {
     it('only computes when called', () => {
         let runCount = 0;
         let currentValue = 1;
-        const a = observable(0);
+        const a = prop(0);
         const b = computed((val) => {
             runCount += 1;
             expect(val).toEqual(currentValue);
@@ -57,7 +57,7 @@ describe('computed', () => {
         let runCount = 0;
         let subRunCount = 0;
         let currentValue = 1;
-        const a = observable(0);
+        const a = prop(0);
         const b = computed((val) => {
             runCount += 1;
             expect(val).toEqual(currentValue);
@@ -94,7 +94,7 @@ describe('computed', () => {
         let runCount = 0;
         let subRunCount = 0;
         let currentValue = 1;
-        const a = observable(0);
+        const a = prop(0);
         const b = computed((val) => {
             runCount += 1;
             expect(val).toEqual(currentValue);
@@ -134,7 +134,7 @@ describe('computed', () => {
     });
 
     it('can be detached', () => {
-        const a = observable(2);
+        const a = prop(2);
         const b = computed(square, [a]);
         const c = computed(add, [a, b]);
 
@@ -165,8 +165,8 @@ describe('computed', () => {
             return new Set([...a].filter(x => b.has(x)));
         }
 
-        const a = observable(new Set([1, 2]), setEquals);
-        const b = observable(new Set([2, 3]), setEquals);
+        const a = prop(new Set([1, 2]), setEquals);
+        const b = prop(new Set([2, 3]), setEquals);
         const ABintersection = computed(intersection, [a, b], setEquals);
 
         expect(runCount).toEqual(0);

@@ -1,4 +1,4 @@
-import { observable, computed } from 'frptools';
+import { prop, computed } from 'frptools';
 import { matchesSelector } from 'pouchdb-selector-core';
 
 import { getDatabase } from '../services/db.js';
@@ -55,8 +55,8 @@ export function LiveArray(db, selector, watcher) {
     const _watcher = watcher || Watcher(db, selector);
     let changeSub = null;
 
-    const ready = observable(false);
-    const data = observable({docs: []});
+    const ready = prop(false);
+    const data = prop({docs: []});
     const docs = computed(r => r.docs, [data], pouchDocArrayComparator);
 
     const idSet = () => docs().reduce((acc, d) => acc.add(d._id), new Set());

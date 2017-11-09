@@ -1,13 +1,13 @@
-const { observable } = require('../lib/index.js');
+const { prop } = require('../lib/index.js');
 
-describe('observable', () => {
+describe('A property', () => {
     it('returns its initialized value', () => {
-        const a = observable(true);
+        const a = prop(true);
         expect(a()).toEqual(true);
     });
 
     it('returns its set value', () => {
-        const a = observable();
+        const a = prop();
         expect(a()).toEqual(undefined);
         expect(a(true)).toEqual(true);
     });
@@ -15,7 +15,7 @@ describe('observable', () => {
     it('returns notifies dependents of updates', () => {
         let runCount = 0;
         let currentValue = 1;
-        const a = observable();
+        const a = prop();
         a.subscribe(val => {
             runCount += 1;
             expect(val).toEqual(currentValue);
@@ -39,7 +39,7 @@ describe('observable', () => {
     it('honors cancelled subscriptions', () => {
         let runCount = 0;
         let currentValue = 1;
-        const a = observable();
+        const a = prop();
         const cancelSubscription = a.subscribe(val => {
             runCount += 1;
             expect(val).toEqual(currentValue);
@@ -75,7 +75,7 @@ describe('observable', () => {
 
         let runCount = 0
 
-        const a = observable(new Set([1, 2]), setEquals);
+        const a = prop(new Set([1, 2]), setEquals);
         a.subscribe(() => runCount += 1);
         expect([...a()]).toEqual([1, 2]);
         expect(runCount).toEqual(0);

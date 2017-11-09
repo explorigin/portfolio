@@ -1,4 +1,4 @@
-export function bundle(observables) {
+export function bundle(props) {
     const activeSubscribers = new Set();
     let activeUpdate = false;
 
@@ -6,9 +6,9 @@ export function bundle(observables) {
         const result = {};
         activeUpdate = true;
         Object.keys(values)
-            .filter(k => typeof observables[k] === 'function')
+            .filter(k => typeof props[k] === 'function')
             .forEach(k => {
-                result[k] = observables[k](values[k]);
+                result[k] = props[k](values[k]);
             });
 
         const subscribers = Array.from(activeSubscribers);
@@ -32,8 +32,8 @@ export function bundle(observables) {
         });
     };
 
-    Object.keys(observables).forEach(k => {
-        const obs = observables[k];
+    Object.keys(props).forEach(k => {
+        const obs = props[k];
 
         accessor[k] = obs;
         obs._d = subscriptionFactory(obs._d);

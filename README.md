@@ -6,7 +6,7 @@ These are my personal projects.
 
 ## [FRP tools](./packages/frptools/README.md)
 
-Observable and computed value stores designed to work together for storing real state and derived state.
+Observable property and computed value stores designed to work together for storing real and derived state.
 
 ## [Portal](./packages/portal/README.md)
 

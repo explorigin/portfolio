@@ -1,12 +1,10 @@
 # FRP tools
 
-Observer and Computed value stores designed to work together for storing real state and derived state.
+Property and Computed value stores designed to work together for storing real and derived state.
 
-# [observable](./src/observable.js)
+# [property](./src/property.js)
 
-`observable` is a simple value store that can report when its value changes. It is good for wrapping external props passed into a component so compute types can dependent on them. It can also be used to receive events such as *window.onresize* to always provide the current viewport size.
-
-NOTE: Javascript has a proposal for a thing called an [Observable](https://github.com/tc39/proposal-observable). This is not an implementation of that. They do serve similar functions (provide a way to communicate when a value changes) but the tc39 proposal is more about event input sources and can communicate errors and be extended.  This implementation is designed to be as small and simple as possible.  Extending it is done via [Computed] instances depending on them.  I may rename `observable` to `property` in a future major release to avoid this confusion.
+A `property` is a simple value store that can report when its value changes. It is good for wrapping external values passed into a component so compute types can dependent on them and only recompute when these values change. It can also be used to receive events such as *window.onresize* to always provide the current viewport size.
 
 ## Usage
 
@@ -15,7 +13,7 @@ NOTE: Javascript has a proposal for a thing called an [Observable](https://githu
 Creates and sets initial value to `true`
 
 ```js
-const inViewport = observable(true);
+const inViewport = prop(true);
 ```
 
 ### Read
@@ -36,14 +34,13 @@ inViewport(false);
 
 ### Subscribe to changes
 
-Call the `subscribe` method with a callback that will be called when the observable is changed to a different value.  The returned function can be called to unsubscribe from the observable. When called
-it will provide the count of remaining subscriptions.
+Call the `subscribe` method with a callback that will be called when the property value changes.  The returned function can be called to unsubscribe from the property. When called it will provide the count of remaining subscriptions.
 
 ```js
 const unsubscribe = inViewport.subscribe(console.log.bind(console))
 const remainingSubscriptionCount = unsubscribe();
 
-inViewport.unsubscribeAll(); // Call unsubscribeAll to remove child observables/computeds.
+inViewport.unsubscribeAll(); // Call unsubscribeAll to remove child property/computed subscriptions.
 ```
 
 ### Provide a comparator for complex types
@@ -60,12 +57,12 @@ When storing a type that is not determined to be equal with simple equality (===
         );
     }
 
-    const a = observable(new Set([1, 2]), setEquals);
+    const a = prop(new Set([1, 2]), setEquals);
 ```
 
 # [computed](./src/computed.js)
 
-`computed` is a functional store that depends on the values of observables or other computeds. They derive value from observables rather than store value and hence cannot be set directly.
+`computed` is a functional store that depends on the values of properties or other computeds. They derive value from properties rather than store value and hence cannot be set directly.
 
 ## Behavior
 A `computed` will subscribe to its dependencies in such a way that it will be marked as *dirty* when any dependency changes. Whenever it is read from, if will recompute its result if the *dirty* flag is set, otherwise it just return the stored result from the last time it computed.
@@ -77,7 +74,7 @@ A `computed` will subscribe to its dependencies in such a way that it will be ma
 ```js
 const showDialog = computed(
     (inVP, shouldShow) => (inVP && shouldShow),  // computation function
-    [inViewport, shouldShow]  // array of dependencies, can be either observable or computed
+    [inViewport, shouldShow]  // array of dependencies, can be either a property or computed
 );
 ```
 
@@ -91,8 +88,7 @@ Call it to receive the stored value, recomputing if necessary.
 
 ### Subscribe to changes
 
-Call the subscribe method with a callback that will be called when the computed result changes to a different value.  The returned function can be called to unsubscribe from the observable. When called
-it will provide the count of remaining subscriptions.
+Call the subscribe method with a callback that will be called when the computed result changes to a different value.  The returned function can be called to unsubscribe from the property. When called it will provide the count of remaining subscriptions.
 
 ```js
 const unsubscribe = inViewport.subscribe(console.log.bind(console))
@@ -102,8 +98,8 @@ const remainingSubscriptionCount = unsubscribe();
 **NOTE**: Subscribing to a computed forces it to recompute every time an upstream dependency changes.  This could negatively performance if it depends on multiple values that change sequentially and the computation function is non-trivial.  For example:
 
 ```js
-const inViewport = observable(false);
-const shouldShow = observable(false);
+const inViewport = prop(false);
+const shouldShow = prop(false);
 
 const showDialog = computed(
     (inVP, shouldShow) => (inVP && shouldShow),
@@ -122,7 +118,7 @@ shouldShow(false);  // showDialog result recomputed, console.log is not called.
 showDialog();  // showDialog does not recompute, console.log is not called. `false` is returned.
 
 showDialog.detach(); // Call detach to remove this computed from the logic tree.
-showDialog.unsubscribeAll(); // Call unsubscribeAll to remove child observables/computeds.
+showDialog.unsubscribeAll(); // Call unsubscribeAll to remove child property/computed subscriptions.
 ```
 
 ### Provide a comparator for complex types
@@ -143,19 +139,19 @@ When the computed result is a type that is not determined to be equal with simpl
         return new Set([...a].filter(x => b.has(x)));
     }
 
-    const a = observable(new Set([1, 2]), setEquals);
-    const b = observable(new Set([2, 3]), setEquals);
+    const a = prop(new Set([1, 2]), setEquals);
+    const b = prop(new Set([2, 3]), setEquals);
     const intersection = computed(_intersection, [a, b], setEquals);
 ```
 
 # [bundle](./src/bundle.js)
 
-`bundle` is a wrapper around a group of `observables` for the purpose of applying changes to all of them at once without having to trigger a subscription that may depend on more than observable in the group.
+`bundle` is a wrapper around a group of properties for the purpose of applying changes to all of them at once without having to trigger a subscription that may depend on more than property in the group.
 
-Another way to think of a `bundle` is an `observable` that takes an object and exposes the properties as individual observables.
+Another way to think of a `bundle` is a `property` that takes an object and exposes the object's properties as individual `property` instances.
 
 ## Behavior
-A `bundle` wraps observables to intercept dependency hooks in such a way that updating all observables can happen at once before any downstream `computeds` are evaluated. A bundle returns a function that can be called with an object to set values for the mapped member observables.
+A `bundle` wraps properties to intercept dependency hooks in such a way that updating all `property` instances can happen at once before any downstream `computed` instances are evaluated. A bundle returns a function that can be called with an object to set values for the mapped member `property` instances.
 
 ## Usage
 
@@ -163,14 +159,14 @@ A `bundle` wraps observables to intercept dependency hooks in such a way that up
 
 ```js
 const layoutEventBundle = bundle({
-    width: observable(1),
-    height: observable(2),
+    width: prop(1),
+    height: prop(2),
 });
 const ratio = computed((a, b) => a / b, [layoutEventBundle.width, layoutEventBundle.height]);
 ratio.subscribe(render);
 ```
 
-### Change Member Observables atomically
+### Change Member Properties atomically
 ```js
 layoutEventBundle({width: 640, height: 480});
 ```
@@ -178,10 +174,10 @@ layoutEventBundle({width: 640, height: 480});
 `ratio` would normally be evaluated twice and `render` would be called after each intermediate change.  But bundle allows both values to change and `ratio` will only be evaluated once and `render` called once.
 
 
-### Change Member Observables individually
+### Change Member Properties individually
 ```js
 layoutEventBundle.width(640);
 layoutEventBundle.height(480);
 ```
 
-The observables exposed by the bundle can also be updated apart from their grouping.
+The properties exposed by the bundle can also be updated apart from their grouping.

@@ -1,11 +1,11 @@
 import { defineView, defineElement as el } from 'domvm';
-import { observable, computed } from 'frptools';
+import { prop, computed } from 'frptools';
 
 import * as image from '../data/image.js';
 
 export function ImageView(vm, model) {
     const { addTag } = model;
-    const imageData = observable(null);
+    const imageData = prop(null);
     let imageId = null;
 
     function onAddTag(image_id) {
