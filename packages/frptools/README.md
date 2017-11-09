@@ -1,10 +1,12 @@
 # FRP tools
 
-Observer and computed value stores designed to work together for storing real state and derived state.
+Observer and Computed value stores designed to work together for storing real state and derived state.
 
 # [observable](./src/observable.js)
 
-`observable` is a simple value store that can report when its value changes. It is good for wrapping external props passed into a component so compute types can dependent on them.
+`observable` is a simple value store that can report when its value changes. It is good for wrapping external props passed into a component so compute types can dependent on them. It can also be used to receive events such as *window.onresize* to always provide the current viewport size.
+
+NOTE: Javascript has a proposal for a thing called an [Observable](https://github.com/tc39/proposal-observable). This is not an implementation of that. They do serve similar functions (provide a way to communicate when a value changes) but the tc39 proposal is more about event input sources and can communicate errors and be extended.  This implementation is designed to be as small and simple as possible.  Extending it is done via [Computed] instances depending on them.  I may rename `observable` to `property` in a future major release to avoid this confusion.
 
 ## Usage
 
