@@ -2,7 +2,7 @@ import { defineView } from 'domvm';
 import * as image from '../data/image.js';
 import * as index from '../data/indexType.js';
 import * as imageTag from '../context/manageImageTags.js';
-import { ImageView } from './image.js';
+import { ThumbnailView } from './thumbnail.js';
 import { AlbumView } from './album.js';
 import { router, routeChanged } from '../services/router.js';
 import { styled, el } from '../services/style.js';
@@ -67,7 +67,7 @@ export function GalleryView(vm, model) {
             ...(
                 title === 'Images'
                 ? members.map(i => {
-                    return defineView(ImageView, {
+                    return defineView(ThumbnailView, {
                         doc: i,
                         showTags: true,
                         addTag: imageTag.add,

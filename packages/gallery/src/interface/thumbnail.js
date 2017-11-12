@@ -3,7 +3,7 @@ import { prop, computed } from 'frptools';
 
 import * as image from '../data/image.js';
 
-export function ImageView(vm, model) {
+export function ThumbnailView(vm, model) {
     const { addTag } = model;
     const imageData = prop(null);
     let imageId = null;

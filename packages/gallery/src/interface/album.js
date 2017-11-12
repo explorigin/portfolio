@@ -1,6 +1,6 @@
 import { defineView, defineElement as el } from 'domvm';
 import * as image from '../data/image.js';
-import { ImageView } from './image.js';
+import { ThumbnailView } from './thumbnail.js';
 import { LiveArray } from '../utils/livearray.js';
 
 
@@ -35,7 +35,7 @@ export function AlbumView(vm, model) {
         return el('.album', [
             el('h2', [ title ]),
             ...images.map(i => {
-                return defineView(ImageView, {
+                return defineView(ThumbnailView, {
                     doc: i,
                     showTags: false,
                     remove: removeImageFromAlbum
