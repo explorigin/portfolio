@@ -7,12 +7,6 @@ import { blobToArrayBuffer } from '../utils/conversion.js';
 export const FileType = PouchDB.registerType({
     name: "File",
     getUniqueID: doc => doc.digest.substr(0, 16),
-    getSequence: doc => (
-        new Date(doc.modifiedDate
-            ? doc.modifiedDate
-            : (new Date()).toISOString()
-        ).getTime()
-    ),
     // schema: {
     //     name: t.REQUIRED_STRING,
     //     mimetype: t.REQUIRED_STRING,

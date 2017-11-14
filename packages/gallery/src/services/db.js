@@ -63,7 +63,8 @@ export function PouchORM(PouchDB) {
 
         function populateId(doc) {
             if (!doc._id) {
-                doc._id = `${prefix}_${getSequence(doc).toString(36)}_${getUniqueID(doc)}`;
+                const sequence = getSequence ? getSequence(doc).toString(36) : '';
+                doc._id = `${prefix}_${sequence}_${getUniqueID(doc)}`;
             }
             return doc;
         }
