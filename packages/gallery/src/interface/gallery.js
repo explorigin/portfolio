@@ -19,12 +19,10 @@ export function GalleryView(vm, model) {
     const NAV_OPTIONS = {
         images: {
             selector: image.SELECTOR,
-            watcher: image.watcher,
             title: 'Images'
         },
         albums: {
             selector: index.SELECTOR,
-            watcher: Watcher(db, index.SELECTOR),
             title: 'Albums'
         }
     };
@@ -37,7 +35,7 @@ export function GalleryView(vm, model) {
             data.cleanup();
         }
         const o = NAV_OPTIONS[route.name];
-        data = LiveArray(db, o.selector, o.watcher);
+        data = LiveArray(db, o.selector);
         title = o.title;
         data.subscribe(() => vm.redraw());
     });

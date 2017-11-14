@@ -7,12 +7,15 @@ import { pouchDocArrayComparator } from './comparators.js';
 import { difference } from './set.js';
 
 
-// The point of the globalWatcher mechanism is that PouchDB.changes doesn't register when a document changes in such a way that removes it from the selector specifications.
-// For Example: a selector looks for images with a specific tag. If a change removes that tag, the changes API will not register a change event.  globalWatcher watches the document IDs for exactly this type of change and triggers the LiveArray to refresh.
-
-const globalWatcher = Watcher(getDatabase(), {}, true);
+// The point of the watcher mechanism is that PouchDB.changes doesn't register
+// when a document changes in such a way that removes it from the selector
+// specifications.  For Example: a selector looks for images with a specific
+// tag. If a change removes that tag, the changes API will not register a change
+// event.  globalWatcher watches the document IDs for exactly this type of
+// change and triggers the LiveArray to refresh.
+const watcherMap = new Map();
 const watchingIDs = new Map();
-let globalWatcherSubscription = null;
+const dbIDs = new Map();
 
 function checkDocs(id, deleted, doc) {
     // Is the changed doc one that we're watching?
@@ -26,42 +29,49 @@ function checkDocs(id, deleted, doc) {
     }
 }
 
-function addID(id, selector, refresher) {
-    if (!watchingIDs.has(id)) {
-        watchingIDs.set(id, new Map());
+function addID(db, id, selector, refresher) {
+    if (!watcherMap.has(db)) {
+        watcherMap.set(db, Watcher(db, {}, true)(checkDocs));
     }
+
+    if (!dbIDs.has(db)) { dbIDs.set(db, new Set()); }
+    dbIDs.get(db).add(id);
+
+    if (!watchingIDs.has(id)) { watchingIDs.set(id, new Map()); }
     watchingIDs.get(id).set(selector, refresher);
-    if (globalWatcherSubscription === null) {
-        globalWatcherSubscription = globalWatcher(checkDocs);;
-    }
 }
 
-function removeID(id, selector) {
+function removeID(db, id, selector) {
     if (watchingIDs.has(id)) {
         const idSet = watchingIDs.get(id);
         idSet.delete(selector);
         if (idSet.size === 0) {
             watchingIDs.delete(selector);
-            if (watchingIDs.size === 0) {
-                globalWatcherSubscription();
-                globalWatcherSubscription = null;
-            }
+        }
+
+        const dbIDMap = dbIDs.get(db);
+        dbIDMap.delete(id);
+        if (dbIDMap.size === 0) {
+            // Unsubscribe from this watcher
+            watcherMap.get(db)();
+            dbIDs.delete(db);
         }
     }
 }
 
 // LiveArray is a subscribable property function that always returns the db results that match the provided selector and calls subscribers when the results change.
-export function LiveArray(db, selector, watcher) {
-    const _watcher = watcher || Watcher(db, selector);
+export function LiveArray(db, selector, mapper) {
+    const _watcher = Watcher(db, selector);
     let changeSub = null;
+    let _mapper = mapper || (doc => doc);
 
     const ready = prop(false);
     const data = prop({docs: []});
-    const docs = computed(r => r.docs, [data], pouchDocArrayComparator);
+    const docs = computed(r => r.docs.map(_mapper), [data], pouchDocArrayComparator);
 
     const idSet = () => docs().reduce((acc, d) => acc.add(d._id), new Set());
-    const addThisID = id => addID(id, selector, refresh);
-    const removeThisID = id => removeID(id, selector);
+    const addThisID = id => addID(db, id, selector, refresh);
+    const removeThisID = id => removeID(db, id, selector);
 
     const cleanup = () => {
         docs.unsubscribeAll();
