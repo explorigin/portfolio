@@ -11,3 +11,7 @@ export function pouchDocArrayComparator(a, b) {
 
     return equals(new Set(...aIDs), new Set(...bIDs));
 }
+
+export function isObject(obj) {
+    return typeof obj === 'object' && !Array.isArray(obj);
+}

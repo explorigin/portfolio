@@ -1,6 +1,7 @@
 import Styletron from 'styletron';
 import { injectStyle as _injectStyle } from 'styletron-utils';
 import { defineElement } from 'domvm';
+import { isObject } from '../utils/comparators.js';
 
 const styletronSingleton = new Styletron();
 
@@ -8,9 +9,6 @@ export function injectStyle(...styles) {
     return _injectStyle(styletronSingleton, Object.assign({}, ...styles));
 }
 
-function isObject(obj) {
-    return typeof obj === 'object' && !Array.isArray(obj);
-}
 
 export function el(sig, ...attrsOrChildren) {
     let attrs = {};
