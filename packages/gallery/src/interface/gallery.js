@@ -41,12 +41,6 @@ export function GalleryView(vm, model) {
     });
 
     return function(vm, model, key, opts) {
-        if (!data || !data.ready()) {
-            return el('h1', "Loading...");
-        }
-
-        const members = data();
-
         return el('.gallery', [
             header([
                 el('div', { css: { fontSize: '20pt' } }, 'Gallery'),
@@ -59,30 +53,35 @@ export function GalleryView(vm, model) {
                     }
                 )
             ]),
-            el('a', { href: router.href('images') }, 'Images'),
-            el('a', { href: router.href('albums') }, 'Albums'),
-            el('h1', title),
             ...(
-                title === 'Images'
-                ? members.map(i => {
-                    return defineView(ThumbnailView, {
-                        doc: i,
-                        showTags: true,
-                        addTag: imageTag.add,
-                        remove: image.remove,
-                        removeTag: imageTag.remove
-                    },
-                    i._id);
-                })
-                : members.map(a => {
-                    return defineView(AlbumView, {
-                        doc: a,
-                        db,
-                        addTag: imageTag.add,
-                        remove: imageTag.remove
-                    },
-                    a._id)
-                })
+                (!data || !data.ready())
+                ? [el('h1', "Loading...")]
+                : [
+                    el('a', { href: router.href('images') }, 'Images'),
+                    el('a', { href: router.href('albums') }, 'Albums'),
+                    el('h1', title),
+                    ...(
+                        title === 'Images'
+                        ? data().map(i => {
+                            return defineView(ThumbnailView, {
+                                doc: i,
+                                showTags: true,
+                                addTag: imageTag.add,
+                                remove: image.remove,
+                                removeTag: imageTag.remove
+                            },
+                            i._id);
+                        })
+                        : data().map(a => {
+                            return defineView(AlbumView, {
+                                doc: a,
+                                db,
+                                addTag: imageTag.add,
+                                remove: imageTag.remove
+                            },
+                            a._id)
+                        })
+                    )                ]
             )
         ]);
     };
