@@ -1,6 +1,7 @@
 import { defineView } from 'domvm';
 import * as image from '../data/image.js';
 import * as index from '../data/indexType.js';
+import { FileType } from '../data/file.js';
 import * as imageTag from '../context/manageImageTags.js';
 import { ThumbnailView } from './thumbnail.js';
 import { AlbumView } from './album.js';
@@ -9,10 +10,6 @@ import { styled, el } from '../services/style.js';
 import { LiveArray } from '../utils/livearray.js';
 import { Watcher } from '../utils/watcher.js';
 
-
-function uploadImages(evt) {
-    image.add(evt.currentTarget.files);
-}
 
 export function GalleryView(vm, model) {
     const { db } = model;
@@ -49,7 +46,7 @@ export function GalleryView(vm, model) {
                         type: "file",
                         multiple: true,
                         accept: "image/jpeg",
-                        onchange: uploadImages
+                        onchange: FileType.upload
                     }
                 )
             ]),

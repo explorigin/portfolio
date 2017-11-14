@@ -4,6 +4,7 @@ import { sha256 } from '../utils/crypto.js';
 import { blobToArrayBuffer, deepAssign } from '../utils/conversion.js';
 import { Event, backgroundTask } from '../utils/event.js'
 import { Watcher } from '../utils/watcher.js';
+import { FileType } from './file.js';
 
 
 
@@ -51,26 +52,6 @@ export async function getAttachment(id, attName) {
     return await db.getAttachment(id, attName);
 }
 
-export async function add(imageFileList) {
-    const docs = Array.prototype.map.call(imageFileList, f => ({
-        _id: `${PROCESS_PREFIX}_${f.name}`,
-        name: f.name,
-        mimetype: f.type,
-        size: f.size,
-        modifiedDate: (new Date(f.lastModified)).toISOString(),
-        uploadedDate: (new Date()).toISOString(),
-        tags: {},
-        _attachments: {
-            image: {
-                content_type: f.type,
-                data: f,
-            }
-        }
-    }));
-    const results = await db.bulkDocs(docs);
-    return docs.filter((d, i) => results[i].ok);
-}
-
 export async function remove(ids) {
     const docs = await find(Array.isArray(ids) ? ids : [ids]);
     const foundDocs = docs.rows.filter(r => !r.error);
@@ -96,29 +77,21 @@ export async function addAttachment(doc, key, blob) {
 }
 
 // Internal Functions
-importWatcher(backgroundTask(async function _processImportables(changeId, deleted) {
-    if (deleted) { return; }
-    const selector = changeId ? { _id: changeId } : IMPORT_SELECTOR;
-    const result = await db.find({
-        selector,
-        limit: 1
-    });
+const processImportables = backgroundTask(async function _processImportables(importables) {
+    if (!importables.length) { return; }
 
-    if (!result.docs.length) { return; }
-
-    const doc = result.docs[0];
-    const { _id, _rev } = doc;
-    const imageData = await db.getAttachment(_id, "image")
+    const file = importables[0];
+    const { _id, _rev } = file;
+    const imageData = await file.getAttachment('data');
 
     const ExifParser = await import('exif-parser');
 
     const buffer = await blobToArrayBuffer(imageData);
-    const digest = await sha256(buffer);
 
     // Check if this image already exists
     // TODO - Create an image.digest index
     const digestQuery = await db.find({
-        selector: { digest },
+        selector: { digest: file.digest },
         fields: ["_id"],
         limit: 1,
     });
@@ -131,25 +104,23 @@ importWatcher(backgroundTask(async function _processImportables(changeId, delete
         const originalDate = new Date(
             tags.DateTimeOriginal
             ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
-            : doc.modifiedDate
+            : file.modifiedDate
         );
-        const id = `${PREFIX}_${originalDate.getTime().toString(36)}_${digest.substr(0, 6)}`;
+        const id = `${PREFIX}_${originalDate.getTime().toString(36)}_${file.digest.substr(0, 6)}`;
 
         const newDoc = Object.assign(
             {},
-            doc,
             {
                 _id: id,
-                originalDate: originalDate.toISOString(),
+                originalDate: originalDate,
                 orientation: tags.Orientation,
-                digest,
+                digest: file.digest,
                 make: tags.Make,
                 model: tags.Model,
                 flash: !!tags.Flash,
                 ISO: tags.ISO,
-                attachmentUrls: {
-                    image: generateAttachmentUrl(db.name, id, 'image'),
-                },
+                fileId: file._id,
+                url: generateAttachmentUrl('file', file._id, 'data'),
                 gps: {
                     latitude: tags.GPSLatitude,
                     longitude: tags.GPSLongitude,
@@ -163,11 +134,22 @@ importWatcher(backgroundTask(async function _processImportables(changeId, delete
 
         try {
             await db.put(newDoc);
+            file.update({tags: {galleryImage: false}});
             imported.fire(id, _id, true);
         } catch (e) {
             error(`Error processing Image ${id}`, e);
         }
     }
+}, false);
 
-    await db.remove({ _id, _rev });
-}));
+FileType.find({
+    $and: [
+        {mimetype: { $in: ["image/jpeg"]}},
+        {$not: {['tags.galleryImage']: false}}
+    ]},
+    true
+).then(fw => {
+    fw.subscribe((...props) => {
+        processImportables(...props);
+    });
+});
