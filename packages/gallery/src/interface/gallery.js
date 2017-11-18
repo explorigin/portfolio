@@ -1,8 +1,8 @@
-import { defineView } from 'domvm';
 import * as image from '../data/image.js';
 import * as index from '../data/indexType.js';
 import { FileType } from '../data/file.js';
 import * as imageTag from '../context/manageImageTags.js';
+import { defineView as vw } from 'domvm';
 import { ThumbnailView } from './thumbnail.js';
 import { AlbumView } from './album.js';
 import { router, routeChanged } from '../services/router.js';
@@ -60,23 +60,23 @@ export function GalleryView(vm, model) {
                     ...(
                         title === 'Images'
                         ? data().map(i => {
-                            return defineView(ThumbnailView, {
+                            return vw(ThumbnailView, {
                                 doc: i,
                                 showTags: true,
                                 addTag: imageTag.add,
                                 remove: image.remove,
                                 removeTag: imageTag.remove
                             },
-                            i._id);
+                            i._id + i._rev);
                         })
                         : data().map(a => {
-                            return defineView(AlbumView, {
+                            return vw(AlbumView, {
                                 doc: a,
                                 db,
                                 addTag: imageTag.add,
                                 remove: imageTag.remove
                             },
-                            a._id)
+                            a._id + a._rev)
                         })
                     )                ]
             )
