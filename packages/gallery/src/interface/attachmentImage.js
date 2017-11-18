@@ -1,43 +1,40 @@
 import { defineElement as el } from 'domvm';
 import { prop, computed, bundle } from 'frptools';
 
-import * as imageType from '../data/image.js';
+import { ImageType } from '../data/image.js';
+import { FileType } from '../data/file.js';
+import { pouchDocComparator } from '../utils/comparators.js'
 
 
-export function AttachmentImageView(vm, params) {
+export function AttachmentImageView(vm, doc) {
     const model = bundle({
-        doc: prop(params.src),
-        attachmentKey: prop(params.attachmentKey || 'image')
+        _id: prop(doc._id),
+        _rev: prop(doc._rev),
+        sizes: prop(doc.sizes)
     });
 
     const blobURL = prop('');
-
-    const imageID = computed(
-        doc => doc._id,
-        [model.doc]
-    );
     const imageURL = computed(
-        (doc, key, bURL) => bURL || doc.attachmentUrls[key],
-        [model.doc, model.attachmentKey, blobURL]
+        (sizes, bURL) => bURL || sizes.thumbnail || sizes.full,
+        [model.sizes, blobURL]
     );
-    const imageSignature = computed(
-        (id, key) => id + ' ' + key,
-        [imageID, model.attachmentKey]
-    );
+    const _key = computed((id, rev) => id + rev, [model._id, model._rev]);
 
     async function loadImageFromBlob() {
-        const id = imageID();
-        const key = model.attachmentKey();
+        const options = ['thumbnail', 'full'].filter(o => model.sizes().hasOwnProperty(o));
 
-        try {
-            const data = await imageType.getAttachment(id, key);
-            if (blobURL()) {
-                URL.revokeObjectURL(blobURL());
+        for (let attempt of options) {
+            try {
+                const data = await FileType.getFromURL(model.sizes()[attempt]);
+
+                if (blobURL()) {
+                    URL.revokeObjectURL(blobURL());
+                }
+                blobURL(URL.createObjectURL(data));
+                return;
+            } catch(err) {
+                continue;
             }
-            blobURL(URL.createObjectURL(data));
-        } catch(err) {
-            // Probably hasn't created the thumbnail yet.
-            console.log("Probably hasn't created the thumbnail yet.", err);
         }
     }
 
@@ -48,19 +45,18 @@ export function AttachmentImageView(vm, params) {
 
     const redrawOff = imageURL.subscribe(() => vm.redraw())
 
-    return function render(vm, params) {
-        const imgSig = imageSignature();
-        model(params);
-        if (imgSig !== imageSignature()) {
+    return function render(vm, doc) {
+        if (!pouchDocComparator(doc, {_id:model._id(), _rev:model._rev()})) {
             URL.revokeObjectURL(blobURL());
             blobURL('');
         }
+        model(doc);
 
         return el('img',
             {
                 src: imageURL(),
                 onerror: loadImageFromBlob,
-                _key: imageSignature(),
+                _key: _key(),
                 _hooks: {
                     didRemove: cleanup
                 }

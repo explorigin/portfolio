@@ -1,15 +1,18 @@
-import { extractID } from './conversion.js';
-import { equals } from './set.js';
+import { pick } from './conversion.js';
 
+const extractID = pick('_id');
+const extractREV = pick('_rev');
+
+export function pouchDocComparator(a, b) {
+    return extractID(a) === extractID(b) && extractREV(a) === extractREV(b)
+}
 
 export function pouchDocArrayComparator(a, b) {
-    if (!Array.isArray(a)) {
+    if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) {
         return false;
     }
-    const aIDs = a.map(extractID);
-    const bIDs = b.map(extractID);
 
-    return equals(new Set(...aIDs), new Set(...bIDs));
+    return a.every((aRec, index) => pouchDocComparator(aRec, b[index]));
 }
 
 export function isObject(obj) {

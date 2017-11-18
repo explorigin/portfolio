@@ -1,7 +1,6 @@
 import pica from 'pica/dist/pica';
 
-import { generateAttachmentUrl, getDatabase } from '../services/db.js'
-import { find, update, addAttachment } from '../data/image.js';
+import { FileType } from '../data/file.js';
 
 
 export function maxLinearSize(width, height, max) {
@@ -44,32 +43,19 @@ async function resizeImage(imageBlob, mimetype, width, height) {
     });
 }
 
-export async function generateThumbnailForImage(id) {
-    const results = await find([id], { attachments: true, binary: true });
-    const doc = results.rows[0].doc;
+export async function generateThumbnailForImage(doc) {
+    if (doc.sizes.thumbnail) { return; }
 
-    if (doc.attachmentUrls.thumbnail && doc._attachments.thumbnail) {
-        return;
-    }
-
-    const attachment = doc._attachments.image;
-    const mimetype = attachment.content_type;
+    const attachment = (await FileType.getFromURL(doc.sizes.full))
+    const mimetype = attachment.content_type || attachment.type;
     const { width, height } = maxLinearSize(doc.width, doc.height, 320);
-    const resizedBlob = await resizeImage(attachment.data, mimetype, width, height);
-    const url = generateAttachmentUrl(getDatabase().name, id, 'thumbnail');
+    const resizedBlob = await resizeImage(attachment, mimetype, width, height);
 
-    await addAttachment(doc, 'thumbnail', resizedBlob)
-    await update(
-        doc._id,
-        {
-            attachmentUrls: {
-                thumbnail: url
-            },
+    const thumbfile = await FileType.upload(resizedBlob);
+
+    await doc.update({
+        sizes: {
+            thumbnail: FileType.getURL(thumbfile)
         }
-    );
-
-    return resizedBlob;
+    });
 }
-
-
-export const invoke = generateThumbnailForImage;

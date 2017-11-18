@@ -1,7 +1,7 @@
 import { defineView as vw, defineElement as el } from 'domvm';
 import { prop, computed } from 'frptools';
+import { isObject } from '../utils/comparators.js';
 
-import * as image from '../data/image.js';
 import { AttachmentImageView } from './attachmentImage.js';
 
 export function ThumbnailView(vm, model) {
@@ -16,7 +16,7 @@ export function ThumbnailView(vm, model) {
         const { _id: id, _rev: rev, tags } = doc;
         const _showTags = showTags !== undefined ? showTags : true;
         const filteredTags = (
-            _showTags
+            _showTags && isObject(doc.tags)
             ? Object.entries(doc.tags).filter(([_, visible]) => visible)
             : []
         );
@@ -28,10 +28,7 @@ export function ThumbnailView(vm, model) {
                     onclick: {"img":[remove, id, rev]}
                 },
                 [
-                    vw(AttachmentImageView, {
-                        src: doc,
-                        attachmentKey: 'thumbnail'
-                    }),
+                    vw(AttachmentImageView, doc, doc._id+doc._rev),
                     (
                         filteredTags.length
                         ? (

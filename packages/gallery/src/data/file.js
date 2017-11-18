@@ -21,31 +21,32 @@ export const FileType = PouchDB.registerType({
     //     }
     // },
     methods: {
-        upload: async function(fileListOrEvent) {
-            const files = Array.from(
-                fileListOrEvent instanceof Event
-                ? fileListOrEvent.currentTarget.files
-                : fileListOrEvent
-            );
-            return files.map(async f => {
-                const digest = await sha256(await blobToArrayBuffer(f));
-                const file = FileType.new({
-                    name: f.name,
-                    mimetype: f.type,
-                    size: f.size,
-                    modifiedDate: new Date(f.lastModified),
-                    addDate: new Date(),
-                    digest,
-                    tags: {},
-                    _attachments: {
-                        data: {
-                            content_type: f.type,
-                            data: f
-                        }
+        getURL: doc => `/${FileType.prefix}/${doc._id}/data`,
+        getFromURL: async path => {
+            if (path.endsWith('/')) {
+                path = path.substr(0, path.length - 1);
+            }
+            const [_, db, id, attname] = path.split('/');
+            const doc = await FileType.find(id);
+            return await doc.getAttachment(attname);
+        },
+        upload: async function(blob) {
+            const digest = await sha256(await blobToArrayBuffer(blob));
+            const lastModified = blob.lastModified ? new Date(blob.lastModified) : new Date();
+            return await FileType.getOrCreate({
+                name: blob.name,
+                mimetype: blob.type,
+                size: blob.size,
+                lastModified: lastModified.toISOString(),
+                addDate: new Date().toISOString(),
+                digest,
+                tags: {},
+                _attachments: {
+                    data: {
+                        content_type: blob.type,
+                        data: blob
                     }
-                });
-                await file.save();
-                return file;
+                }
             });
         }
     }

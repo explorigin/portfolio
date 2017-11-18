@@ -16,7 +16,6 @@ export const PouchDB = core.plugin(idb)
                     .plugin(find)
                     .plugin(PouchORM);
 
-
 export function generateAttachmentUrl(dbName, docId, attachmentKey) {
     return `/_doc_attachments/${dbName}/${docId}/${attachmentKey}`;
 }
@@ -113,51 +112,61 @@ export function PouchORM(PouchDB) {
             return docOrResultSet;
         }
 
-        async function find(idOrQuery, live=false, raw=false) {
+        async function find(idOrQuery, live=false) {
             let results = [];
-            if (typeof idOrQuery === 'undefined') {
-                results = await db.find({
-                    selector: {
-                        _id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`}
-                    }
-                });
-            } else if (typeof idOrQuery === 'string') {
-                results = await db.find({
-                    selector: { _id: idOrQuery }
-                });
-            } else if (isObject(idOrQuery)) {
+
+            if (typeof idOrQuery === 'string') {
+                results = await db.get(idOrQuery);
+            } else {
+                const selector = Object.assign(
+                    { _deleted: {exists: false} },
+                    (
+                        isObject(idOrQuery)
+                        ? idOrQuery
+                        : {_id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`,}}
+                    )
+                );
                 if (live) {
                     return LiveArray(db, idOrQuery, instantiate);
                 }
-                results = await db.find({
-                    selector: idOrQuery
-                });
+                results = await db.find({ selector: idOrQuery });
             }
 
-            return raw ? results : instantiate(results);
+            return instantiate(results);
         }
 
         async function _delete() {
-            try {
-                const { ok } = await db.remove(this);
-                this.update({_id: undefined, _rev: undefined}, false);
-                return ok;
-            } catch(e) {
-                return false;
-            }
+            return await this.update({_deleted: true});
         }
 
-        function _new(props, save=false) {
+        async function _new(props, save=true) {
             const doc = instantiate(populateId(props));
             if (save) {
-                doc.save();
+                await doc.save();
+            }
+            return doc;
+        }
+
+        async function getOrCreate(props) {
+            let doc = await _new(props, false);
+            try {
+                await doc.save();
+            } catch(e) {
+                if (e.status !== 409) {
+                    throw e;
+                }
+                doc = await find(doc._id);
             }
             return doc;
         }
 
         return Object.assign({
             new: _new,
+            getOrCreate,
             find,
+            prefix,
+            db,
+            // delete: // FIXME
         }, opts.methods || {});
     };
 }
