@@ -10,6 +10,12 @@ export function error(...args) {
     }
 }
 
+export function warn(...args) {
+    if (__DEV__) {
+        console.warn(...args);
+    }
+}
+
 export function group(...args) {
     if (__DEV__) {
         console.group(...args);
