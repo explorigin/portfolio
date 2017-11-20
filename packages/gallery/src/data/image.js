@@ -8,7 +8,7 @@ class ImageSpec extends TypeSpec {
 
     static async upload(blob) {
         const f = await FileType.upload(blob, false);
-        return await ImageType.getOrCreate({
+        const doc = await ImageType.getOrCreate({
             digest: f.digest,
             originalDate: f.lastModified,
             importing: true,
@@ -18,6 +18,8 @@ class ImageSpec extends TypeSpec {
                 full: FileType.getURL(f)
             }
         });
+        processImportables(doc);
+        return doc;
     };
 
     static getUniqueID(doc) {
@@ -26,6 +28,16 @@ class ImageSpec extends TypeSpec {
 
     static getSequence(doc) {
         return new Date(doc.originalDate).getTime();
+    }
+
+    async delete(cascade=true) {
+        if (cascade) {
+            Object.keys(this.sizes).forEach(async key => {
+                const f = await FileType.getDocFromURL(this.sizes[key])
+                f.delete();
+            });
+        }
+        return await this.update({_deleted: true});
     }
     //
     // static validate(doc) {
@@ -65,10 +77,7 @@ class ImageSpec extends TypeSpec {
     // }
 }
 
-const processImportables = backgroundTask(async function _processImportables(importables) {
-    if (!importables.length) { return; }
-
-    const image = importables[0];
+const processImportables = backgroundTask(async function _processImportables(image) {
     const { _id, _rev } = image;
     const imageData = await FileType.getFromURL(image.sizes.full);
 
@@ -79,38 +88,39 @@ const processImportables = backgroundTask(async function _processImportables(imp
     const exifData = ExifParser.create(buffer).parse();
     const { tags, imageSize } = exifData;
     const { width, height } = imageSize;
+    const { sizes, digest } = image;
     const originalDate = new Date(
         tags.DateTimeOriginal
         ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
         : image.originalDate
     ).toISOString();
 
-    const img = await ImageType.getOrCreate({
+    await image.update({
         originalDate,
         width,
         height,
         orientation: tags.Orientation,
-        digest: image.digest,
+        digest,
         make: tags.Make,
         model: tags.Model,
         flash: !!tags.Flash,
         iso: tags.ISO,
-        sizes: image.sizes,
+        sizes,
         gps: {
             latitude: tags.GPSLatitude,
             longitude: tags.GPSLongitude,
             altitude: tags.GPSAltitude,
             heading: tags.GPSImgDirection,
         }
-    });
-
-    image.delete();
+    }, false);
+    delete image.importing;
+    await image.save();
 
     const module = await import('../context/generateThumbnails');
-    await module.generateThumbnailForImage(img);
+    module.generateThumbnailForImage(image);
 }, false);
 
 export const ImageType = PouchDB.registerType("Image", ImageSpec);
 
-ImageType.find({importing: true}, true)
-    .then(fw => fw.subscribe(processImportables));
+ImageType.find({importing: true})
+    .then(results => results.forEach(processImportables));

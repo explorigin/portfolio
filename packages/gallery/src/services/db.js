@@ -132,6 +132,8 @@ export function PouchORM(PouchDB) {
         Object.defineProperties(cls, {
             getOrCreate: { value: getOrCreate },
             find: { value: find },
+            db: { value: _db },
+            name: { value: name },
         });
 
         return cls;

@@ -9,7 +9,7 @@ export function Watcher(db, selector, include_docs) {
         subscribers.add(fn);
 
         if (subscribers.size === 1 && !changes) {
-            log('Watching:', db, selector);
+            log(`Watching "${db.name}" for ${JSON.stringify(selector)}`);
             changes = db.changes({
                 since: 'now',
                 live: true,
@@ -17,8 +17,8 @@ export function Watcher(db, selector, include_docs) {
                 selector
             })
             .on("change", change => {
-                log('changed:', change);
                 const { id, deleted, doc } = change;
+                log(`Change from "${db.name}" for ${JSON.stringify(selector)} ${id} ${deleted ? 'deleted' : ''}`);
                 subscribers.forEach(s => s(id, !!deleted, doc));
             })
             .on("error", err => {
