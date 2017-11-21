@@ -19,7 +19,7 @@ export const PouchDB = core.plugin(idb)
 export class TypeSpec {
     constructor(props) {
         this._populateId(props);
-        Object.assign(this, props);
+        Object.assign(this, props, { type: this._prefix });
     }
 
     static getSequence(doc) { return ''; }
@@ -83,6 +83,9 @@ export function PouchORM(PouchDB) {
     PouchDB.registerType = (name, cls, db) => {
         const prefix = name.toLowerCase();
         const _db = db || PouchDB(prefix);
+        const _baseSelector = Object.freeze({
+            _id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`,}
+        });
 
         if (!cls.hasOwnProperty('validate')) {
             warn(`${cls.name} has no validation.`)
@@ -106,7 +109,7 @@ export function PouchORM(PouchDB) {
                 (
                     isSelector
                     ? idOrSelector
-                    : {_id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`,}}
+                    : _baseSelector
                 )
             );
             if (live) {
@@ -145,6 +148,7 @@ export function PouchORM(PouchDB) {
             _prefix: { value: prefix },
             _db: { value: _db },
             _cls: { value: cls },
+            _baseSelector: { value: _baseSelector }
         });
 
         Object.defineProperties(cls, {
@@ -153,6 +157,7 @@ export function PouchORM(PouchDB) {
             delete: { value: _delete },
             db: { value: _db },
             name: { value: name },
+            selector: { value: _baseSelector }
         });
 
         return cls;
