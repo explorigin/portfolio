@@ -1,5 +1,4 @@
 import { PouchDB, TypeSpec } from '../services/db.js';
-import { log } from '../services/console.js';
 import { sha256 } from '../utils/crypto.js';
 import { blobToArrayBuffer } from '../utils/conversion.js';
 

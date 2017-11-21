@@ -90,23 +90,29 @@ export function PouchORM(PouchDB) {
 
         const instantiate = (doc) => new cls(doc);
 
-        async function find(idOrQuery, live=false) {
-            if (typeof idOrQuery === 'string') {
-                return instantiate(await _db.get(idOrQuery));
+        async function find(idOrSelector, live=false) {
+            if (typeof idOrSelector === 'string') {
+                return instantiate(await _db.get(idOrSelector));
             }
 
+            const isSelector = isObject(idOrSelector);
+
             const selector = Object.assign(
-                { _deleted: {exists: false} },
                 (
-                    isObject(idOrQuery)
-                    ? idOrQuery
+                    isSelector && idOrSelector._deleted
+                    ? { _deleted: true }
+                    : { _deleted: {exists: false} }
+                ),
+                (
+                    isSelector
+                    ? idOrSelector
                     : {_id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`,}}
                 )
             );
             if (live) {
-                return LiveArray(_db, idOrQuery, instantiate);
+                return LiveArray(_db, idOrSelector, instantiate);
             }
-            return (await _db.find({ selector: idOrQuery })).docs.map(instantiate);
+            return (await _db.find({ selector: idOrSelector })).docs.map(instantiate);
         }
 
         async function getOrCreate(props) {
@@ -122,6 +128,18 @@ export function PouchORM(PouchDB) {
             return doc;
         }
 
+        async function _delete(id) {
+            try {
+                const doc = await find(id);
+                doc._deleted = true;
+                await _db.put(doc);
+            } catch(e) {
+                if (e.status !== 404) {
+                    throw e;
+                }
+            }
+        }
+
         Object.defineProperties(cls.prototype, {
             _name: { value: name },
             _prefix: { value: prefix },
@@ -132,6 +150,7 @@ export function PouchORM(PouchDB) {
         Object.defineProperties(cls, {
             getOrCreate: { value: getOrCreate },
             find: { value: find },
+            delete: { value: _delete },
             db: { value: _db },
             name: { value: name },
         });

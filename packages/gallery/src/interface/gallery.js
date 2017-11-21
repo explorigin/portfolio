@@ -1,7 +1,6 @@
 import { defineView as vw } from 'domvm';
 import { ImageType } from '../data/image.js';
-// import * as index from '../data/indexType.js';
-// import * as imageTag from '../context/manageImageTags.js';
+import { AlbumType } from '../data/album.js';
 import { ThumbnailView } from './thumbnail.js';
 import { AlbumView } from './album.js';
 import { router, routeChanged } from '../services/router.js';
@@ -17,10 +16,10 @@ export function GalleryView(vm, model) {
             }, true),
             title: 'Images'
         },
-        // albums: {
-        //     selector: index.SELECTOR,
-        //     title: 'Albums'
-        // }
+        albums: {
+            data: AlbumType.find({}, true),
+            title: 'Albums'
+        }
     };
 
     let data = null;
@@ -31,12 +30,26 @@ export function GalleryView(vm, model) {
         Array.from(evt.currentTarget.files).forEach(ImageType.upload);
     }
 
+    function deleteImage(i) {
+        ImageType.delete(i._id);
+    }
+
+    function addAlbum() {
+        const a = new AlbumType({
+            title: prompt("Album Name"),
+            members: []
+        });
+        a.save();
+    }
+
     routeChanged.subscribe(function onRouteChange(router, route) {
         if (laCleanup) {
             laCleanup();
         }
         const o = NAV_OPTIONS[route.name];
         title = o.title;
+        vm.redraw();
+
         return o.data.then(la => {
             data = la;
             laCleanup = data.subscribe(() => {
@@ -50,6 +63,7 @@ export function GalleryView(vm, model) {
         return el('.gallery', [
             header([
                 el('div', { css: { fontSize: '20pt' } }, 'Gallery'),
+                el('button', { onclick: addAlbum }, "Add Album"),
                 el('input#fInput',
                     {
                         type: "file",
@@ -73,7 +87,7 @@ export function GalleryView(vm, model) {
                                 doc: i,
                                 showTags: true,
                                 // addTag: imageTag.add,
-                                remove: i.delete.bind(i),
+                                remove: deleteImage,
                                 // removeTag: imageTag.remove
                             },
                             i._id + i._rev);
@@ -81,7 +95,6 @@ export function GalleryView(vm, model) {
                         : data().map(a => {
                             return vw(AlbumView, {
                                 doc: a,
-                                db,
                                 // addTag: imageTag.add,
                                 // remove: imageTag.remove
                             },

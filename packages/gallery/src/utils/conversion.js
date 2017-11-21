@@ -1,4 +1,5 @@
 import { readAsArrayBuffer } from 'pouchdb-binary-utils';
+import { isObject } from './comparators';
 
 export function bufferToHexString(buffer) {
     const hexCodes = [];
@@ -19,6 +20,14 @@ export function bufferToHexString(buffer) {
 export function blobToArrayBuffer(blob) {
     return new Promise(resolve => readAsArrayBuffer(blob, resolve));
 }
+
+export const arrayHashWrapper = hash => arr => Array.isArray(arr) ? arr.map(hash).join('?') : arr;
+
+export function pouchDocHash(d) {
+    return isObject(d) ? `${d._id}:${d._rev}` : d;
+}
+
+export const pouchDocArrayHash = arrayHashWrapper(pouchDocHash);
 
 export function deepAssign(to, ...rest) {
     for (let src of rest) {

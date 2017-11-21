@@ -25,7 +25,7 @@ export function ThumbnailView(vm, model) {
             el(
                 `figure#${doc._id}.image`,
                 {
-                    onclick: {"img":[remove, id, rev]}
+                    onclick: {"img":[remove, doc]}
                 },
                 [
                     vw(AttachmentImageView, doc, doc._id+doc._rev),

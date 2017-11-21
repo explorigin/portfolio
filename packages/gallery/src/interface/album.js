@@ -1,46 +1,78 @@
 import { defineView, defineElement as el } from 'domvm';
-import * as image from '../data/image.js';
+
+import { ImageType } from '../data/image.js';
+import { FileType } from '../data/file.js';
+import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
 import { ThumbnailView } from './thumbnail.js';
-import { LiveArray } from '../utils/livearray.js';
+import { prop, computed, bundle } from 'frptools';
 
+export function AlbumView(vm, params) {
+    const model = prop({}, pouchDocHash)
+    const images = prop([], pouchDocArrayHash);
 
-export function AlbumView(vm, model) {
-    const { remove, db } = model;
-    let data = null;
-    let title = null;
+    const id = computed(pouchDocHash, [model]);
+    const members = computed(d => d.members, [model]);  // always update
+    const title = computed(d => d.title, [model]);  // always update
 
-    function removeImageFromAlbum(id, rev) {
-        remove(title, id);
+    let laCleanup = null;
+
+    id.subscribe(async () => {
+        const la = await ImageType.find({
+            _id: {$in: members()}
+        }, true);
+
+        function refresh() {
+            images(la());
+            vm.redraw();
+        }
+
+        if (laCleanup) {
+            laCleanup();
+        }
+
+        laCleanup = la.subscribe(refresh);
+        la.ready.subscribe(refresh)
+    });
+
+    function removeImageFromAlbum(image) {
+        model().removeMember(image._id);
     }
 
-    return function(vm, model, key, opts) {
-        const { doc, remove } = model;
-        const { props } = doc;
+    function removeAlbum() {
+        model().delete();
+    }
 
-        if (title !== props.title) {
-            if (data) {
-                data.cleanup();
-            }
-            title = props.title;
-            const SELECTOR = Object.assign({
-                [`tags.${title}`]: {$eq: true}},
-                image.SELECTOR
-            );
+    function uploadImages(album, evt) {
+        Promise.all(Array.from(evt.currentTarget.files).map(ImageType.upload))
+        .then(images => {
+            images.forEach(i => album.addMember(i._id));
+        });
+    }
 
-            data = LiveArray(db, SELECTOR);
-            data.subscribe(() => vm.redraw());
-        }
-        const images = data();
+    model(params.doc);
+
+    return function(vm, params, key, opts) {
+        model(params.doc);
 
         return el('.album', [
-            el('h2', [ title ]),
-            ...images.map(i => {
+            el('h2', [
+                title(),
+                el('button', { onclick: removeAlbum }, 'X')
+            ]),
+            el('input#fInput',
+                {
+                    type: "file",
+                    multiple: true,
+                    accept: "image/jpeg",
+                    onchange: [uploadImages, model()]
+                }
+            ),
+            ...images().map(i => {
                 return defineView(ThumbnailView, {
                     doc: i,
                     showTags: false,
-                    remove: removeImageFromAlbum
-                },
-                i._id)
+                    remove: removeImageFromAlbum,
+                }, id())
             })
         ]);
     };

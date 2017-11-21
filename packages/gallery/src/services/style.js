@@ -3,12 +3,12 @@ import { injectStyle as _injectStyle } from 'styletron-utils';
 import { defineElement } from 'domvm';
 import { isObject } from '../utils/comparators.js';
 
+
 const styletronSingleton = new Styletron();
 
 export function injectStyle(...styles) {
     return _injectStyle(styletronSingleton, Object.assign({}, ...styles));
 }
-
 
 export function el(sig, ...attrsOrChildren) {
     let attrs = {};

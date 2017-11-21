@@ -1,7 +1,7 @@
 import { prop, computed } from 'frptools';
 
 import { Watcher } from './watcher.js';
-import { pouchDocArrayComparator } from './comparators.js';
+import { pouchDocArrayHash } from './conversion.js';
 
 
 // LiveArray is a subscribable property function that always returns the db results that match the provided selector and calls subscribers when the results change.
@@ -12,7 +12,7 @@ export function LiveArray(db, selector, mapper) {
 
     const ready = prop(false);
     const data = prop({docs: []});
-    const docs = computed(r => r.docs.map(_mapper), [data], pouchDocArrayComparator);
+    const docs = computed(r => r.docs.map(_mapper), [data], pouchDocArrayHash);
 
     const cleanup = () => {
         docs.unsubscribeAll();
