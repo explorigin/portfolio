@@ -1,4 +1,5 @@
 const { prop, computed } = require('../lib/index.js');
+const { hashSet } = require('../lib/util.js');
 
 describe('computed', () => {
     const add = (a, b) => a + b;
@@ -149,15 +150,6 @@ describe('computed', () => {
     });
 
     it('uses a comparator', () => {
-        function setEquals(a, b) {
-            return (
-                a instanceof Set
-                && b instanceof Set
-                && [...a].reduce((acc, d) => acc && b.has(d), true)
-                && [...b].reduce((acc, d) => acc && a.has(d), true)
-            );
-        }
-
         let runCount = 0;
 
         function intersection(a, b) {
@@ -165,9 +157,9 @@ describe('computed', () => {
             return new Set([...a].filter(x => b.has(x)));
         }
 
-        const a = prop(new Set([1, 2]), setEquals);
-        const b = prop(new Set([2, 3]), setEquals);
-        const ABintersection = computed(intersection, [a, b], setEquals);
+        const a = prop(new Set([1, 2]), hashSet);
+        const b = prop(new Set([2, 3]), hashSet);
+        const ABintersection = computed(intersection, [a, b], hashSet);
 
         expect(runCount).toEqual(0);
         expect([...ABintersection()]).toEqual([2]);

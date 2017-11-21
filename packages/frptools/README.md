@@ -43,21 +43,21 @@ const remainingSubscriptionCount = unsubscribe();
 inViewport.unsubscribeAll(); // Call unsubscribeAll to remove child property/computed subscriptions.
 ```
 
-### Provide a comparator for complex types
+### Provide a hash function for complex types
 
-When storing a type that is not determined to be equal with simple equality (===), provide a function to determine in the new provided value should be propagated to dependents.
+When storing a type that is not determined to be equal with simple equality (===), provide a hash function to be used for simple comparison to determine if the new provided value should be propagated to dependents.
 
 ```js
-    function setEquals(a, b) {
-        return (
-            a instanceof Set
-            && b instanceof Set
-            && [...a].reduce((acc, d) => acc && b.has(d), true)
-            && [...b].reduce((acc, d) => acc && a.has(d), true)
-        );
+    function hashSet(_a) {
+        if (_a instanceof Set) {
+            return Array.from(_a.keys())
+                .sort()
+                .map(k => `${(typeof k).substr(0, 1)}:${encodeURIComponent(k)}/`).join('?');
+        }
+        return _a
     }
 
-    const a = prop(new Set([1, 2]), setEquals);
+    const a = prop(new Set([1, 2]), hashSet);
 ```
 
 # [computed](./src/computed.js)
@@ -121,27 +121,27 @@ showDialog.detach(); // Call detach to remove this computed from the logic tree.
 showDialog.unsubscribeAll(); // Call unsubscribeAll to remove child property/computed subscriptions.
 ```
 
-### Provide a comparator for complex types
+### Provide a hash function for complex types
 
-When the computed result is a type that is not determined to be equal with simple equality (===), provide a function to determine in the new provided value should be propagated to dependents.
+When the computed result is a type that is not determined to be equal with simple equality (===), provide a hash function to be used for simple comparison to determine if the new provided value should be propagated to dependents.
 
 ```js
-    function setEquals(a, b) {
-        return (
-            a instanceof Set
-            && b instanceof Set
-            && [...a].reduce((acc, d) => acc && b.has(d), true)
-            && [...b].reduce((acc, d) => acc && a.has(d), true)
-        );
+    function hashSet(_a) {
+        if (_a instanceof Set) {
+            return Array.from(_a.keys())
+                .sort()
+                .map(k => `${(typeof k).substr(0, 1)}:${encodeURIComponent(k)}/`).join('?');
+        }
+        return _a
     }
 
     function _intersection(a, b) {
         return new Set([...a].filter(x => b.has(x)));
     }
 
-    const a = prop(new Set([1, 2]), setEquals);
-    const b = prop(new Set([2, 3]), setEquals);
-    const intersection = computed(_intersection, [a, b], setEquals);
+    const a = prop(new Set([1, 2]), hashSet);
+    const b = prop(new Set([2, 3]), hashSet);
+    const intersection = computed(_intersection, [a, b], hashSet);
 ```
 
 # [bundle](./src/bundle.js)

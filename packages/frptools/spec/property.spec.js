@@ -1,4 +1,5 @@
 const { prop } = require('../lib/index.js');
+const { hashSet } = require('../lib/util.js');
 
 describe('A property', () => {
     it('returns its initialized value', () => {
@@ -63,19 +64,10 @@ describe('A property', () => {
     });
 
 
-    it('uses a comparator', () => {
-        function setEquals(a, b) {
-            return (
-                a instanceof Set
-                && b instanceof Set
-                && [...a].reduce((acc, d) => acc && b.has(d), true)
-                && [...b].reduce((acc, d) => acc && a.has(d), true)
-            );
-        }
-
+    it('uses a hash function', () => {
         let runCount = 0
 
-        const a = prop(new Set([1, 2]), setEquals);
+        const a = prop(new Set([1, 2]), hashSet);
         a.subscribe(() => runCount += 1);
         expect([...a()]).toEqual([1, 2]);
         expect(runCount).toEqual(0);

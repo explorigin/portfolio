@@ -1,10 +1,13 @@
-import { eq } from './util.js';
+import { id } from './util.js';
 
-export function prop(store, comparator=eq) {
+export function prop(store, hash=id) {
     const subscribers = new Set();
+    let id = hash(store);
 
     const accessor = function _prop(newVal) {
-        if (newVal !== undefined && !comparator(store, newVal)) {
+        const newId = hash(newVal);
+        if (newVal !== undefined && id !== newId) {
+            id = newId;
             store = newVal;
             subscribers.forEach(s => s(store));
         }

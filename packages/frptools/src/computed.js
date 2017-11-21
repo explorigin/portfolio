@@ -1,10 +1,11 @@
-import { eq } from './util.js';
+import { id } from './util.js';
 
-export function computed(fn, dependencies = [], comparator=eq) {
+export function computed(fn, dependencies = [], hash=id) {
     const subscribers = new Set();
     const dependents = new Set();
     let isDirty = true;
     let val;
+    let id;
 
     // Receive dirty flag from parent logic node (dependency).  Pass it down.
     function _computedDirtyReporter(_, skipPropagation) {
@@ -27,7 +28,9 @@ export function computed(fn, dependencies = [], comparator=eq) {
         if (isDirty) {
             const newVal = fn.apply(null, dependencies.map(runParam));
             isDirty = false;
-            if (!comparator(val, newVal)) {
+            const newId = hash(newVal);
+            if (id !== newId) {
+                id = newId;
                 val = newVal;
                 subscribers.forEach(s => s(val));
             }
