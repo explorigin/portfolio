@@ -5,7 +5,6 @@ import { FileType } from './file.js';
 
 
 class ImageSpec extends TypeSpec {
-
     static async upload(blob) {
         const f = await FileType.upload(blob, false);
         const doc = await ImageType.getOrCreate({
@@ -95,6 +94,7 @@ const processImportables = backgroundTask(async function _processImportables(ima
         : image.originalDate
     ).toISOString();
 
+    delete image.importing;
     await image.update({
         originalDate,
         width,
@@ -112,9 +112,7 @@ const processImportables = backgroundTask(async function _processImportables(ima
             altitude: tags.GPSAltitude,
             heading: tags.GPSImgDirection,
         }
-    }, false);
-    delete image.importing;
-    await image.save();
+    });
 
     const module = await import('../context/generateThumbnails');
     module.generateThumbnailForImage(image);

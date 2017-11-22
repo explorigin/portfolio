@@ -19,7 +19,7 @@ export const PouchDB = core.plugin(idb)
 export class TypeSpec {
     constructor(props) {
         this._populateId(props);
-        Object.assign(this, props, { type: this._prefix });
+        Object.assign(this, { $links: {} }, props, { type: this._prefix });
     }
 
     static getSequence(doc) { return ''; }

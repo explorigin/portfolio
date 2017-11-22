@@ -89,19 +89,12 @@ export function GalleryView(vm, model) {
                             return vw(ThumbnailView, {
                                 doc: i,
                                 showTags: true,
-                                // addTag: imageTag.add,
                                 remove: deleteImage,
-                                // removeTag: imageTag.remove
                             },
                             i._id + i._rev);
                         })
                         : data().map(a => {
-                            return vw(AlbumView, {
-                                doc: a,
-                                // addTag: imageTag.add,
-                                // remove: imageTag.remove
-                            },
-                            a._id + a._rev)
+                            return vw(AlbumView, a, a._id + a._rev)
                         })
                     )                ]
             )

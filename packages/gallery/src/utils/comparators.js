@@ -1,7 +1,5 @@
-import { pick } from './conversion.js';
+import { extractID, extractREV } from './conversion.js';
 
-const extractID = pick('_id');
-const extractREV = pick('_rev');
 
 export function pouchDocComparator(a, b) {
     return extractID(a) === extractID(b) && extractREV(a) === extractREV(b)

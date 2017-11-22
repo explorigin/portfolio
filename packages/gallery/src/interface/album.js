@@ -6,7 +6,7 @@ import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
 import { ThumbnailView } from './thumbnail.js';
 import { prop, computed, bundle } from 'frptools';
 
-export function AlbumView(vm, params) {
+export function AlbumView(vm, doc) {
     const model = prop({}, pouchDocHash)
     const images = prop([], pouchDocArrayHash);
 
@@ -16,55 +16,49 @@ export function AlbumView(vm, params) {
 
     let laCleanup = null;
 
-    id.subscribe(async () => {
-        const la = await ImageType.find({
-            _id: {$in: members()}
-        }, true);
+    model.subscribe(async album => {
+        if (!album.findImages) { return; }
+        const imagesLiveArray = await album.findImages(true);
+
+        if (laCleanup) { laCleanup(); }
 
         function refresh() {
-            images(la());
+            images(imagesLiveArray());
             vm.redraw();
         }
 
-        if (laCleanup) {
-            laCleanup();
-        }
-
-        laCleanup = la.subscribe(refresh);
-        la.ready.subscribe(refresh)
+        laCleanup = imagesLiveArray.subscribe(refresh);
+        imagesLiveArray.ready.subscribe(refresh)
     });
 
     function removeImageFromAlbum(image) {
-        model().removeMember(image._id);
+        model().removeImage(image);
     }
 
-    function removeAlbum() {
-        model().delete();
+    function removeAlbum(album) {
+        album.delete();
     }
 
     function uploadImages(album, evt) {
-        Promise.all(Array.from(evt.currentTarget.files).map(ImageType.upload))
-        .then(images => {
-            images.forEach(i => album.addMember(i._id));
-        });
+        Array.from(evt.currentTarget.files).forEach(f => album.addImageBlob(f));
     }
 
-    model(params.doc);
+    model(doc);
 
-    return function(vm, params, key, opts) {
-        model(params.doc);
+    return function(vm, album, key, opts) {
+        model(album);
 
         return el('.album', [
             el('h2', [
                 title(),
-                el('button', { onclick: removeAlbum }, 'X')
+                el('button', { onclick: [removeAlbum, album] }, 'X')
             ]),
             el('input#fInput',
                 {
                     type: "file",
                     multiple: true,
                     accept: "image/jpeg",
-                    onchange: [uploadImages, model()]
+                    onchange: [uploadImages, album]
                 }
             ),
             ...images().map(i => {

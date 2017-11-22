@@ -1,5 +1,6 @@
 import { PouchDB, TypeSpec } from '../services/db.js';
-import { log } from '../services/console.js';
+import { ImageType } from '../data/image.js';
+import { extractID } from '../utils/conversion.js';
 
 
 class AlbumSpec extends TypeSpec {
@@ -7,23 +8,48 @@ class AlbumSpec extends TypeSpec {
         return doc.title.trim().replace(/[ \-~!@#$%^&]/g, '_').toLowerCase();
     }
 
-    async addMember(member, position) {
-        const currentPosition = this.members.indexOf(member);
-        const newPosition = position ? position : this.members.length;
-        if (currentPosition !== -1) {
-            this.members.splice(currentPosition, 1);
-        }
-        this.members.splice(newPosition, 0, member);
-        await this.save();
+    async findImages(live=false) {
+        return await ImageType.find(Object.assign(
+            { [`$links.${this._id}`]: {$exists: true} },
+            ImageType.selector
+        ), live);
     }
 
-    async removeMember(member) {
-        const currentPosition = this.members.indexOf(member);
-
-        if (currentPosition !== -1) {
-            this.members.splice(currentPosition, 1);
+    async addImage(image) {
+        if (!image.$links[this._id]) {
+            await image.update({
+                $links: {
+                    [this._id]: {
+                        sequence: this.count
+                    }
+                }
+            });
+            this.count += 1;
             await this.save();
         }
+        return image;
+    }
+
+    async removeImage(image) {
+        if (image.$links[this._id]) {
+            delete image.$links[this._id];
+            this.count -= 1;
+            await image.save();
+            await this.save();
+        }
+        return image;
+    }
+
+    async addImageBlob(blob) {
+        return await this.addImage(await ImageType.upload(blob));
+    }
+
+    async delete(cascade=true) {
+        if (cascade) {
+            const images = await this.findImages();
+            images.map(async i => await this.removeImage(i));
+        }
+        return await this.update({_deleted: true});
     }
 
     //
@@ -32,10 +58,8 @@ class AlbumSpec extends TypeSpec {
     //
     //     const schema = {
     //         title: t.REQUIRED_STRING,
-    //         members: {
-    //             type: "array",
-    //             items: t.STRING
-    //         }
+    //         createdDate: t.REQUIRED_DATE,
+    //         count: t.REQUIRED_INTEGER
     //     };
     // }
 }
