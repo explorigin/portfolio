@@ -35,11 +35,14 @@ export function GalleryView(vm, model) {
     }
 
     function addAlbum() {
-        const a = new AlbumType({
-            title: prompt("Album Name"),
-            members: []
-        });
-        a.save();
+        const albumName = prompt("Album Name");
+        if (albumName && albumName.trim()) {
+            const a = new AlbumType({
+                title: albumName.trim(),
+                count: 0
+            });
+            a.save();
+        }
     }
 
     routeChanged.subscribe(function onRouteChange(router, route) {
