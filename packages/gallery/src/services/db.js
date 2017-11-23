@@ -7,7 +7,7 @@ import find from 'pouchdb-find';
 import { log, warn } from './console.js';
 import { isObject } from '../utils/comparators.js';
 import { LiveArray } from '../utils/livearray.js';
-import { deepAssign } from '../utils/conversion.js';
+import { deepAssign, pouchDocHash } from '../utils/conversion.js';
 
 
 export const PouchDB = core.plugin(idb)
@@ -37,6 +37,10 @@ export class TypeSpec {
             doc._id = `${this._prefix}_${this._cls.getSequence(doc)}_${this._cls.getUniqueID(doc)}`;
         }
         return doc;
+    }
+
+    _hash() {
+        return pouchDocHash(this);
     }
 
     async delete() {

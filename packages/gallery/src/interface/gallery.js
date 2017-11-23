@@ -3,8 +3,9 @@ import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
 import { ThumbnailView } from './thumbnail.js';
 import { AlbumView } from './album.js';
+import { Dropzone } from './dropzone.js';
 import { router, routeChanged } from '../services/router.js';
-import { styled, el } from '../services/style.js';
+import { injectStyle, styled, el } from '../services/style.js';
 
 
 export function GalleryView(vm, model) {
@@ -26,8 +27,8 @@ export function GalleryView(vm, model) {
     let laCleanup = null;
     let title = "";
 
-    function uploadImages(evt) {
-        Array.from(evt.currentTarget.files).forEach(ImageType.upload);
+    function uploadImages(files) {
+        Array.from(files).forEach(ImageType.upload);
     }
 
     function deleteImage(i) {
@@ -62,44 +63,53 @@ export function GalleryView(vm, model) {
         });
     });
 
-    return function(vm, model, key, opts) {
-        return el('.gallery', [
+    function renderDropzone() {
+        return [
+            el('a', { href: router.href('images') }, 'Images'),
+            el('a', { href: router.href('albums') }, 'Albums'),
+            el('h1', title),
+            ...(
+                title === 'Images'
+                ? data().map(i => {
+                    return vw(ThumbnailView, {
+                        doc: i,
+                        showTags: true,
+                        remove: deleteImage,
+                    },
+                    i._hash());
+                })
+                : data().map(a => {
+                    return vw(AlbumView, a, a._hash())
+                })
+            )
+        ];
+    }
+
+    return function render(vm, params, key, opts) {
+        if (!data || !data.ready()) {
+            return el('h1', "Loading...");
+        }
+
+        return el('.gallery', { class: slate },
             header([
                 el('div', { css: { fontSize: '20pt' } }, 'Gallery'),
-                el('button', { onclick: addAlbum }, "Add Album"),
-                el('input#fInput',
-                    {
-                        type: "file",
-                        multiple: true,
-                        accept: "image/jpeg",
-                        onchange: uploadImages
-                    }
-                )
+                headerRight({
+                    css: { visibility: /* selectMode */ true ? 'visible' : 'hidden' }
+                }, [
+                    el('button', { onclick: addAlbum }, "Add Album")
+                ])
             ]),
-            ...(
-                (!data || !data.ready())
-                ? [el('h1', "Loading...")]
-                : [
-                    el('a', { href: router.href('images') }, 'Images'),
-                    el('a', { href: router.href('albums') }, 'Albums'),
-                    el('h1', title),
-                    ...(
-                        title === 'Images'
-                        ? data().map(i => {
-                            return vw(ThumbnailView, {
-                                doc: i,
-                                showTags: true,
-                                remove: deleteImage,
-                            },
-                            i._id + i._rev);
-                        })
-                        : data().map(a => {
-                            return vw(AlbumView, a, a._id + a._rev)
-                        })
-                    )                ]
-            )
-        ]);
-    };
+            vw(Dropzone, {
+                className: slate,
+                activeClassName: 'dropHover',
+                ondrop: uploadImages,
+                type: "file",
+                multiple: true,  // FIXME - these don't carry through to the input tag
+                accept: "image/jpeg",
+                children: renderDropzone()
+            }, 'dz')
+        );
+    }
 }
 
 const header = styled({
@@ -108,4 +118,16 @@ const header = styled({
     zIndex: 1,
     display: 'flex',
     alignItems: 'center',
+});
+
+const headerRight = styled({
+    display: 'flex',
+    alignItems: 'center'
+});
+
+const slate = injectStyle({
+    display: 'flex',
+    flex: 1,
+    flexDirection: 'column',
+    // overflow: 'hidden',
 });
