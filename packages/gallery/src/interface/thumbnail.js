@@ -1,4 +1,4 @@
-import { defineView as vw, defineElement as el } from 'domvm';
+import { defineView as vw, defineElement as el } from '../utils/domvm.js';
 import { prop, computed } from 'frptools';
 import { isObject } from '../utils/comparators.js';
 

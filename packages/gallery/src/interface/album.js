@@ -1,4 +1,4 @@
-import { defineView, defineElement as el } from 'domvm';
+import { defineView, defineElement as el } from '../utils/domvm.js';
 
 import { ImageType } from '../data/image.js';
 import { FileType } from '../data/file.js';

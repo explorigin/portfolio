@@ -1,4 +1,4 @@
-import { defineView as vw } from 'domvm';
+import { defineView as vw } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
 import { ThumbnailView } from './thumbnail.js';

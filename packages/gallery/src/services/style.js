@@ -1,6 +1,6 @@
 import Styletron from 'styletron';
 import { injectStyle as _injectStyle } from 'styletron-utils';
-import { defineElement } from 'domvm';
+import { defineElement } from '../utils/domvm.js';
 import { isObject } from '../utils/comparators.js';
 
 

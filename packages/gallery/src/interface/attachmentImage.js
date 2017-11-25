@@ -1,4 +1,4 @@
-import { defineElement as el } from 'domvm';
+import { defineElement as el } from '../utils/domvm.js';
 import { prop, computed, bundle } from 'frptools';
 
 import { ImageType } from '../data/image.js';

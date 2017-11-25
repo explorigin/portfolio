@@ -1,5 +1,4 @@
-// import { createView } from 'domvm/dist/dev/domvm.dev.js';
-import { createView } from 'domvm/dist/micro/domvm.micro.js';
+import { createView } from './utils/domvm.js';
 
 import * as styles from './app.css';
 import { GalleryView } from './interface/gallery.js';
