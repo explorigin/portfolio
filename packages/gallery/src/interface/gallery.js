@@ -1,15 +1,16 @@
-import { defineView as vw } from '../utils/domvm.js';
+import { prop } from 'frptools';
+
+import { defineView as vw, defineElement as el } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
 import { ThumbnailView } from './thumbnail.js';
 import { AlbumView } from './album.js';
 import { Dropzone } from './dropzone.js';
 import { router, routeChanged } from '../services/router.js';
-import { injectStyle, styled, el } from '../services/style.js';
+import { injectStyle, styled } from '../services/style.js';
 
 
 export function GalleryView(vm, model) {
-    const { db } = model;
     const NAV_OPTIONS = {
         images: {
             data: ImageType.find({
@@ -25,7 +26,7 @@ export function GalleryView(vm, model) {
 
     let data = null;
     let laCleanup = null;
-    let title = "";
+    const title = prop('');
 
     function uploadImages(files) {
         Array.from(files).forEach(ImageType.upload);
@@ -51,15 +52,13 @@ export function GalleryView(vm, model) {
             laCleanup();
         }
         const o = NAV_OPTIONS[route.name];
-        title = o.title;
-        vm.redraw();
+        title(o.title);
 
         return o.data.then(la => {
             data = la;
             laCleanup = data.subscribe(() => {
                 vm.redraw()
             });
-            data.ready.subscribe(() => vm.redraw);
         });
     });
 
@@ -69,11 +68,10 @@ export function GalleryView(vm, model) {
             el('a', { href: router.href('albums') }, 'Albums'),
             el('h1', title),
             ...(
-                title === 'Images'
+                title() === 'Images'
                 ? data().map(i => {
                     return vw(ThumbnailView, {
                         doc: i,
-                        showTags: true,
                         remove: deleteImage,
                     },
                     i._hash());
@@ -90,7 +88,7 @@ export function GalleryView(vm, model) {
             return el('h1', "Loading...");
         }
 
-        return el('.gallery', { class: slate },
+        return el('.gallery', { class: slate }, [
             header([
                 el('div', { css: { fontSize: '20pt' } }, 'Gallery'),
                 headerRight({
@@ -106,9 +104,9 @@ export function GalleryView(vm, model) {
                 type: "file",
                 multiple: true,  // FIXME - these don't carry through to the input tag
                 accept: "image/jpeg",
-                children: renderDropzone()
+                children: renderDropzone
             }, 'dz')
-        );
+        ]);
     }
 }
 

@@ -94,3 +94,10 @@ export function backgroundTask(fn, initialDelay=500) {
 
     return wrapper;
 }
+
+export const streamConfig = {
+    is:    s => s && typeof s.subscribe === 'function',
+    val:  s => s(),
+    sub:  (s, fn) => s.subscribe(fn),
+    unsub:  s => s(),
+}

@@ -2,7 +2,7 @@ import Styletron from 'styletron';
 import { injectStyle as _injectStyle } from 'styletron-utils';
 import { defineElement } from '../utils/domvm.js';
 import { isObject } from '../utils/comparators.js';
-
+import { streamConfig } from '../utils/event.js';
 
 const styletronSingleton = new Styletron();
 
@@ -13,7 +13,7 @@ export function injectStyle(...styles) {
 export function el(sig, ...attrsOrChildren) {
     let attrs = {};
     let children = attrsOrChildren;
-    if (attrsOrChildren.length && isObject(attrsOrChildren[0])) {
+    if (attrsOrChildren.length && isObject(attrsOrChildren[0]) && !streamConfig.is(attrsOrChildren[0])) {
         attrs = attrsOrChildren[0];
         children = attrsOrChildren.slice(1);
         if (isObject(attrs.css)) {
@@ -29,6 +29,9 @@ export function el(sig, ...attrsOrChildren) {
                 return acc;
             }, []).join(' ');
         }
+    }
+    if (children.length === 1 && streamConfig.is(attrsOrChildren[0])) {
+        children = children[0]; 
     }
     return defineElement(sig, attrs, children);
 }

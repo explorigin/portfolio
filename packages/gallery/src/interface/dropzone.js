@@ -1,5 +1,6 @@
 import { prop, computed } from 'frptools';
-import { injectStyle, el } from '../services/style';
+import { injectStyle } from '../services/style';
+import { defineElement as el } from '../utils/domvm.js';
 
 
 const CSS_DROPZONE = {
@@ -19,10 +20,16 @@ export function Dropzone(vm, model) {
         ondrop,
         ondragenter,
         ondragleave,
+        className,
+        activeClassName,
+        children,
     } = model;
 
+    const baseClassName = className || injectStyle(CSS_DROPZONE);
+    const hoverClassName = `${baseClassName} ${activeClassName || injectStyle(CSS_DROPZONE_ACTIVE)}`;
+
     const enterCounter = prop(0);
-    enterCounter.subscribe(() => vm.redraw());
+    const class_ = computed(c => c === 0 ? baseClassName : hoverClassName, [enterCounter]);
 
     function onDragOver(evt) {
         // allows the browser to accept drops.
@@ -55,18 +62,6 @@ export function Dropzone(vm, model) {
     }
 
     return function render(vm, model) {
-        const {
-            className,
-            activeClassName,
-            class: _class,
-            children,
-        } = model;
-
-        const class_ = Object.assign({
-            [className || injectStyle(CSS_DROPZONE)]: true,
-            [activeClassName || injectStyle(CSS_DROPZONE_ACTIVE)]: enterCounter() > 0
-        }, (_class || {}));
-
         return el('div',
             {
                 class: class_,
@@ -75,7 +70,7 @@ export function Dropzone(vm, model) {
                 ondragleave: onDragLeave,
                 ondrop: onDrop
             },
-            ...children
+            children()
         );
     };
 }

@@ -4,7 +4,7 @@ import { ImageType } from '../data/image.js';
 import { FileType } from '../data/file.js';
 import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
 import { ThumbnailView } from './thumbnail.js';
-import { prop, computed, bundle } from 'frptools';
+import { prop, computed } from 'frptools';
 
 export function AlbumView(vm, doc) {
     const model = prop({}, pouchDocHash)
@@ -15,21 +15,24 @@ export function AlbumView(vm, doc) {
     const title = computed(d => d.title, [model]);  // always update
 
     let laCleanup = null;
+    const refresh = _ => vm.redraw();
+    const subscriptions = [
+        images.subscribe(refresh),
+        model.subscribe(async album => {
+            if (!album.findImages) { return; }
+            const imagesLiveArray = await album.findImages(true);
 
-    model.subscribe(async album => {
-        if (!album.findImages) { return; }
-        const imagesLiveArray = await album.findImages(true);
+            if (laCleanup) { laCleanup(); }
 
-        if (laCleanup) { laCleanup(); }
+            function refresh() {
+                images(imagesLiveArray());
+                vm.redraw();
+            }
 
-        function refresh() {
-            images(imagesLiveArray());
-            vm.redraw();
-        }
-
-        laCleanup = imagesLiveArray.subscribe(refresh);
-        imagesLiveArray.ready.subscribe(refresh)
-    });
+            laCleanup = imagesLiveArray.subscribe(refresh);
+            imagesLiveArray.ready.subscribe(refresh)
+        })
+    ];
 
     function removeImageFromAlbum(image) {
         model().removeImage(image);
@@ -43,16 +46,17 @@ export function AlbumView(vm, doc) {
         Array.from(evt.currentTarget.files).forEach(f => album.addImageBlob(f));
     }
 
+    function cleanup() {
+        if (laCleanup) { laCleanup(); }
+        subscriptions.forEach(s => s());
+    }
+
     model(doc);
 
     return function(vm, album, key, opts) {
-        model(album);
-
         return el('.album', [
-            el('h2', [
-                title(),
-                el('button', { onclick: [removeAlbum, album] }, 'X')
-            ]),
+            el('h2', title),
+            el('button', { onclick: [removeAlbum, album] }, 'X'),
             el('input#fInput',
                 {
                     type: "file",

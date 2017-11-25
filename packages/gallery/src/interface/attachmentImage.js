@@ -3,7 +3,7 @@ import { prop, computed, bundle } from 'frptools';
 
 import { ImageType } from '../data/image.js';
 import { FileType } from '../data/file.js';
-import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
+import { pouchDocHash } from '../utils/conversion.js';
 
 
 export function AttachmentImageView(vm, image) {
@@ -43,18 +43,13 @@ export function AttachmentImageView(vm, image) {
     }
 
     function cleanup() {
-        redrawOff();
         URL.revokeObjectURL(blobURL());
     }
 
-    const redrawOff = imageURL.subscribe(() => vm.redraw())
-
     return function render(vm, doc) {
-        model(doc);
-
         return el('img',
             {
-                src: imageURL(),
+                src: imageURL,
                 onerror: loadImageFromBlob,
                 _key: id(),
                 _hooks: {
