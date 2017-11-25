@@ -66,10 +66,15 @@ class AlbumSpec extends TypeSpec {
 
 export const AlbumType = PouchDB.registerType("Album", AlbumSpec);
 
-// ImageType.watch({_deleted: true}, true)
-//     .then(la => {
-//         la.subscribe() );
-//
-// image.removed.subscribe(image => {
-//     Object.keys(image.tags).forEach(t => index.removeMember(t, image._id));
-// })
+
+ImageType.subscribe((id, deleted, doc) => {
+    if (!deleted) { return; }
+
+    Object.keys(doc.$links)
+        .filter(k => k.startsWith(AlbumType.prefix))
+        .forEach(async albumId => {
+            const album = await AlbumType.find(albumId);
+            album.count -= 1;
+            album.save();
+        });
+});

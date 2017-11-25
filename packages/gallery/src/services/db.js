@@ -7,6 +7,7 @@ import find from 'pouchdb-find';
 import { log, warn } from './console.js';
 import { isObject } from '../utils/comparators.js';
 import { LiveArray } from '../utils/livearray.js';
+import { Watcher } from '../utils/watcher.js';
 import { deepAssign, pouchDocHash } from '../utils/conversion.js';
 
 
@@ -90,6 +91,7 @@ export function PouchORM(PouchDB) {
         const _baseSelector = Object.freeze({
             _id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`,}
         });
+        const watch = Watcher(_db, _baseSelector, true);
 
         if (!cls.hasOwnProperty('validate')) {
             warn(`${cls.name} has no validation.`)
@@ -159,8 +161,10 @@ export function PouchORM(PouchDB) {
             getOrCreate: { value: getOrCreate },
             find: { value: find },
             delete: { value: _delete },
+            subscribe: { value: watch },
             db: { value: _db },
             name: { value: name },
+            prefix: { value: prefix },
             selector: { value: _baseSelector }
         });
 
