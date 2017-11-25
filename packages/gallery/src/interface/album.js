@@ -3,7 +3,7 @@ import { defineView, defineElement as el } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { FileType } from '../data/file.js';
 import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
-import { ThumbnailView } from './thumbnail.js';
+import { ThumbnailTemplate } from './thumbnail.js';
 import { prop, computed } from 'frptools';
 
 export function AlbumView(vm, doc) {
@@ -66,11 +66,7 @@ export function AlbumView(vm, doc) {
                 }
             ),
             ...images().map(i => {
-                return defineView(ThumbnailView, {
-                    doc: i,
-                    showTags: false,
-                    remove: removeImageFromAlbum,
-                }, id())
+                return ThumbnailTemplate(i, removeImageFromAlbum, i._hash())
             })
         ]);
     };

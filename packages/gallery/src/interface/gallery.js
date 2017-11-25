@@ -3,7 +3,7 @@ import { prop } from 'frptools';
 import { defineView as vw, defineElement as el } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
-import { ThumbnailView } from './thumbnail.js';
+import { ThumbnailTemplate } from './thumbnail.js';
 import { AlbumView } from './album.js';
 import { Dropzone } from './dropzone.js';
 import { router, routeChanged } from '../services/router.js';
@@ -70,11 +70,7 @@ export function GalleryView(vm, model) {
             ...(
                 title() === 'Images'
                 ? data().map(i => {
-                    return vw(ThumbnailView, {
-                        doc: i,
-                        remove: deleteImage,
-                    },
-                    i._hash());
+                    return ThumbnailTemplate(i, deleteImage, i._hash())
                 })
                 : data().map(a => {
                     return vw(AlbumView, a, a._hash())
