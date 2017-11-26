@@ -86,7 +86,7 @@ export function GalleryView(vm, model) {
 
         return el('.gallery', { class: slate }, [
             header([
-                el('div', { css: { fontSize: '20pt' } }, 'Gallery'),
+                el('div', { style: "font-size: 20pt" }, 'Gallery'),
                 headerRight({
                     css: { visibility: /* selectMode */ true ? 'visible' : 'hidden' }
                 }, [
