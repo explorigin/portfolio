@@ -5,7 +5,7 @@ import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
 import { ThumbnailTemplate } from './thumbnail.js';
 import { AlbumView } from './album.js';
-import { Dropzone } from './dropzone.js';
+import { Dropzone } from './components/dropzone.js';
 import { router, routeChanged } from '../services/router.js';
 import { injectStyle, styled } from '../services/style.js';
 

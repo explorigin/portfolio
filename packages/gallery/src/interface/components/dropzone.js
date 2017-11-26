@@ -1,6 +1,7 @@
 import { prop, computed } from 'frptools';
-import { injectStyle } from '../services/style';
-import { defineElement as el } from '../utils/domvm.js';
+
+import { injectStyle } from '../../services/style';
+import { defineElement as el } from '../../utils/domvm.js';
 
 
 const CSS_DROPZONE = {

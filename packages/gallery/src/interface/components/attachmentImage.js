@@ -1,9 +1,9 @@
-import { defineElement as el } from '../utils/domvm.js';
 import { prop, computed, bundle } from 'frptools';
 
-import { ImageType } from '../data/image.js';
-import { FileType } from '../data/file.js';
-import { pouchDocHash } from '../utils/conversion.js';
+import { defineElement as el } from '../../utils/domvm.js';
+import { ImageType } from '../../data/image.js';
+import { FileType } from '../../data/file.js';
+import { pouchDocHash } from '../../utils/conversion.js';
 
 
 export function AttachmentImageView(vm, image) {
