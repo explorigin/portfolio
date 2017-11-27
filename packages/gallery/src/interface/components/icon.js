@@ -13,9 +13,9 @@ const ICON_PATHS = {
 
 // const sizeBasis = 24;
 
-export function Icon(props) {
-    const { name, size } = props;
-    const otherProps = Object.assign({}, props);
+export function Icon(params) {
+    const { name, size } = params;
+    const attrs = Object.assign({}, params);
     const _size = (size || 1) + 1;
     const [boxBounds, path] = ICON_PATHS[name] || ICON_PATHS.unknown;
 
@@ -27,7 +27,7 @@ export function Icon(props) {
             viewBox: "0 0 1 1",
             width: `${_size}em`,
             height: `${_size}em`
-        }, otherProps),
+        }, attrs),
         [
             sv('svg', {viewBox: `0 0 ${boxBounds}`}, [ sv('path', {d: path}) ] ),
         ]

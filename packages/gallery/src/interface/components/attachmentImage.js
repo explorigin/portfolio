@@ -6,8 +6,8 @@ import { FileType } from '../../data/file.js';
 import { pouchDocHash } from '../../utils/conversion.js';
 
 
-export function AttachmentImageView(vm, image) {
-    const model = prop(image, pouchDocHash)
+export function AttachmentImageView(vm, params) {
+    const model = prop(params, pouchDocHash)
     const id = computed(pouchDocHash, [model]);
     const sizes = computed(d => d.sizes, [model]);  // always update
 
@@ -46,7 +46,7 @@ export function AttachmentImageView(vm, image) {
         URL.revokeObjectURL(blobURL());
     }
 
-    return function render(vm, doc) {
+    return function render() {
         return el('img',
             {
                 src: imageURL,

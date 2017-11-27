@@ -10,7 +10,7 @@ import { router, routeChanged } from '../services/router.js';
 import { injectStyle, styled } from '../services/style.js';
 
 
-export function GalleryView(vm, model) {
+export function GalleryView(vm) {
     const NAV_OPTIONS = {
         images: {
             data: ImageType.find({
@@ -79,7 +79,7 @@ export function GalleryView(vm, model) {
         ];
     }
 
-    return function render(vm, params, key, opts) {
+    return function render() {
         if (!data || !data.ready()) {
             return el('h1', "Loading...");
         }
@@ -100,7 +100,7 @@ export function GalleryView(vm, model) {
                 type: "file",
                 multiple: true,  // FIXME - these don't carry through to the input tag
                 accept: "image/jpeg",
-                children: renderDropzone
+                content: renderDropzone
             }, 'dz')
         ]);
     }

@@ -6,7 +6,7 @@ import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
 import { ThumbnailTemplate } from './thumbnail.js';
 import { prop, computed } from 'frptools';
 
-export function AlbumView(vm, doc) {
+export function AlbumView(vm, params) {
     const model = prop({}, pouchDocHash)
     const images = prop([], pouchDocArrayHash);
 
@@ -51,9 +51,11 @@ export function AlbumView(vm, doc) {
         subscriptions.forEach(s => s());
     }
 
-    model(doc);
+    model(params);
 
-    return function(vm, album, key, opts) {
+    return function() {
+        const album = model();
+
         return el('.album', [
             el('h2', title),
             el('button', { onclick: [removeAlbum, album] }, 'X'),

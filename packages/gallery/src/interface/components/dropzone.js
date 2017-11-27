@@ -16,15 +16,15 @@ const CSS_DROPZONE_ACTIVE = {
     backgroundColor: '#eee',
 };
 
-export function Dropzone(vm, model) {
+export function Dropzone(vm, params) {
     const {
         ondrop,
         ondragenter,
         ondragleave,
         className,
         activeClassName,
-        children,
-    } = model;
+        content,
+    } = params;
 
     const baseClassName = className || injectStyle(CSS_DROPZONE);
     const hoverClassName = `${baseClassName} ${activeClassName || injectStyle(CSS_DROPZONE_ACTIVE)}`;
@@ -62,7 +62,7 @@ export function Dropzone(vm, model) {
         }
     }
 
-    return function render(vm, model) {
+    return function render() {
         return el('div',
             {
                 class: class_,
@@ -71,7 +71,7 @@ export function Dropzone(vm, model) {
                 ondragleave: onDragLeave,
                 ondrop: onDrop
             },
-            children()
+            content()
         );
     };
 }
