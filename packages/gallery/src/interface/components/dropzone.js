@@ -22,19 +22,27 @@ export function Dropzone(vm, params) {
         ondragenter,
         ondragleave,
         className,
-        activeClassName,
+        hoverClassName,
         content,
+        hoverContent,
+        dropEffect
     } = params;
 
     const baseClassName = className || injectStyle(CSS_DROPZONE);
-    const hoverClassName = `${baseClassName} ${activeClassName || injectStyle(CSS_DROPZONE_ACTIVE)}`;
+    const activeClassName = `${baseClassName} ${hoverClassName || injectStyle(CSS_DROPZONE_ACTIVE)}`;
 
     const enterCounter = prop(0);
-    const class_ = computed(c => c === 0 ? baseClassName : hoverClassName, [enterCounter]);
+    const active = computed(c => c > 0, [enterCounter]);
+    const _class = computed(a => (a && hoverClassName) ? activeClassName : baseClassName, [active]);
+    const _content = computed(a => a && hoverContent ? hoverContent : content, [active]);
 
     function onDragOver(evt) {
         // allows the browser to accept drops.
         evt.preventDefault();
+
+        if (dropEffect) {
+            evt.dataTransfer.dropEffect = dropEffect;
+        }
     }
 
     function onDragEnter() {
@@ -58,20 +66,21 @@ export function Dropzone(vm, params) {
         enterCounter(0);
 
         if (ondrop) {
-            ondrop(evt.dataTransfer.files);
+            ondrop(evt, evt.dataTransfer.files);
         }
     }
 
     return function render() {
         return el('div',
             {
-                class: class_,
+                class: _class,
+                "data-hover": active,  // only here to subscribe to the change
                 ondragenter: onDragEnter,
                 ondragover: onDragOver,
                 ondragleave: onDragLeave,
                 ondrop: onDrop
             },
-            content()
+            _content()()
         );
     };
 }

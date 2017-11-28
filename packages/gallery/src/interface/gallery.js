@@ -97,10 +97,8 @@ export function GalleryView(vm) {
             vw(Dropzone, {
                 className: slate,
                 activeClassName: 'dropHover',
+                dropEffect: 'copy',
                 ondrop: uploadImages,
-                type: "file",
-                multiple: true,  // FIXME - these don't carry through to the input tag
-                accept: "image/jpeg",
                 content: renderDropzone
             }, 'dz')
         ]);
