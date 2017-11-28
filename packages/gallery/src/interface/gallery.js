@@ -6,6 +6,7 @@ import { AlbumType } from '../data/album.js';
 import { ThumbnailTemplate } from './thumbnail.js';
 import { AlbumView } from './album.js';
 import { Dropzone } from './components/dropzone.js';
+import { Overlay } from './components/overlay.js';
 import { router, routeChanged } from '../services/router.js';
 import { injectStyle, styled } from '../services/style.js';
 
@@ -81,7 +82,7 @@ export function GalleryView(vm) {
 
     return function render() {
         if (!data || !data.ready()) {
-            return el('h1', "Loading...");
+            return Overlay([el('h1', "Loading...")]);
         }
 
         return el('.gallery', { class: slate }, [
