@@ -19,8 +19,8 @@ export function Icon(params) {
     const _size = (size || 1) + 1;
     const [boxBounds, path] = ICON_PATHS[name] || ICON_PATHS.unknown;
 
-    delete otherProps.name;
-    delete otherProps.size;
+    delete attrs.name;
+    delete attrs.size;
 
     return sv(`svg.icon.${name}`,
         Object.assign({
