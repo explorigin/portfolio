@@ -7,6 +7,7 @@ import { ThumbnailTemplate } from './thumbnail.js';
 import { AlbumView } from './album.js';
 import { Dropzone } from './components/dropzone.js';
 import { Overlay } from './components/overlay.js';
+import { AppBarView } from './components/appbar.js';
 import { Icon } from './components/icon.js';
 import { router, routeChanged } from '../services/router.js';
 import { injectStyle, styled } from '../services/style.js';
@@ -28,6 +29,7 @@ export function GalleryView(vm) {
 
     let data = null;
     let laCleanup = null;
+    const context = {};
     const title = prop('');
 
     function uploadImages(evt, files) {
@@ -68,7 +70,6 @@ export function GalleryView(vm) {
         });
     });
 
-
     function renderWelcomePane() {
         return [
             Overlay([
@@ -89,28 +90,30 @@ export function GalleryView(vm) {
         ];
     }
 
+    function renderAppBarButtons() {
+        return [
+            el('button', [
+                el('label', {"for": 'uploadButton'}, "Upload"),
+            ]),
+            el('input', {
+                id: 'uploadButton',
+                name: 'uploadButton',
+                type: 'file',
+                multiple: true,
+                accept: '.png,.jpg,.jpeg', // no love for gifs yet
+                onchange: uploadImages,
+                class: injectStyle({display: 'none'})
+            })
+        ];
+    }
+
     function renderMain() {
         return [
-            header([
-                el('div', { style: "font-size: 20pt" }, 'Gallery'),
-                headerRight({
-                    css: { visibility: /* selectMode */ true ? 'visible' : 'hidden' }
-                }, [
-                    el('button', [
-                        el('label', {"for": 'uploadButton'}, "Upload"),
-                    ]),
-                    el('input', {
-                        id: 'uploadButton',
-                        name: 'uploadButton',
-                        type: 'file',
-                        multiple: true,
-                        accept: '.png,.jpg,.jpeg', // no love for gifs yet
-                        onchange: uploadImages,
-                        class: injectStyle({display: 'none'})
-                    })
-                ])
-            ]),
-            ...(
+            vw(AppBarView, {
+                title: 'Photos',
+                renderButtons: renderAppBarButtons
+            }, 'appbar', context),
+            el('div', { class: fill }, (
                 data().length
                 ? data().map(i => {
                     return ThumbnailTemplate(i, deleteImage, i._hash())
@@ -118,7 +121,7 @@ export function GalleryView(vm) {
                 : [
                     renderWelcomePane()
                 ]
-            )
+            ))
         ];
     }
 
@@ -138,19 +141,6 @@ export function GalleryView(vm) {
         ]);
     }
 }
-
-const header = styled({
-    justifyContent: 'space-between',
-    padding: '1em',
-    zIndex: 1,
-    display: 'flex',
-    alignItems: 'center',
-});
-
-const headerRight = styled({
-    display: 'flex',
-    alignItems: 'center'
-});
 
 const fill = injectStyle({
     display: 'flex',
