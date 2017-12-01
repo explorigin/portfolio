@@ -10,19 +10,7 @@ export const router = Router(
         {
             name: 'home',
             path: '/',
-            enter: (r, route) => {
-                r.goto('images');
-            },
-        },
-        {
-            name: 'images',
-            path: '/images',
-            enter: fire,
-        },
-        {
-            name: 'albums',
-            path: '/albums',
-            enter: fire,
+            enter: (r, route) => fire('photos', route),
         },
         {
             id: '404',

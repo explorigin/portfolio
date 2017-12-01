@@ -25,7 +25,11 @@ export function AttachmentImageView(vm, params) {
     })
 
     async function loadImageFromBlob() {
-        const options = ['thumbnail', 'full'].filter(o => sizes().hasOwnProperty(o));
+        const options = [
+            'thumbnail',
+            'preview',
+            'full'
+        ].filter(o => sizes().hasOwnProperty(o));
 
         for (let attempt of options) {
             try {

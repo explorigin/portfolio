@@ -1,73 +1,38 @@
 import { prop } from 'frptools';
 
-import { defineView as vw, defineElement as el } from '../utils/domvm.js';
+import { subscribeToRender, defineView as vw, defineElement as el } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
 import { ThumbnailTemplate } from './thumbnail.js';
-import { AlbumView } from './album.js';
+import { AllImagesView, uploadImages } from './allImages.js';
 import { Dropzone } from './components/dropzone.js';
 import { Overlay } from './components/overlay.js';
 import { AppBarView } from './components/appbar.js';
 import { Icon } from './components/icon.js';
-import { router, routeChanged } from '../services/router.js';
-import { injectStyle, styled } from '../services/style.js';
+import { routeChanged } from '../services/router.js';
+import { injectStyle } from '../services/style.js';
 
 
 export function GalleryView(vm) {
-    const NAV_OPTIONS = {
-        images: {
-            data: ImageType.find({
-                ["sizes.thumbnail"]: {$exists: true}
-            }, true),
-            title: 'Images'
-        },
-        albums: {
-            data: AlbumType.find({}, true),
-            title: 'Albums'
-        }
-    };
-
     let data = null;
     let laCleanup = null;
     const context = {};
     const title = prop('');
+    const hasData = prop(null);
 
-    function uploadImages(evt, files) {
-        Array.from(files || evt.currentTarget.files).forEach(ImageType.upload);
+    subscribeToRender(vm, [hasData]);
 
-        if (evt.currentTarget) {
-            evt.currentTarget.value = null;
-        }
-    }
-
-    function deleteImage(i) {
-        ImageType.delete(i._id);
-    }
-
-    function addAlbum() {
-        const albumName = prompt("Album Name");
-        if (albumName && albumName.trim()) {
-            const a = new AlbumType({
-                title: albumName.trim(),
-                count: 0
+    routeChanged.subscribe(function onRouteChange(name, params) {
+        if (name == 'photos') {
+            title('Photos');
+            ImageType.find({
+                ["sizes.thumbnail"]: {$exists: true}
+            }).then(results => {
+                hasData(results.length > 0);
             });
-            a.save();
+        } else {
+            throw new Error('Should not happen');
         }
-    }
-
-    routeChanged.subscribe(function onRouteChange(router, route) {
-        if (laCleanup) {
-            laCleanup();
-        }
-        const o = NAV_OPTIONS[route.name];
-        title(o.title);
-
-        return o.data.then(la => {
-            data = la;
-            laCleanup = data.subscribe(() => {
-                vm.redraw()
-            });
-        });
     });
 
     function renderWelcomePane() {
@@ -90,34 +55,16 @@ export function GalleryView(vm) {
         ];
     }
 
-    function renderAppBarButtons() {
-        return [
-            el('button', [
-                el('label', {"for": 'uploadButton'}, "Upload"),
-            ]),
-            el('input', {
-                id: 'uploadButton',
-                name: 'uploadButton',
-                type: 'file',
-                multiple: true,
-                accept: '.png,.jpg,.jpeg', // no love for gifs yet
-                onchange: uploadImages,
-                class: injectStyle({display: 'none'})
-            })
-        ];
-    }
-
     function renderMain() {
         return [
             vw(AppBarView, {
-                title: 'Photos',
-                renderButtons: renderAppBarButtons
+                title: 'Photos'
             }, 'appbar', context),
             el('div', { class: fill }, (
-                data().length
-                ? data().map(i => {
-                    return ThumbnailTemplate(i, deleteImage, i._hash())
-                })
+                hasData()
+                ? [
+                    vw(AllImagesView, {}, 'allImages', context)
+                ]
                 : [
                     renderWelcomePane()
                 ]
@@ -126,7 +73,7 @@ export function GalleryView(vm) {
     }
 
     return function render() {
-        if (!data || !data.ready()) {
+        if (hasData() === null) {
             return Overlay([el('h1', "Loading...")]);
         }
 
