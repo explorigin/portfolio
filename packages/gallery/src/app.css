@@ -1,7 +1,14 @@
 @import '../node_modules/semantic-ui-reset/reset.css';
 @import '../node_modules/semantic-ui-site/site.css';
 
+html {
+    overflow: hidden;
+    height: 100%;
+}
+
 body {
+    height: 100%;
+    overflow: auto;
     display: flex;
     flex-direction: column;
 }

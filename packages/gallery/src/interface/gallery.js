@@ -10,7 +10,7 @@ import { Overlay } from './components/overlay.js';
 import { AppBarView } from './components/appbar.js';
 import { Icon } from './components/icon.js';
 import { routeChanged } from '../services/router.js';
-import { injectStyle } from '../services/style.js';
+import { injectStyle, styled } from '../services/style.js';
 
 
 export function GalleryView(vm) {
@@ -34,6 +34,10 @@ export function GalleryView(vm) {
             throw new Error('Should not happen');
         }
     });
+
+    function handleContentScroll(evt) {
+        context.appbar.companionScrollTop(evt.target.scrollTop);
+    }
 
     function renderWelcomePane() {
         return [
@@ -60,7 +64,9 @@ export function GalleryView(vm) {
             vw(AppBarView, {
                 title: 'Photos'
             }, 'appbar', context),
-            el('div', { class: fill }, (
+            content({
+                onscroll: handleContentScroll
+            }, (
                 hasData()
                 ? [
                     vw(AllImagesView, {}, 'allImages', context)
@@ -89,8 +95,11 @@ export function GalleryView(vm) {
     }
 }
 
-const fill = injectStyle({
+const FILL_STYLE = {
     display: 'flex',
     flex: 1,
     flexDirection: 'column',
-});
+};
+const fill = injectStyle(FILL_STYLE);
+
+const content = styled({ overflow: 'auto' }, FILL_STYLE);
