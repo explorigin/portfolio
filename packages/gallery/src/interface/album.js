@@ -3,7 +3,7 @@ import { defineView, defineElement as el } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { FileType } from '../data/file.js';
 import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
-import { ThumbnailTemplate } from './thumbnail.js';
+import { ThumbnailTemplate } from './components/thumbnail.js';
 import { prop, computed } from 'frptools';
 
 export function AlbumView(vm, params) {

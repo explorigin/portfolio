@@ -3,7 +3,7 @@ import { prop } from 'frptools';
 import { subscribeToRender, defineView as vw, defineElement as el } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
-import { ThumbnailTemplate } from './thumbnail.js';
+import { ThumbnailTemplate } from './components/thumbnail.js';
 import { AllImagesView, uploadImages } from './allImages.js';
 import { Dropzone } from './components/dropzone.js';
 import { Overlay } from './components/overlay.js';

@@ -4,7 +4,7 @@ import { subscribeToRender, defineView, defineElement as el } from '../utils/dom
 
 import { ImageType } from '../data/image.js';
 import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
-import { ThumbnailTemplate } from './thumbnail.js';
+import { ThumbnailTemplate } from './components/thumbnail.js';
 import { injectStyle, styled } from '../services/style.js';
 
 export function uploadImages(evt, files) {
