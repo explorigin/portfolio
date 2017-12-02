@@ -5,6 +5,7 @@ import { subscribeToRender, defineView, defineElement as el } from '../utils/dom
 import { ImageType } from '../data/image.js';
 import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
 import { ThumbnailTemplate } from './components/thumbnail.js';
+import { AlbumTemplate } from './components/albumTemplate.js';
 import { injectStyle, styled } from '../services/style.js';
 
 export function uploadImages(evt, files) {
@@ -59,10 +60,10 @@ export function AllImagesView(vm, params, key, opts) {
     }
 
     return function() {
-        const album = model();
-
-        return el('div', images().map(i => (
-            ThumbnailTemplate(i, deleteImage, i._hash())
-        )));
+        return AlbumTemplate({
+            title: 'Test',
+            id: 1,
+            photos: []
+        });
     };
 }
