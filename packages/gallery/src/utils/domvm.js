@@ -9,3 +9,16 @@ export function subscribeToRender(vm, subscribables, subscriptions) {
 
     vm.config({ hooks: { willUnmount: () => subList.forEach(s => s())}});
 }
+
+
+export function patchRefStyle(ref, style, evt, node, vm) {
+    vm.refs[ref].patch({style});
+}
+
+export function patchRefStyleMap(refStylemap, ...args) {
+    Object.entries(refStylemap).forEach(([r, s]) => patchRefStyle(r, s, ...args))
+}
+
+export function patchNodeStyle(style, evt, node) {
+    node.patch({style});
+}

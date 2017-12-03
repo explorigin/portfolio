@@ -1,33 +1,34 @@
-import { defineView as vw, defineElement as el } from '../../utils/domvm.js';
+import {
+    defineView as vw,
+    defineElement as el,
+    patchRefStyle,
+    patchNodeStyle
+} from '../../utils/domvm.js';
 import { injectStyle, styled } from '../../services/style.js';
 
 import { Icon } from './icon.js';
-import { AttachmentImageView } from './attachmentImage.js';
+import { AlbumPhotoTemplate } from './albumPhotoTemplate.js';
 
-
-function setRefStyle(ref, style, evt, node, vm) {
-    vm.refs[ref].patch({style});
-}
 
 export function AlbumTemplate(params) {
     const { id, title, photos } = params;
+    const albumSelectButtonRef = `albSel${id}`;
 
     return Album({
-        onmouseenter: [setRefStyle, 'selectButton', "opacity: 0.7;"],
-        onmouseleave: [setRefStyle, 'selectButton', "opacity: 0;"],
+        onmouseenter: [patchRefStyle, albumSelectButtonRef, "opacity: 0.7;"],
+        onmouseleave: [patchRefStyle, albumSelectButtonRef, "opacity: 0;"],
     }, [
         albumTitle([
             title,
             albumSelectButton({
-                _ref: 'selectButton',
-                onmouseenter: [setRefStyle, 'selectButton', "opacity: 1;"],
-                onmouseleave: [setRefStyle, 'selectButton', "opacity: 0.7;"],
-
+                _ref: albumSelectButtonRef,
+                onmouseenter: [patchNodeStyle, "opacity: 1;"],
+                onmouseleave: [patchNodeStyle, "opacity: 0.7;"],
             }, [
                 Icon({ name: "check_circle", size: 0.25 })
             ])
         ]),
-        albumContent()
+        albumContent( photos.map(AlbumPhotoTemplate) )
     ]);
 }
 

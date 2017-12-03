@@ -4,7 +4,6 @@ import { subscribeToRender, defineView, defineElement as el } from '../utils/dom
 
 import { ImageType } from '../data/image.js';
 import { pouchDocArrayHash, pouchDocHash } from '../utils/conversion.js';
-import { ThumbnailTemplate } from './components/thumbnail.js';
 import { AlbumTemplate } from './components/albumTemplate.js';
 import { injectStyle, styled } from '../services/style.js';
 
@@ -63,7 +62,7 @@ export function AllImagesView(vm, params, key, opts) {
         return AlbumTemplate({
             title: 'Test',
             id: 1,
-            photos: []
+            photos: images()
         });
     };
 }
