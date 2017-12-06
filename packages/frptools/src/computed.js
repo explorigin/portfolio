@@ -69,4 +69,4 @@ export function computed(fn, dependencies = [], hash=id) {
     return accessor;
 }
 
-const runParam = a => a();
+const runParam = a => typeof a === 'function' ? a() : a;

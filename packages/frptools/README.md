@@ -181,3 +181,27 @@ layoutEventBundle.height(480);
 ```
 
 The properties exposed by the bundle can also be updated apart from their grouping.
+
+
+# [container](./src/container.js)
+
+`container` is a wrapper around any container type (object, Set, Map, or Array) while monitoring changes to the container. A container can be subscribed to and `computed` instances can depend on them.
+
+## Behavior
+Anytime a property is set or a method is gotten and called, the container will check for an updated state and trigger subscribers if it is updated.  An hash function must be applied to determine updated status otherwise subscribers will be called on any potential update.
+
+## Usage
+
+### Creation
+
+```js
+const monkeys = contained([], arr => arr.join('$'));
+const firstMonkey = computed(m => m.length ? m[0] : null, [monkeys]);
+firstMonkey.subscribe(console.log.bind.console);
+```
+
+### Add a member to the container
+```js
+monkeys.push('Bill')
+```
+*firstMonkey* would be computed and "Bill" would be logged to the console.
