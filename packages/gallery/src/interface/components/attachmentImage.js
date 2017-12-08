@@ -4,62 +4,58 @@ import { defineElement as el } from '../../utils/domvm.js';
 import { ImageType } from '../../data/image.js';
 import { FileType } from '../../data/file.js';
 import { pouchDocHash } from '../../utils/conversion.js';
+import { styled } from '../../services/style.js';
+import { DEFAULT_TRANSITION } from '../styles.js';
 
+const srcMap = new Map();
 
-export function AttachmentImageView(vm, params) {
-    const model = prop(params, pouchDocHash)
-    const id = computed(pouchDocHash, [model]);
-    const sizes = computed(d => d.sizes, [model]);  // always update
+async function loadImageFromBlob(doc, evt, node, vm) {
+    const { sizes, _id } = doc;
+    const options = [
+        'thumbnail',
+        'preview',
+        'full'
+    ].filter(o => sizes.hasOwnProperty(o));
 
-    const blobURL = prop('');
-    const imageURL = computed(
-        (sizes, bURL) => bURL || sizes.thumbnail || sizes.full,
-        [sizes, blobURL]
-    );
-
-    model.subscribe(() => {
-        if (blobURL()) {
-            URL.revokeObjectURL(blobURL());
-            blobURL('');
-        }
-    })
-
-    async function loadImageFromBlob() {
-        const options = [
-            'thumbnail',
-            'preview',
-            'full'
-        ].filter(o => sizes().hasOwnProperty(o));
-
-        for (let attempt of options) {
-            try {
-                const data = await FileType.getFromURL(sizes()[attempt]);
-
-                if (blobURL()) {
-                    URL.revokeObjectURL(blobURL());
-                }
-                blobURL(URL.createObjectURL(data));
-                return;
-            } catch(err) {
-                continue;
+    for (let attempt of options) {
+        try {
+            const data = await FileType.getFromURL(sizes[attempt]);
+            let src = evt.target.src;
+            if (src.startsWith('blob:')) {
+                URL.revokeObjectURL(src);
             }
+            src = URL.createObjectURL(data);
+            node.patch({ src });
+            srcMap.set(_id, src);
+            // node.data = attempt;
+            break;
+        } catch(err) {
+            continue;
         }
-    }
-
-    function cleanup() {
-        URL.revokeObjectURL(blobURL());
-    }
-
-    return function render() {
-        return el('img',
-            {
-                src: imageURL,
-                onerror: loadImageFromBlob,
-                _key: id(),
-                _hooks: {
-                    didRemove: cleanup
-                }
-            }
-        );
     }
 }
+
+
+function cleanup(id, evt) {
+    const { src } = evt.target;
+    if (src.startsWith('blob:')) {
+        URL.revokeObjectURL(s);
+        srcMap.remove(id);
+    }
+}
+
+export function AttachmentImageView(doc, props) {
+    const { sizes, _id } = doc;
+    const src = srcMap.get(_id) || sizes.thumbnail || sizes.preview || sizes.full;
+
+    return image(Object.assign({
+        src,
+        onerror: [loadImageFromBlob, doc],
+        _key: _id,
+        _hooks: {
+            didRemove: [cleanup, _id]
+        }
+    }, (props || {})));
+}
+
+const image = styled('img', DEFAULT_TRANSITION);

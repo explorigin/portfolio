@@ -6,7 +6,7 @@ export function ThumbnailTemplate(doc, remove, key) {
         el(`figure.image`, {
             onclick: {"img":[remove, doc]},
         }, [
-            vw(AttachmentImageView, doc, key)
+            AttachmentImageView(doc)
         ])
     ]);
 }

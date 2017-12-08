@@ -49,3 +49,12 @@ export const pick = id => doc => doc[id];
 
 export const extractID = pick('_id');
 export const extractREV = pick('_rev');
+
+export function hashSet(_a) {
+    if (_a instanceof Set) {
+        return Array.from(_a.keys())
+            .sort()
+            .map(k => `${(typeof k).substr(0, 1)}:${encodeURIComponent(k)}/`).join('?');
+    }
+    return _a
+}

@@ -17,6 +17,6 @@ export function isObject(obj) {
     return typeof obj === 'object' && !Array.isArray(obj);
 }
 
-export function isString(str) {
+export function isString(obj) {
     return typeof obj === 'string';
 }
