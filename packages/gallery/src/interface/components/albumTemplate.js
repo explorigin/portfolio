@@ -8,6 +8,7 @@ import { injectStyle, styled } from '../../services/style.js';
 import { DEFAULT_TRANSITION } from '../styles.js';
 import { Icon } from './icon.js';
 import { AlbumPhotoTemplate } from './albumPhotoTemplate.js';
+import { extractID } from '../../utils/conversion.js';
 
 
 export function AlbumTemplate(params) {
@@ -26,6 +27,10 @@ export function AlbumTemplate(params) {
     return Album({
         onmouseenter: [patchRefStyle, albumSelectButtonRef, "opacity: 0.7;"],
         onmouseleave: [patchRefStyle, albumSelectButtonRef, "opacity: 0;"],
+        _data: {
+            type: 'section',
+            sectionImageIds: photos.map(extractID)
+        }
     }, [
         albumTitle([
             title,

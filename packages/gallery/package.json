@@ -19,6 +19,7 @@
     "exif-parser": "~0.1.9",
     "extract-text-webpack-plugin": "^3.0.2",
     "frptools": "2.2.0",
+    "moment": "~2.19.3",
     "pica": "~2.0.8",
     "pouchdb-adapter-http": "~6.3.4",
     "pouchdb-adapter-idb": "~6.3.4",

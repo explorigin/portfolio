@@ -1,3 +1,4 @@
+import * as moment from 'moment';
 import { prop, computed, container } from 'frptools';
 
 import { subscribeToRender, defineView, subscribeToRender, defineElement as el } from '../utils/domvm.js';
@@ -20,10 +21,20 @@ export function uploadImages(evt, files) {
 export function AllImagesView(vm, params, key, opts) {
     const model = prop({}, pouchDocHash)
     const images = container([], pouchDocArrayHash);
-    const visibleIds = computed(arr => arr.map(extractID), [images]);
     const hoverId = prop(null);
     const selectedIds = container(new Set(), hashSet);
     const mode = computed(sIds => sIds.size > 0 ? 'select' : 'view', [selectedIds]);
+
+    const sections = computed(imageArr => {
+        const sectionMap = imageArr.reduce((acc, i) => {
+            const date = i.originalDate.substr(0, 10);
+            return Object.assign(acc, { [date]: (acc[date] || []).concat(i) });
+        }, {});
+        const res = Object.entries(sectionMap).reduce((acc, [date, sectionImages]) => Object.assign(acc, {
+            [moment(date).format('LL')]: sectionImages
+        }), {});
+        return res;
+    }, [images]);
 
     ImageType.find({
         ["sizes.thumbnail"]: {$exists: true}
@@ -86,16 +97,28 @@ export function AllImagesView(vm, params, key, opts) {
         }
     }
 
-
     function toggleAll(evt, node, vm) {
-        if (images.length === selectedIds.size) {
-            selectedIds.clear();
+        const sectionNode = nodeParentWithType(node, 'section');
+        const { sectionImageIds } = sectionNode.data;
+        const selected = sectionImageIds.filter(i => selectedIds.has(i));
+        if (sectionImageIds.length === selected.length) {
+            sectionImageIds.forEach(i => selectedIds.delete(i));
         } else {
-            images.map(extractID).forEach(i => selectedIds.add(i));
+            sectionImageIds.forEach(i => selectedIds.add(i));
         }
     }
 
     subscribeToRender(vm, [selectedIds, images, hoverId, mode]);
+
+    function renderSection([title, _images]) {
+        return AlbumTemplate({
+            title,
+            id: title,
+            photos: _images,
+            selectedIds,
+            mode: mode()
+        });
+    }
 
     return function() {
         return el('.eventSnarfer', {
@@ -105,12 +128,6 @@ export function AllImagesView(vm, params, key, opts) {
                 '.albumSelectButton .icon': toggleAll,
                 '.albumSelectButton .icon svg path': toggleAll
             },
-        }, [AlbumTemplate({
-            title: 'Test',
-            id: 1,
-            photos: images,
-            selectedIds,
-            mode: mode()
-        })]);
+        }, Object.entries(sections()).map(renderSection));
     };
 }
