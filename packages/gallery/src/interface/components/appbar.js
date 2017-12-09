@@ -31,7 +31,7 @@ export function AppBarView(vm, params, key, opts) {
         return header({
             css: { boxShadow: boxShadowStyle() }
         }, [
-            el('div', { style: "font-size: 20pt" }, title),
+            titleContainer(title),
             headerRight(renderButtons()())
         ]);
     };
@@ -40,7 +40,7 @@ export function AppBarView(vm, params, key, opts) {
 const header = styled({
     justifyContent: 'space-between',
     padding: '1em',
-    zIndex: 1,
+    zIndex: 1000,
     display: 'flex',
     alignItems: 'center',
 });
@@ -48,4 +48,8 @@ const header = styled({
 const headerRight = styled({
     display: 'flex',
     alignItems: 'center'
+});
+
+const titleContainer = styled({
+    fontSize: '20pt'
 });

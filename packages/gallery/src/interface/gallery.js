@@ -102,4 +102,7 @@ const FILL_STYLE = {
 };
 const fill = injectStyle(FILL_STYLE);
 
-const content = styled({ overflow: 'auto' }, FILL_STYLE);
+const content = styled({
+    overflow: 'scroll',
+    ['-webkit-transform']: 'translate3d(0,0,0);'  // http://blog.getpostman.com/2015/01/23/ui-repaint-issue-on-chrome/
+}, FILL_STYLE);

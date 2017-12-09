@@ -82,6 +82,7 @@ const image = styled('img', CSS_FULL_SIZE, DEFAULT_TRANSITION, {
     position: 'absolute',
     top: 0,
     left: 0,
+    zIndex: 0
 });
 
 const photoSelectButton = styled(DEFAULT_TRANSITION, {
