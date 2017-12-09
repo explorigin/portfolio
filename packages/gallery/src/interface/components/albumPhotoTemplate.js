@@ -53,7 +53,7 @@ export function AlbumPhotoTemplate(vm, { doc }) {
                 onmouseleave: [hoverSelectButton, false],
             }, [
                 Icon({
-                    name: selectMode && !isSelected ? "circle_o" : "check_circle" ,
+                    name: selectMode && !isSelected && !hover() ? "circle_o" : "check_circle" ,
                     size: 0.75,
                     fill: isSelected ? '#00C800' : '#fff',
                 })
