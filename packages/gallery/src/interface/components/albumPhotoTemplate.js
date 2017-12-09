@@ -21,7 +21,7 @@ const full = "opacity: 1;";
 
 export function AlbumPhotoTemplate(vm, { doc }) {
     const photoSelectButtonRef = `pSB${doc._id}`;
-    const photoBackgroundRef = `pBkd${doc._id}`;
+    const photoOverlayRef = `pBkd${doc._id}`;
     const hover = prop(false);
     const hoverSelectButton = prop(false);
 
@@ -34,7 +34,8 @@ export function AlbumPhotoTemplate(vm, { doc }) {
             onmouseleave: [hover, false],
             css: {
                 cursor: selectMode ? 'pointer' : 'zoom-in'
-            }
+            },
+            _data: doc,
         }, [
             AttachmentImageView(doc, {
                 css: {
@@ -43,7 +44,6 @@ export function AlbumPhotoTemplate(vm, { doc }) {
             }),
             photoSelectButton({
                 _ref: photoSelectButtonRef,
-                _data: doc,
                 class: 'photoSelect',
                 css: {
                     backgroundColor: isSelected ? 'white' : 'transparent',
@@ -58,8 +58,9 @@ export function AlbumPhotoTemplate(vm, { doc }) {
                     fill: isSelected ? '#00C800' : '#fff',
                 })
             ]),
-            photoBackdrop({
-                _ref: photoBackgroundRef,
+            photoOverlay({
+                _ref: photoOverlayRef,
+                class: 'photoOverlay',
                 css: {
                     transform: isSelected ? 'translateZ(-50px)' : null,
                     opacity: (selectMode || hover()) ? 0.7 : 0,
@@ -98,7 +99,7 @@ const photoSelectButton = styled(DEFAULT_TRANSITION, {
     cursor: 'pointer'
 });
 
-const photoBackdrop = styled(CSS_FULL_SIZE, DEFAULT_TRANSITION, {
+const photoOverlay = styled(CSS_FULL_SIZE, DEFAULT_TRANSITION, {
     position: 'absolute', // Unnecessary but helps with a rendering bug in Chrome. https://gitlab.com/explorigin/gallery/issues/1
     top: '0px',
     left: '0px',

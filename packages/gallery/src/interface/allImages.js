@@ -23,7 +23,7 @@ export function AllImagesView(vm, params, key, opts) {
     const images = container([], pouchDocArrayHash);
     const hoverId = prop(null);
     const selectedIds = container(new Set(), hashSet);
-    const mode = computed(sIds => sIds.size > 0 ? 'select' : 'view', [selectedIds]);
+    const selectMode = computed(sIds => sIds.size > 0, [selectedIds]);
 
     const sections = computed(imageArr => {
         const sectionMap = imageArr.reduce((acc, i) => {
@@ -87,6 +87,14 @@ export function AllImagesView(vm, params, key, opts) {
         return parentNode;
     }
 
+    function photoClick(evt, node, vm) {
+        if (selectMode()) {
+            toggleSelect(evt, node, vm)
+        } else {
+            // todo implement zoom-view
+        }
+    }
+
     function toggleSelect(evt, node, vm) {
         const imageNode = nodeParentWithType(node, 'image');
         const id = imageNode.data._id;
@@ -108,7 +116,7 @@ export function AllImagesView(vm, params, key, opts) {
         }
     }
 
-    subscribeToRender(vm, [selectedIds, images, hoverId, mode]);
+    subscribeToRender(vm, [selectedIds, images, hoverId, selectMode]);
 
     function renderSection([title, _images]) {
         return AlbumTemplate({
@@ -116,7 +124,7 @@ export function AllImagesView(vm, params, key, opts) {
             id: title,
             photos: _images,
             selectedIds,
-            mode: mode()
+            selectMode: selectMode()
         });
     }
 
@@ -126,7 +134,8 @@ export function AllImagesView(vm, params, key, opts) {
                 '.photoSelect .icon svg path': toggleSelect,
                 '.photoSelect .icon': toggleSelect,
                 '.albumSelectButton .icon': toggleAll,
-                '.albumSelectButton .icon svg path': toggleAll
+                '.albumSelectButton .icon svg path': toggleAll,
+                '.photoOverlay': photoClick
             },
         }, Object.entries(sections()).map(renderSection));
     };

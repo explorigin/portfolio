@@ -12,9 +12,8 @@ import { extractID } from '../../utils/conversion.js';
 
 
 export function AlbumTemplate(params) {
-    const { id, title, photos, selectedIds, mode } = params;
+    const { id, title, photos, selectedIds, selectMode } = params;
     const albumSelectButtonRef = `albSel${id}`;
-    const selectMode = mode === "select";
 
     function photoMap(doc) {
         return vw(AlbumPhotoTemplate, {
