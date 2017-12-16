@@ -1,5 +1,6 @@
 // export * from 'domvm/dist/dev/domvm.dev.js';
 export * from 'domvm/dist/mini/domvm.mini.js';
+import { call } from 'frptools';
 import { deepAssign } from './conversion.js';
 import { error } from '../services/console.js';
 
@@ -9,7 +10,7 @@ export function subscribeToRender(vm, subscribables, subscriptions) {
         .map(s => s.subscribe(redraw))
         .concat(subscriptions);
 
-    vm.config({ hooks: { willUnmount: () => subList.forEach(s => s())}});
+    vm.config({ hooks: { willUnmount: () => subList.forEach(call)}});
 }
 
 
