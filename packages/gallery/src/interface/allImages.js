@@ -12,7 +12,9 @@ import { error } from '../services/console.js';
 import { ImageType } from '../data/image.js';
 import { pouchDocArrayHash, pouchDocHash, hashSet, extractID } from '../utils/conversion.js';
 import { AlbumTemplate } from './components/albumTemplate.js';
+import { Icon } from './components/icon.js';
 import { injectStyle, styled } from '../services/style.js';
+import { CLICKABLE } from './styles.js';
 
 
 export function uploadImages(evt, files) {
@@ -48,6 +50,19 @@ export function AllImagesView(vm, params, key, { appbar }) {
     }, [images]);
 
     function renderAppBarButtons() {
+        if (selectMode()) {
+            return [
+                trashButtonContainer({
+                    onclick: deleteSelectedImages
+                }, [
+                    Icon({
+                        name: "trash" ,
+                        size: 0.75,
+                    })
+                ])
+            ];
+        }
+
         return [
             el('button', [
                 el('label', {"for": 'uploadButton'}, "Upload"),
@@ -63,11 +78,12 @@ export function AllImagesView(vm, params, key, { appbar }) {
             })
         ];
     }
-    //
-    // function deleteImage(i) {
-    //     ImageType.delete(i._id);
-    // }
-    //
+
+    function deleteSelectedImages() {
+        selectedIds.forEach(ImageType.delete)
+        selectedIds.clear();
+    }
+
     // function addAlbum() {
     //     const albumName = prompt("Album Name");
     //     if (albumName && albumName.trim()) {
@@ -158,7 +174,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
     }
 
     return function() {
-        return el('.eventSnarfer', {
+        return el('div', {
             onclick: {
                 '.photoSelect .icon svg path': toggleSelect,
                 '.photoSelect .icon': toggleSelect,
@@ -169,3 +185,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
         }, Object.entries(sections()).map(renderSection));
     };
 }
+
+const trashButtonContainer = styled({
+    marginRight: '1em',
+}, CLICKABLE);

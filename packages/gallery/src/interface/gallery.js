@@ -1,6 +1,12 @@
 import { prop } from 'frptools';
 
-import { subscribeToRender, defineView as vw, defineElement as el } from '../utils/domvm.js';
+import {
+    subscribeToRender,
+    defineView as vw,
+    createView as cv,
+    defineElement as el,
+    injectView as iv
+} from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
 import { ThumbnailTemplate } from './components/thumbnail.js';
@@ -18,8 +24,7 @@ export function GalleryView(vm) {
     let laCleanup = null;
     const context = {};
     const hasData = prop(null);
-
-    subscribeToRender(vm, [hasData]);
+    const appbar = cv(AppBarView, {}, 'appbar', context);
 
     routeChanged.subscribe(function onRouteChange(name, params) {
         if (name == 'photos') {
@@ -59,7 +64,7 @@ export function GalleryView(vm) {
 
     function renderMain() {
         return [
-            vw(AppBarView, {}, 'appbar', context),
+            iv(appbar),
             content({
                 onscroll: handleContentScroll
             }, (
@@ -73,6 +78,8 @@ export function GalleryView(vm) {
             ))
         ];
     }
+
+    subscribeToRender(vm, [hasData]);
 
     return function render() {
         if (hasData() === null) {
