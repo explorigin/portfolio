@@ -14,11 +14,11 @@ export function container(store, hash) {
     };
     containerMethods._d = containerMethods.subscribe;
 
-    function checkUpdate() {
-        const newId = hash(store);
+    function checkUpdate(target) {
+        const newId = hash(target);
         if (id !== newId) {
             id = newId;
-            subscribers.forEach(s => s(store));
+            subscribers.forEach(s => s(target));
         }
     }
 
@@ -37,7 +37,7 @@ export function container(store, hash) {
             if (typeof thing === 'function') {
                 return (...args) => {
                     const ret = target[name](...args);
-                    checkUpdate();
+                    checkUpdate(target);
                     return ret;
                 };
             }
@@ -48,7 +48,7 @@ export function container(store, hash) {
                 throw new ReferenceError(`Cannot set ${name} in ${target}`);
             }
             target[name] = newVal;
-            checkUpdate();
+            checkUpdate(target);
 
             return newVal;
         }

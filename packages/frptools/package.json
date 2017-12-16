@@ -1,6 +1,6 @@
 {
   "name": "frptools",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "Observable Property and Computed data streams",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
