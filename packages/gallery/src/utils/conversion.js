@@ -45,7 +45,7 @@ export function deepAssign(to, ...rest) {
     return to;
 }
 
-export const pick = id => doc => doc[id];
+export const pick = id => doc => doc && doc[id];
 
 export const extractID = pick('_id');
 export const extractREV = pick('_rev');

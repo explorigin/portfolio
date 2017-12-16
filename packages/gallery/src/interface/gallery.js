@@ -17,14 +17,12 @@ export function GalleryView(vm) {
     let data = null;
     let laCleanup = null;
     const context = {};
-    const title = prop('');
     const hasData = prop(null);
 
     subscribeToRender(vm, [hasData]);
 
     routeChanged.subscribe(function onRouteChange(name, params) {
         if (name == 'photos') {
-            title('Photos');
             ImageType.find({
                 ["sizes.thumbnail"]: {$exists: true}
             }).then(results => {
@@ -61,9 +59,7 @@ export function GalleryView(vm) {
 
     function renderMain() {
         return [
-            vw(AppBarView, {
-                title: 'Photos'
-            }, 'appbar', context),
+            vw(AppBarView, {}, 'appbar', context),
             content({
                 onscroll: handleContentScroll
             }, (
