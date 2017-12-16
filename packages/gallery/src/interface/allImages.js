@@ -24,12 +24,18 @@ export function uploadImages(evt, files) {
     }
 }
 
-export function AllImagesView(vm, params, key, opts) {
-    const model = prop({}, pouchDocHash)
+export function AllImagesView(vm, params, key, { appbar }) {
+    const model = prop({}, pouchDocHash);
+    const appbarState = prop({});
     const images = container([], pouchDocArrayHash);
-    const hoverId = prop(null);
+
     const selectedIds = container(new Set(), hashSet);
-    const selectMode = computed(sIds => sIds.size > 0, [selectedIds]);
+    const appBarTitle = computed(
+        s => s.size > 0 ? `${s.size} selected` : 'Photos',
+        [selectedIds]
+    );
+    const hasSelectedIDs = computed(sIds => sIds.size > 0, [selectedIds]);
+    const selectMode = computed((s, abS) => s && abS.selectMode, [hasSelectedIDs, appbarState]);
 
     const sections = computed(imageArr => {
         const sectionMap = imageArr.reduce((acc, i) => {
@@ -41,13 +47,6 @@ export function AllImagesView(vm, params, key, opts) {
         }), {});
         return res;
     }, [images]);
-
-    ImageType.find({
-        ["sizes.thumbnail"]: {$exists: true}
-    }, true).then(la => {
-        opts.appbar.renderButtons(renderAppBarButtons);
-        subscribeToRender(vm, [images], [la.subscribe(res => images.splice(0, images.length, ...res))]);
-    });
 
     function renderAppBarButtons() {
         return [
@@ -111,7 +110,41 @@ export function AllImagesView(vm, params, key, opts) {
         }
     }
 
-    subscribeToRender(vm, [selectedIds, images, hoverId, selectMode]);
+    function pushAppBarState() {
+        appbar.pushState({
+            title: appBarTitle,
+            buttons: renderAppBarButtons,
+            selectMode: hasSelectedIDs()
+        });
+    }
+
+    function popAppBarState() {
+        appbar.popState();
+    }
+
+    ImageType.find({
+        ["sizes.thumbnail"]: {$exists: true}
+    }, true).then(la => {
+        pushAppBarState();
+        subscribeToRender(
+            vm,
+            [selectedIds, images, selectMode],
+            [
+                la.subscribe(res => images.splice(0, images.length, ...res)),
+                appbar.subscribe(({newState, oldState}) => {
+                    appbarState(newState);
+                }),
+                hasSelectedIDs.subscribe(selected => {
+                    console.log("hasSelectedIDs subscription");
+                    if (selected && !selectMode()) {
+                        pushAppBarState();
+                    } else if (!selected && appbarState().selectMode) {
+                        popAppBarState();
+                    }
+                })
+            ]
+        );
+    });
 
     function renderSection([title, _images]) {
         return AlbumTemplate({
