@@ -1,7 +1,13 @@
 import * as moment from 'moment';
 import { prop, computed, container } from 'frptools';
 
-import { subscribeToRender, defineView, subscribeToRender, defineElement as el } from '../utils/domvm.js';
+import {
+    subscribeToRender,
+    defineView,
+    subscribeToRender,
+    nodeParentWithType,
+    defineElement as el
+} from '../utils/domvm.js';
 
 import { error } from '../services/console.js';
 import { ImageType } from '../data/image.js';
@@ -75,17 +81,6 @@ export function AllImagesView(vm, params, key, opts) {
     //     }
     // }
 
-    function nodeParentWithType(node, type) {
-        let parentNode = node;
-        while (parentNode && (!parentNode.data || parentNode.data.type !== type)) {
-            parentNode = parentNode.parent;
-        }
-        if (!parentNode) {
-            error(`Could not find {"type": "${type}"} parent.`);
-            return;
-        }
-        return parentNode;
-    }
 
     function photoClick(evt, node, vm) {
         if (selectMode()) {

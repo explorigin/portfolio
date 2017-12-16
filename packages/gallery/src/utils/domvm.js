@@ -1,6 +1,7 @@
 // export * from 'domvm/dist/dev/domvm.dev.js';
 export * from 'domvm/dist/mini/domvm.mini.js';
 import { deepAssign } from './conversion.js';
+import { error } from '../services/console.js';
 
 export function subscribeToRender(vm, subscribables, subscriptions) {
     const redraw = (...args) => vm.redraw();
@@ -28,4 +29,16 @@ export function changeElementStateMap(refStateMap, evt, node, vm) {
     Object.entries(refStateMap).forEach(([r, state]) => {
         deepAssign(vm.refs[ref]._data, state);
     });
+}
+
+export function nodeParentWithType(node, type) {
+    let parentNode = node;
+    while (parentNode && (!parentNode.data || parentNode.data.type !== type)) {
+        parentNode = parentNode.parent;
+    }
+    if (!parentNode) {
+        error(`Could not find {"type": "${type}"} parent.`);
+        return;
+    }
+    return parentNode;
 }
