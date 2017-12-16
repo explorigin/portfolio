@@ -18,8 +18,8 @@ export function AppBarView(vm, params, key, opts) {
     const renderButtons = computed(state => state.buttons, [currentState]);
     const hasBackButton = computed(stack => stack.length > 1, [stateStack]);
     const stateChange = computed(
-        (c, p) => ({ newState: c, oldState: p }),
-        [currentState, previousState]
+        c => ({ newState: c, oldState: previousState() }),
+        [currentState]
     );
 
     const boxShadowStyle = computed(t => (
@@ -31,15 +31,13 @@ export function AppBarView(vm, params, key, opts) {
     }
 
     function pushState(newState) {
-        const oldState = currentState() || {};
+        previousState(currentState());
         stateStack.unshift(Object.assign({_seq: seq++}, newState));
-        previousState(oldState);
     }
 
     function popState() {
-        const oldState = currentState();
+        previousState(currentState());
         stateStack.shift();
-        previousState(oldState);
     }
 
     opts.appbar = {
@@ -59,7 +57,9 @@ export function AppBarView(vm, params, key, opts) {
         }, [
             (
                 hasBackButton()
-                ? backButtonContainer([
+                ? backButtonContainer({
+                    onclick: popState
+                }, [
                     Icon({
                         name: "arrow_left" ,
                         size: 0.75,

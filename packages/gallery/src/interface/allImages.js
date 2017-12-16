@@ -133,9 +133,11 @@ export function AllImagesView(vm, params, key, { appbar }) {
                 la.subscribe(res => images.splice(0, images.length, ...res)),
                 appbar.subscribe(({newState, oldState}) => {
                     appbarState(newState);
+                    if (!newState.selectMode && hasSelectedIDs()) {
+                        selectedIds.clear();
+                    }
                 }),
                 hasSelectedIDs.subscribe(selected => {
-                    console.log("hasSelectedIDs subscription");
                     if (selected && !selectMode()) {
                         pushAppBarState();
                     } else if (!selected && appbarState().selectMode) {
