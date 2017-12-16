@@ -4,6 +4,7 @@ import { Icon } from './icon.js';
 import { defineElement as el, subscribeToRender } from '../../utils/domvm.js';
 import { injectStyle, styled } from '../../services/style.js';
 import { pick } from '../../utils/conversion.js';
+import { CLICKABLE } from '../styles.js';
 
 let seq = 0;
 const getSeq = pick('_seq');
@@ -63,9 +64,6 @@ export function AppBarView(vm, params, key, opts) {
                     Icon({
                         name: "arrow_left" ,
                         size: 0.75,
-                        attrs: {
-                            onclick: popState
-                        }
                     })
                 ])
                 : null
@@ -84,10 +82,9 @@ const header = styled({
     alignItems: 'center',
 });
 
-
 const backButtonContainer = styled({
     marginRight: '1em',
-});
+}, CLICKABLE);
 
 const headerRight = styled({
     display: 'flex',

@@ -8,7 +8,7 @@ import {
     subscribeToRender
 } from '../../utils/domvm.js';
 import { injectStyle, styled } from '../../services/style.js';
-import { DEFAULT_TRANSITION, CSS_FULL_SIZE, IMAGE_MARGIN } from '../styles.js';
+import { DEFAULT_TRANSITION, CSS_FULL_SIZE, IMAGE_MARGIN, CLICKABLE } from '../styles.js';
 import { Icon } from './icon.js';
 import { AttachmentImageView } from './attachmentImage.js';
 
@@ -33,7 +33,7 @@ export function AlbumPhotoTemplate(vm, { doc }) {
             onmouseenter: [hover, true],
             onmouseleave: [hover, false],
             css: {
-                cursor: selectMode ? 'pointer' : 'zoom-in'
+                cursor: selectMode ? CLICKABLE.cursor : 'zoom-in'
             },
             _data: doc,
         }, [
@@ -86,7 +86,7 @@ const image = styled('img', CSS_FULL_SIZE, DEFAULT_TRANSITION, {
     zIndex: 0
 });
 
-const photoSelectButton = styled(DEFAULT_TRANSITION, {
+const photoSelectButton = styled(DEFAULT_TRANSITION, CLICKABLE,{
     position: 'absolute',
     top: '4%',
     left: '4%',
@@ -96,7 +96,6 @@ const photoSelectButton = styled(DEFAULT_TRANSITION, {
     padding: '2px',
     backgroundColor: 'transparent',
     opacity: 0,
-    cursor: 'pointer'
 });
 
 const photoOverlay = styled(CSS_FULL_SIZE, DEFAULT_TRANSITION, {

@@ -5,7 +5,7 @@ import {
     patchNodeStyle
 } from '../../utils/domvm.js';
 import { injectStyle, styled } from '../../services/style.js';
-import { DEFAULT_TRANSITION } from '../styles.js';
+import { DEFAULT_TRANSITION, CLICKABLE } from '../styles.js';
 import { Icon } from './icon.js';
 import { AlbumPhotoTemplate } from './albumPhotoTemplate.js';
 import { extractID } from '../../utils/conversion.js';
@@ -64,8 +64,7 @@ const albumContent = styled({
     userSelect: "none"
 });
 
-const albumSelectButton = styled(DEFAULT_TRANSITION, {
+const albumSelectButton = styled(DEFAULT_TRANSITION, CLICKABLE, {
     paddingLeft: "0.5em",
-    cursor: "pointer",
     opacity: 0
 });

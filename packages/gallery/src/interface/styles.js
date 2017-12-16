@@ -9,3 +9,7 @@ export const CSS_FULL_SIZE = {
 export const DEFAULT_TRANSITION = {
     transition: "transform 0.135s cubic-bezier(0, 0, 0.2, 1), opacity 0.135s cubic-bezier(0, 0, 0.2, 1)"
 };
+
+export const CLICKABLE = {
+    cursor: 'pointer'
+};

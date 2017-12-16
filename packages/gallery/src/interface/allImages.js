@@ -4,7 +4,6 @@ import { prop, computed, container } from 'frptools';
 import {
     subscribeToRender,
     defineView,
-    subscribeToRender,
     nodeParentWithType,
     defineElement as el
 } from '../utils/domvm.js';
