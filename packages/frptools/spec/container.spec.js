@@ -1,5 +1,5 @@
 const { container, computed } = require('../lib/index.js');
-const { hashSet } = require('../lib/util.js');
+const { dirtyMock, hashSet } = require('../lib/testUtil.js');
 
 describe('A container', () => {
     it('notifies dependents of updates', () => {
@@ -57,5 +57,29 @@ describe('A container', () => {
         currentValue.add(3)
         a._.add(3);
         expect(runCount).toEqual(2);
+    });
+
+    it('flags all subscribers as dirty before propagating change', () => {
+        const a = container(new Set(), hashSet);
+
+        const [dirtyA, dirtyB, checker] = dirtyMock(2);
+
+        a.subscribe(dirtyA.setDirty);
+        a.subscribe(dirtyB.setDirty);
+
+        a.add(1);
+
+        expect(checker()).toBe(true);
+    });
+
+    it('calls subscriptions in order', () => {
+        let order = '';
+
+        const a = container(new Set(), hashSet);
+        a.subscribe(() => order += 'a');
+        a.subscribe(() => order += 'b');
+        a.subscribe(() => order += 'c');
+        a.add(1);
+        expect(order).toEqual('abc');
     });
 });

@@ -1,6 +1,6 @@
 # FRP tools
 
-Property and Computed value stores designed to work together for storing real and derived state.
+Property, Container and Computed value stores designed to work together for storing discrete and derived state.
 
 # [property](./src/property.js)
 
@@ -30,17 +30,6 @@ Call it passing the new value. If any computed stores depend on this value they 
 
 ```js
 inViewport(false);
-```
-
-### Subscribe to changes
-
-Call the `subscribe` method with a callback that will be called when the property value changes.  The returned function can be called to unsubscribe from the property. When called it will provide the count of remaining subscriptions.
-
-```js
-const unsubscribe = inViewport.subscribe(console.log.bind(console))
-const remainingSubscriptionCount = unsubscribe();
-
-inViewport.unsubscribeAll(); // Call unsubscribeAll to remove child property/computed subscriptions.
 ```
 
 ### Provide a hash function for complex types
@@ -126,69 +115,30 @@ showDialog.unsubscribeAll(); // Call unsubscribeAll to remove child property/com
 When the computed result is a type that is not determined to be equal with simple equality (===), provide a hash function to be used for simple comparison to determine if the new provided value should be propagated to dependents.
 
 ```js
-    function hashSet(_a) {
-        if (_a instanceof Set) {
-            return Array.from(_a.keys())
-                .sort()
-                .map(k => `${(typeof k).substr(0, 1)}:${encodeURIComponent(k)}/`).join('?');
-        }
-        return _a
+function hashSet(_a) {
+    if (_a instanceof Set) {
+        return Array.from(_a.keys())
+            .sort()
+            .map(k => `${(typeof k).substr(0, 1)}:${encodeURIComponent(k)}/`).join('?');
     }
+    return _a
+}
 
-    function _intersection(a, b) {
-        return new Set([...a].filter(x => b.has(x)));
-    }
+function _intersection(a, b) {
+    return new Set([...a].filter(x => b.has(x)));
+}
 
-    const a = prop(new Set([1, 2]), hashSet);
-    const b = prop(new Set([2, 3]), hashSet);
-    const intersection = computed(_intersection, [a, b], hashSet);
+const a = prop(new Set([1, 2]), hashSet);
+const b = prop(new Set([2, 3]), hashSet);
+const intersection = computed(_intersection, [a, b], hashSet);
 ```
-
-# [bundle](./src/bundle.js)
-
-`bundle` is a wrapper around a group of properties for the purpose of applying changes to all of them at once without having to trigger a subscription that may depend on more than property in the group.
-
-Another way to think of a `bundle` is a `property` that takes an object and exposes the object's properties as individual `property` instances.
-
-## Behavior
-A `bundle` wraps properties to intercept dependency hooks in such a way that updating all `property` instances can happen at once before any downstream `computed` instances are evaluated. A bundle returns a function that can be called with an object to set values for the mapped member `property` instances.
-
-## Usage
-
-### Creation
-
-```js
-const layoutEventBundle = bundle({
-    width: prop(1),
-    height: prop(2),
-});
-const ratio = computed((a, b) => a / b, [layoutEventBundle.width, layoutEventBundle.height]);
-ratio.subscribe(render);
-```
-
-### Change Member Properties atomically
-```js
-layoutEventBundle({width: 640, height: 480});
-```
-
-`ratio` would normally be evaluated twice and `render` would be called after each intermediate change.  But bundle allows both values to change and `ratio` will only be evaluated once and `render` called once.
-
-
-### Change Member Properties individually
-```js
-layoutEventBundle.width(640);
-layoutEventBundle.height(480);
-```
-
-The properties exposed by the bundle can also be updated apart from their grouping.
-
 
 # [container](./src/container.js)
 
-`container` is a wrapper around any container type (object, Set, Map, or Array) while monitoring changes to the container. A container can be subscribed to and `computed` instances can depend on them.
+`container` is a wrapper around any container type (Object, Set, Map, or Array) while monitoring changes to the container. A container can be subscribed to and `computed` instances can depend on them.
 
 ## Behavior
-Anytime a property is set or a method is gotten and called, the container will check for an updated state and trigger subscribers if it is updated.  An hash function must be applied to determine updated status otherwise subscribers will be called on any potential update.
+Anytime a property is set or a method is gotten and called, the container will check for an updated state and trigger subscribers if it is updated.  An hash function must be applied to determine updated status.
 
 ## Usage
 
@@ -205,3 +155,47 @@ firstMonkey.subscribe(console.log.bind.console);
 monkeys.push('Bill')
 ```
 *firstMonkey* would be computed and "Bill" would be logged to the console.
+
+
+### Access the contained object directly
+
+Reference the `_` (underscore) property to access the contained object directly.
+
+```js
+monkeys._.push('Bill')
+```
+The array in *monkeys* would get a new value without *firstMonkey* being notified of the change.
+
+
+# Common Behaviors
+
+All frptools types have the following methods available:
+
+## `.subscribe(fn)` - Subscribe to changes
+
+Call the `subscribe` method with a callback that will be called when the property value changes.  The returned function can be called to unsubscribe from the property. When called it will provide the count of remaining subscriptions.
+
+```js
+const unsubscribe = inViewport.subscribe(console.log.bind(console))
+const remainingSubscriptionCount = unsubscribe();
+```
+
+## `.unsubscribeAll()` - Remove child subscriptions
+
+Call the `unsubscribeAll` method to remove all child-node subscriptions.
+
+```js
+const unsubscribe = inViewport.subscribe(console.log.bind(console))
+const remainingSubscriptionCount = unsubscribe();
+
+inViewport.unsubscribeAll(); // console.log will no longer be called.
+```
+
+## `.fire(val)` - Send a value to the node's subscribers
+
+Call the `fire` method to send a value to each of the node's subscribers. This is designed for the node to use to propagate updates but firing other values could have some uses.
+
+```js
+const unsubscribe = inViewport.subscribe(console.log.bind(console))
+inViewport.fire(false); // "false" logged to console.
+```

@@ -1,24 +1,20 @@
+import { id, registerSubscriptions, registerFire } from './util.js';
+
 export function container(store, hash) {
-    const subscribers = new Set();
+    let subscribers = [];
     let id = hash(store);
 
     const containerMethods = {
-        subscribe: fn => {
-            subscribers.add(fn);
-            return () => {
-                subscribers.delete(fn);
-                return subscribers.size;
-            }
-        },
-        unsubscribeAll: () => subscribers.clear()
+        subscribe: registerSubscriptions(subscribers),
+        fire: registerFire(subscribers),
+        unsubscribeAll: () => { subscribers = []; }
     };
-    containerMethods._d = containerMethods.subscribe;
 
     function checkUpdate(target) {
         const newId = hash(target);
         if (id !== newId) {
             id = newId;
-            subscribers.forEach(s => s(target));
+            containerMethods.fire(target);
         }
     }
 

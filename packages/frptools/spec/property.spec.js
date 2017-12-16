@@ -1,5 +1,5 @@
 const { prop } = require('../lib/index.js');
-const { hashSet } = require('../lib/util.js');
+const { dirtyMock, hashSet } = require('../lib/testUtil.js');
 
 describe('A property', () => {
     it('returns its initialized value', () => {
@@ -63,9 +63,8 @@ describe('A property', () => {
         expect(runCount).toEqual(3);
     });
 
-
     it('uses a hash function', () => {
-        let runCount = 0
+        let runCount = 0;
 
         const a = prop(new Set([1, 2]), hashSet);
         a.subscribe(() => runCount += 1);
@@ -75,5 +74,29 @@ describe('A property', () => {
         expect(runCount).toEqual(0);
         expect([...a(new Set([3, 2, 1]))]).toEqual([3, 2, 1]);
         expect(runCount).toEqual(1);
+    });
+
+    it('flags all subscribers as dirty before propagating change', () => {
+        const a = prop(true);
+
+        const [dirtyA, dirtyB, checker] = dirtyMock(2);
+
+        a.subscribe(dirtyA.setDirty);
+        a.subscribe(dirtyB.setDirty);
+
+        a(false);
+
+        expect(checker()).toBe(true);
+    });
+
+    it('calls subscriptions in order', () => {
+        let order = '';
+
+        const a = prop(0);
+        a.subscribe(() => order += 'a');
+        a.subscribe(() => order += 'b');
+        a.subscribe(() => order += 'c');
+        a(1);
+        expect(order).toEqual('abc');
     });
 });

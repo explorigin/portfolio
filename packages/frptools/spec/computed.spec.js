@@ -1,5 +1,5 @@
 const { prop, computed } = require('../lib/index.js');
-const { hashSet } = require('../lib/util.js');
+const { dirtyMock, hashSet } = require('../lib/testUtil.js');
 
 describe('computed', () => {
     const add = (a, b) => a + b;
@@ -52,7 +52,6 @@ describe('computed', () => {
         expect(b()).toEqual(9);
         expect(runCount).toEqual(2);
     });
-
 
     it('computes automatically when subscribed', () => {
         let runCount = 0;
@@ -171,5 +170,36 @@ describe('computed', () => {
         expect(runCount).toEqual(1);
         expect([...ABintersection()]).toEqual([1, 2]);
         expect(runCount).toEqual(2);
+    });
+
+    it('flags all subscribers as dirty before propagating change', () => {
+        function intersection(a, b) {
+            return new Set([...a].filter(x => b.has(x)));
+        }
+
+        const a = prop(new Set([1, 2]), hashSet);
+        const b = prop(new Set([2, 3]), hashSet);
+        const ABintersection = computed(intersection, [a, b], hashSet);
+
+        const [dirtyA, dirtyB, checker] = dirtyMock(2);
+
+        ABintersection.subscribe(dirtyA.setDirty);
+        ABintersection.subscribe(dirtyB.setDirty);
+
+        a(new Set([3, 4]));
+
+        expect(checker()).toBe(true);
+    });
+
+    it('calls subscriptions in order', () => {
+        let order = '';
+
+        const a = prop(null);
+        const b = computed(a => a, [a]);
+        b.subscribe(() => order += 'a');
+        b.subscribe(() => order += 'b');
+        b.subscribe(() => order += 'c');
+        a(1);
+        expect(order).toEqual('abc');
     });
 });
