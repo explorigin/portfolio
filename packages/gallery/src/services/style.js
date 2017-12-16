@@ -30,7 +30,7 @@ export function el(sig, ...attrsOrChildren) {
             }, []).join(' ');
         }
     }
-    if (children.length === 1 && streamConfig.is(attrsOrChildren[0])) {
+    if (children.length === 1 && streamConfig.is(children[0])) {
         children = children[0];
     }
     return defineElement(sig, attrs, children);
@@ -61,7 +61,12 @@ export function styled(...styles) {
             attrs.class += ' ' + injectStyle(attrs.css);
         }
 
-        const children = props.slice(attrIndex + 1);
+        let children = props.slice(attrIndex + 1);
+
+        if (children.length === 1 && streamConfig.is(children[0])) {
+            children = children[0];
+        }
+
         return el(tagName, attrs, children);
     };
 }
