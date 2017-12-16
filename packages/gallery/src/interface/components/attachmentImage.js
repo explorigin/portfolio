@@ -36,11 +36,11 @@ async function loadImageFromBlob(doc, evt, node, vm) {
 }
 
 
-function cleanup(id, evt) {
-    const { src } = evt.target;
+function cleanup(node) {
+    const src = node.el.src;
     if (src.startsWith('blob:')) {
-        URL.revokeObjectURL(s);
-        srcMap.remove(id);
+        URL.revokeObjectURL(src);
+        srcMap.delete(node.key);
     }
 }
 
@@ -53,7 +53,7 @@ export function AttachmentImageView(doc, props) {
         onerror: [loadImageFromBlob, doc],
         _key: _id,
         _hooks: {
-            didRemove: [cleanup, _id]
+            willRemove: cleanup
         }
     }, (props || {})));
 }
