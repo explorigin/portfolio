@@ -7,21 +7,17 @@ import {
     patchNodeStyle,
     subscribeToRender
 } from '../../utils/domvm.js';
+import { router } from '../../services/router.js';
 import { injectStyle, styled } from '../../services/style.js';
 import { DEFAULT_TRANSITION, CSS_FULL_SIZE, IMAGE_MARGIN, CLICKABLE } from '../styles.js';
 import { Icon } from './icon.js';
 import { AttachmentImageView } from './attachmentImage.js';
 
 
-const _imageHover = false;
-const dim = "opacity: 0.7;";
-const off = "opacity: 0;";
-const full = "opacity: 1;";
-
-
 export function AlbumPhotoTemplate(vm, { doc }) {
     const photoSelectButtonRef = `pSB${doc._id}`;
     const photoOverlayRef = `pBkd${doc._id}`;
+    const href = router.href('focus', {id: doc._id});
     const hover = prop(false);
     const hoverSelectButton = prop(false);
 
@@ -29,6 +25,7 @@ export function AlbumPhotoTemplate(vm, { doc }) {
 
     return function render(vm, { isSelected, selectMode }) {
         return photoContainer({
+            href,
             class: 'photoContainer',
             onmouseenter: [hover, true],
             onmouseleave: [hover, false],
@@ -71,7 +68,7 @@ export function AlbumPhotoTemplate(vm, { doc }) {
 }
 
 
-const photoContainer = styled({
+const photoContainer = styled('a', {
     position: 'relative',
     perspective: '1000px',
     backgroundColor: '#eee',

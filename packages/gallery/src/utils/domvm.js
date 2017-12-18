@@ -1,5 +1,6 @@
 // export * from 'domvm/dist/dev/domvm.dev.js';
 export * from 'domvm/dist/mini/domvm.mini.js';
+import { defineView } from 'domvm/dist/mini/domvm.mini.js';
 import { call } from 'frptools';
 import { deepAssign } from './conversion.js';
 import { error } from '../services/console.js';
@@ -43,4 +44,9 @@ export function nodeParentWithType(node, type) {
         return;
     }
     return parentNode;
+}
+
+export function renderSwitch(renderMap, switchValue) {
+    const params = renderMap[switchValue];
+    return params ? defineView.apply(null, params) : 'NOT FOUND';
 }

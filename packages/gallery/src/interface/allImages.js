@@ -98,13 +98,13 @@ export function AllImagesView(vm, params, key, { appbar }) {
 
     function photoClick(evt, node, vm) {
         if (selectMode()) {
-            toggleSelect(evt, node, vm)
-        } else {
-            // todo implement zoom-view
+            toggleSelect(evt, node, vm);
         }
     }
 
     function toggleSelect(evt, node, vm) {
+        evt.preventDefault();
+
         const imageNode = nodeParentWithType(node, 'image');
         const id = imageNode.data._id;
         if (selectedIds.has(id)) {

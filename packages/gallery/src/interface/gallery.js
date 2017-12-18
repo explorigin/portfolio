@@ -2,6 +2,7 @@ import { prop } from 'frptools';
 
 import {
     subscribeToRender,
+    renderSwitch,
     defineView as vw,
     createView as cv,
     defineElement as el,
@@ -20,33 +21,30 @@ import { injectStyle, styled } from '../services/style.js';
 
 
 export function GalleryView(vm) {
-    let data = null;
-    let laCleanup = null;
     const context = {};
-    const hasData = prop(null);
     const appbar = cv(AppBarView, {}, 'appbar', context);
+    const routeName = prop();
+    const routeParams = prop();
 
     routeChanged.subscribe(function onRouteChange(name, params) {
-        if (name == 'photos') {
-            ImageType.find({
-                ["sizes.thumbnail"]: {$exists: true}
-            }).then(results => {
-                hasData(results.length > 0);
-            });
-        } else {
-            throw new Error('Should not happen');
-        }
+        routeName(name);
+        routeParams(params);
     });
 
     function handleContentScroll(evt) {
         context.appbar.companionScrollTop(evt.target.scrollTop);
     }
 
-    function renderWelcomePane() {
+    function renderMain() {
         return [
-            Overlay([
-                el('h1', "Hi")
-            ])
+            iv(appbar),
+            content(
+                { onscroll: handleContentScroll },
+                renderSwitch({
+                    photos: [AllImagesView, {}, 'allImages', context],
+                    // focus: renderFocus
+                }, routeName())
+            )
         ];
     }
 
@@ -62,30 +60,7 @@ export function GalleryView(vm) {
         ];
     }
 
-    function renderMain() {
-        return [
-            iv(appbar),
-            content({
-                onscroll: handleContentScroll
-            }, (
-                hasData()
-                ? [
-                    vw(AllImagesView, {}, 'allImages', context)
-                ]
-                : [
-                    renderWelcomePane()
-                ]
-            ))
-        ];
-    }
-
-    subscribeToRender(vm, [hasData]);
-
     return function render() {
-        if (hasData() === null) {
-            return Overlay([el('h1', "Loading...")]);
-        }
-
         return el('.gallery', { class: fill }, [
             vw(Dropzone, {
                 className: fill,

@@ -35,7 +35,6 @@ async function loadImageFromBlob(doc, evt, node, vm) {
     }
 }
 
-
 function cleanup(node) {
     const src = node.el.src;
     if (src.startsWith('blob:')) {
