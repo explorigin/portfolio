@@ -129,7 +129,8 @@ export function AllImagesView(vm, params, key, { appbar }) {
         appbar.pushState({
             title: appBarTitle,
             buttons: renderAppBarButtons,
-            selectMode: hasSelectedIDs()
+            selectMode: hasSelectedIDs(),
+            backButton: 'x'
         });
     }
 

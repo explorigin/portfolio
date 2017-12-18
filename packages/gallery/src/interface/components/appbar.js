@@ -3,23 +3,28 @@ import { prop, computed, container } from 'frptools';
 import { Icon } from './icon.js';
 import { defineElement as el, subscribeToRender } from '../../utils/domvm.js';
 import { injectStyle, styled } from '../../services/style.js';
-import { pick } from '../../utils/conversion.js';
 import { CLICKABLE } from '../styles.js';
 
 let seq = 0;
-const getSeq = pick('_seq');
 
 export function AppBarView(vm, params, key, opts) {
+    let previousState = {_seq: seq};
     const stateStack = container([], arr => arr.length);
     const companionScrollTop = prop(0);
-    const previousState = prop({_seq: seq}, getSeq);
 
     const currentState = computed(stack => stack[0] || {}, [stateStack]);
     const title = computed(state => state.title || '', [currentState]);
     const renderButtons = computed(state => state.buttons, [currentState]);
-    const hasBackButton = computed(stack => stack.length > 1, [stateStack]);
+    const backButton = computed(
+        (state, stack) => (
+            stack.length > 1
+            ? (state.backButton !== undefined ? state.backButton : 'arrow_left')
+            : null
+        ),
+        [currentState, stateStack]
+    );
     const stateChange = computed(
-        c => ({ newState: c, oldState: previousState() }),
+        c => ({ newState: c, oldState: previousState }),
         [currentState]
     );
 
@@ -32,12 +37,12 @@ export function AppBarView(vm, params, key, opts) {
     }
 
     function pushState(newState) {
-        previousState(currentState());
+        previousState = currentState();
         stateStack.unshift(Object.assign({_seq: seq++}, newState));
     }
 
     function popState() {
-        previousState(currentState());
+        previousState = currentState();
         stateStack.shift();
     }
 
@@ -48,7 +53,7 @@ export function AppBarView(vm, params, key, opts) {
         subscribe: stateChange.subscribe
     };
 
-    subscribeToRender(vm, [boxShadowStyle, renderButtons, hasBackButton, title]);
+    subscribeToRender(vm, [boxShadowStyle, renderButtons, backButton, title]);
 
     return (vm, params) => {
         const _buttons = renderButtons() || (() => {});
@@ -57,12 +62,12 @@ export function AppBarView(vm, params, key, opts) {
             css: { boxShadow: boxShadowStyle() }
         }, [
             (
-                hasBackButton()
+                backButton() !== null
                 ? backButtonContainer({
                     onclick: popState
                 }, [
                     Icon({
-                        name: "arrow_left" ,
+                        name: backButton(),
                         size: 0.75,
                     })
                 ])
