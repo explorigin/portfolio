@@ -7,10 +7,11 @@ import { error } from '../services/console.js';
 export function subscribeToRender(vm, subscribables, subscriptions) {
     const redraw = (...args) => vm.redraw();
     const subList = subscribables
-        .map(s => s.subscribe(redraw))
-        .concat(subscriptions);
+        .map(s => s.subscribe(redraw));
 
-    vm.config({ hooks: { willUnmount: () => subList.forEach(call)}});
+    vm.config({ hooks: {
+        willUnmount: () => subList.concat(subscriptions).forEach(call)
+    }});
 }
 
 
