@@ -6,6 +6,7 @@ module.exports = {
     context: path.resolve(__dirname, './src'),
     entry: {
         app: './app.js',
+        sw: './sw.js'
     },
     output: {
         path: path.resolve(__dirname, './dist'),
@@ -14,6 +15,9 @@ module.exports = {
     },
     devServer: {
         contentBase: path.resolve(__dirname, './src'),
+        headers: {
+            "Service-Worker-Allowed": "/"
+        }
     },
     module: {
         rules: [
@@ -27,10 +31,11 @@ module.exports = {
         ],
     },
     plugins: [
+        new webpack.optimize.CommonsChunkPlugin({}),
         new webpack.DefinePlugin({
             __DEV__: true,
         }),
-        new ExtractTextPlugin('app.css', { allChunks: true }),
+        new ExtractTextPlugin('app.css', { allChunks: true })
     ],
     devtool: 'source-map',
 };
