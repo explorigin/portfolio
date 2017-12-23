@@ -31,7 +31,6 @@ module.exports = {
         ],
     },
     plugins: [
-        new webpack.optimize.CommonsChunkPlugin({}),
         new webpack.DefinePlugin({
             __DEV__: true,
         }),
