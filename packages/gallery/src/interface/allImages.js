@@ -1,4 +1,4 @@
-import * as moment from 'moment';
+import { format } from 'date-fns';
 import { prop, computed, container } from 'frptools';
 
 import {
@@ -44,7 +44,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
             return Object.assign(acc, { [date]: (acc[date] || []).concat(i) });
         }, {});
         const res = Object.entries(sectionMap).reduce((acc, [date, sectionImages]) => Object.assign(acc, {
-            [moment(date).format('LL')]: sectionImages
+            [format(date, 'MMMM D, YYYY')]: sectionImages
         }), {});
         return res;
     }, [images]);
