@@ -34,7 +34,8 @@ export function AlbumPhotoTemplate(vm, { doc }) {
             },
             _data: doc,
         }, [
-            AttachmentImageView(doc, {
+            AttachmentImageView({
+                src: doc.sizes.thumbnail || doc.sizes.full,
                 css: {
                     transform: isSelected ? 'translateZ(-50px)' : null
                 }

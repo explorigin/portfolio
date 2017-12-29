@@ -9,48 +9,33 @@ import { DEFAULT_TRANSITION } from '../styles.js';
 
 const srcMap = new Map();
 
-async function loadImageFromBlob(doc, evt, node, vm) {
-    const { sizes, _id } = doc;
-    const options = [
-        'thumbnail',
-        'preview',
-        'full'
-    ].filter(o => sizes.hasOwnProperty(o));
-
-    for (let attempt of options) {
-        try {
-            const data = await FileType.getFromURL(sizes[attempt]);
-            let src = evt.target.src;
-            if (src.startsWith('blob:')) {
-                URL.revokeObjectURL(src);
-            }
-            src = URL.createObjectURL(data);
-            node.patch({ src });
-            srcMap.set(_id, src);
-            // node.data = attempt;
-            break;
-        } catch(err) {
-            continue;
-        }
+async function loadImageFromBlob(srcUrl, evt, node, vm) {
+    try {
+        const src = URL.createObjectURL(await FileType.getFromURL(srcUrl));
+        node.patch({ src });
+        srcMap.set(srcUrl, src);
+    } catch (e) {
+        // src is not a saved file source
     }
 }
 
 function cleanup(node) {
-    const src = node.el.src;
-    if (src.startsWith('blob:')) {
+    const { src } = node.el;
+    if (src.startsWith('blob:') && srcMap.has(node.key)) {
         URL.revokeObjectURL(src);
         srcMap.delete(node.key);
     }
 }
 
-export function AttachmentImageView(doc, props) {
-    const { sizes, _id } = doc;
-    const src = srcMap.get(_id) || sizes.thumbnail || sizes.preview || sizes.full;
+export function AttachmentImageView(props) {
+    const { src } = props;
+    const cachedSrc = srcMap.get(src)
+    const _src = cachedSrc || src;
+    delete props.src;
 
     return image(Object.assign({
-        src,
-        onerror: [loadImageFromBlob, doc],
-        _key: _id,
+        src: _src,
+        onerror: (!cachedSrc ? [loadImageFromBlob, _src] : null),
         _hooks: {
             willRemove: cleanup
         }
