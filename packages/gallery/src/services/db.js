@@ -91,7 +91,7 @@ export function PouchORM(PouchDB) {
         const _baseSelector = Object.freeze({
             _id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`,}
         });
-        const watch = Watcher(_db, _baseSelector, true);
+        const watch = Watcher(_db, _baseSelector, { include_docs: true });
 
         if (!cls.hasOwnProperty('validate')) {
             warn(`${cls.name} has no validation.`)
@@ -99,7 +99,7 @@ export function PouchORM(PouchDB) {
 
         const instantiate = (doc) => new cls(doc);
 
-        async function find(idOrSelector, live=false) {
+        async function find(idOrSelector, opts={}) {
             if (typeof idOrSelector === 'string') {
                 return instantiate(await _db.get(idOrSelector));
             }
@@ -118,10 +118,11 @@ export function PouchORM(PouchDB) {
                     : _baseSelector
                 )
             );
-            if (live) {
-                return LiveArray(_db, idOrSelector, instantiate);
+            if (opts.live) {
+                opts.mapper = instantiate;
+                return LiveArray(_db, idOrSelector, opts);
             }
-            return (await _db.find({ selector: idOrSelector })).docs.map(instantiate);
+            return (await _db.find(Object.assign({ selector: idOrSelector }, opts))).docs.map(instantiate);
         }
 
         async function getOrCreate(props) {

@@ -1,7 +1,7 @@
 import { log, error } from '../services/console.js';
 
 
-export function Watcher(db, selector, include_docs) {
+export function Watcher(db, selector, opts) {
     const subscribers = new Set();
     let changes = null;
 
@@ -10,12 +10,11 @@ export function Watcher(db, selector, include_docs) {
 
         if (subscribers.size === 1 && !changes) {
             log(`Watching "${db.name}" for ${JSON.stringify(selector)}`);
-            changes = db.changes({
+            changes = db.changes(Object.assign({
                 since: 'now',
                 live: true,
-                include_docs,
                 selector
-            })
+            }, opts))
             .on("change", change => {
                 const { id, deleted, doc } = change;
                 log(`Change from "${db.name}" for ${JSON.stringify(selector)} ${id} ${deleted ? 'deleted' : ''}`);

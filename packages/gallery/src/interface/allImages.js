@@ -140,7 +140,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
 
     ImageType.find({
         ["sizes.thumbnail"]: {$exists: true}
-    }, true).then(la => {
+    }, { live: true }).then(la => {
         pushAppBarState();
         subscribeToRender(
             vm,
