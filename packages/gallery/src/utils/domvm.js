@@ -6,7 +6,7 @@ import { deepAssign } from './conversion.js';
 import { error } from '../services/console.js';
 
 export function subscribeToRender(vm, subscribables, subscriptions) {
-    const redraw = (...args) => vm.redraw();
+    const redraw = () => vm.redraw();
     const subList = subscribables
         .map(s => s.subscribe(redraw));
 
@@ -48,5 +48,5 @@ export function nodeParentWithType(node, type) {
 
 export function renderSwitch(renderMap, switchValue) {
     const params = renderMap[switchValue];
-    return params ? defineView.apply(null, params) : 'NOT FOUND';
+    return params ? defineView.apply(null, params) : `VIEW ${switchValue} NOT FOUND`;
 }

@@ -16,9 +16,9 @@ export const router = Router(
             name: 'focus',
             path: '/focus/:id',
             vars: {
-                id: /^[_A-Za-z0-9]+$/
+                id: /[_A-Za-z0-9]+/
             },
-            enter: (r, route) => fire('image', route),
+            enter: (r, route) => fire('focus', route),
         },
         {
             id: '404',

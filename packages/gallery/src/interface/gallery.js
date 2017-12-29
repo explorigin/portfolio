@@ -12,6 +12,7 @@ import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
 import { ThumbnailTemplate } from './components/thumbnail.js';
 import { AllImagesView, uploadImages } from './allImages.js';
+import { FocusView } from './focus.js';
 import { Dropzone } from './components/dropzone.js';
 import { Overlay } from './components/overlay.js';
 import { AppBarView } from './components/appbar.js';
@@ -29,6 +30,7 @@ export function GalleryView(vm) {
     routeChanged.subscribe(function onRouteChange(name, params) {
         routeName(name);
         routeParams(params);
+        vm.redraw();
     });
 
     function handleContentScroll(evt) {
@@ -42,7 +44,7 @@ export function GalleryView(vm) {
                 { onscroll: handleContentScroll },
                 renderSwitch({
                     photos: [AllImagesView, {}, 'allImages', context],
-                    // focus: renderFocus
+                    focus: [FocusView, routeParams(), 'focus', context]
                 }, routeName())
             )
         ];
@@ -81,6 +83,5 @@ const FILL_STYLE = {
 const fill = injectStyle(FILL_STYLE);
 
 const content = styled({
-    overflow: 'scroll',
     ['-webkit-transform']: 'translate3d(0,0,0);'  // http://blog.getpostman.com/2015/01/23/ui-repaint-issue-on-chrome/
 }, FILL_STYLE);

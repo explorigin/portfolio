@@ -2,6 +2,7 @@ import { prop, computed, container } from 'frptools';
 
 import { Icon } from './icon.js';
 import { defineElement as el, subscribeToRender } from '../../utils/domvm.js';
+import { pick } from '../../utils/conversion.js';
 import { injectStyle, styled } from '../../services/style.js';
 import { CLICKABLE } from '../styles.js';
 
@@ -13,8 +14,9 @@ export function AppBarView(vm, params, key, opts) {
     const companionScrollTop = prop(0);
 
     const currentState = computed(stack => stack[0] || {}, [stateStack]);
-    const title = computed(state => state.title || '', [currentState]);
-    const renderButtons = computed(state => state.buttons, [currentState]);
+    const title = computed(pick('title', ''), [currentState]);
+    const renderButtons = computed(pick('buttons'), [currentState]);
+    const stateStyle = computed(pick('style', {}), [currentState]);
     const backButton = computed(
         (state, stack) => (
             stack.length > 1
@@ -31,6 +33,10 @@ export function AppBarView(vm, params, key, opts) {
     const boxShadowStyle = computed(t => (
         t === 0 ? 'none' : `0px ${Math.min(t/10, 3)}px 3px rgba(0, 0, 0, .2)`
     ), [companionScrollTop]);
+
+    const containerStyle = computed((boxShadow, style) => ({
+            css: Object.assign({ boxShadow }, style)
+        }), [boxShadowStyle, stateStyle])
 
     if (opts.appbar) {
         throw new Error('Cannot have more than one AppBar.');
@@ -53,14 +59,12 @@ export function AppBarView(vm, params, key, opts) {
         subscribe: stateChange.subscribe
     };
 
-    subscribeToRender(vm, [boxShadowStyle, renderButtons, backButton, title]);
+    subscribeToRender(vm, [containerStyle, renderButtons, backButton, title]);
 
     return (vm, params) => {
         const _buttons = renderButtons() || (() => {});
 
-        return header({
-            css: { boxShadow: boxShadowStyle() }
-        }, [
+        return appBarContainer(containerStyle(), [
             (
                 backButton() !== null
                 ? backButtonContainer({
@@ -79,12 +83,13 @@ export function AppBarView(vm, params, key, opts) {
     };
 }
 
-const header = styled({
+const appBarContainer = styled({
     justifyContent: 'space-between',
     padding: '1em',
     zIndex: 1000,
     display: 'flex',
     alignItems: 'center',
+    width: '100%',
 });
 
 const backButtonContainer = styled({
