@@ -14,7 +14,7 @@ export function pouchDocArrayComparator(a, b) {
 }
 
 export function isObject(obj) {
-    return typeof obj === 'object' && !Array.isArray(obj);
+    return typeof obj === 'object' && !Array.isArray(obj) && obj !== null;
 }
 
 export function isString(obj) {

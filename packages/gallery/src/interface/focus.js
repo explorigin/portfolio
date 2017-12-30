@@ -7,6 +7,7 @@ import {
     defineElement as el
 } from '../utils/domvm.js';
 
+import { router } from '../services/router.js';
 import { ImageType } from '../data/image.js';
 import { pouchDocHash, pick } from '../utils/conversion.js';
 import { AttachmentImageView } from './components/attachmentImage.js';
@@ -17,16 +18,15 @@ import { error } from '../services/console.js';
 import { CLICKABLE } from './styles.js';
 
 
-
-
 export function FocusView(vm, params, key, { appbar }) {
-    const id = params.vars.id;
+    const id = prop();
+    const doc = prop(null, pouchDocHash);
     const { body } = document;
     const windowSize = prop({}, o => o ? `${o.width}x${o.height}`: '');
+    const nextLink = prop();
+    const prevLink = prop();
 
     const extractWindowSize = () => windowSize({width: window.innerWidth, height: window.innerHeight});
-
-    const doc = container({}, pouchDocHash);
 
     const imageStyle = computed(({ width: iw, height: ih }, { width: vw, height: vh }) => {
         const imageRatio = iw / ih;
@@ -46,7 +46,7 @@ export function FocusView(vm, params, key, { appbar }) {
     }, [doc, windowSize]);
 
     async function goBack() {
-        history.go(-1);
+        router.goto('home');
     }
 
     function navBack() {
@@ -55,7 +55,7 @@ export function FocusView(vm, params, key, { appbar }) {
     }
 
     async function clickTrash() {
-        await ImageType.delete(id);
+        await ImageType.delete(id());
         navBack();
     }
 
@@ -72,39 +72,97 @@ export function FocusView(vm, params, key, { appbar }) {
         ];
     }
 
+    // Set the appbar title.
+    appbar.pushState({ title: '', buttons: renderAppBarButtons, style: {position: 'fixed'} });
+
     // Prime our window size
     extractWindowSize();
     window.addEventListener('resize', extractWindowSize);
 
-    // Set the appbar title.
-    appbar.pushState({ title: '', buttons: renderAppBarButtons, style: {position: 'fixed'} });
-
-    // Look for our image and set it.
-    ImageType.find(id).then(d => {
-        doc.src = d.sizes.full || d.sizes.preview || d.sizes.thumbnail;
-        doc.width = d.width;
-        doc.height = d.height;
-        doc._id = d._id;
-    }).catch(error);
-
     // Subscribe to our changables.
-    subscribeToRender(vm, [doc, imageStyle], [
+    subscribeToRender(vm, [doc, imageStyle, nextLink, prevLink], [
         appbar.subscribe(goBack),
-        () => window.removeEventListener('resize', extractWindowSize)
+
+        // Keep up with the window resizing
+        () => window.removeEventListener('resize', extractWindowSize),
+
+        // Look for our image and set it.
+        id.subscribe(async _id => {
+            if (!_id) {
+                return;
+            }
+            const image = await ImageType.find(_id)
+            doc(image);
+
+            Promise.all([
+                ImageType.find({"_id": {$lt: _id}}, {limit: 2, sort: [{_id: 'desc'}]}),
+                ImageType.find({"_id": {$gt: _id}}, {limit: 2})
+            ]).then(([prev, next]) => {
+                nextLink(next.length ? router.href('focus', {id: next[0]._id}) : null);
+                prevLink(prev.length ? router.href('focus', {id: prev[0]._id}) : null);
+            });
+        })
     ]);
 
+    // Watch for focus changes
+    vm.config({ hooks: { willUpdate: (vm, { vars }) => id(vars.id) }});
+
+    // Start navigation
+    id(params.vars.id);
+
     return function() {
-        if (!doc._id) {
+        const _id = doc() && doc()._id;
+
+        if (!_id) {
             return Overlay('Loading...');
         }
+
         return focusContainer([
+            (
+                prevLink()
+                ? prevClickZone({href: prevLink()}, [
+                    Icon({
+                        name: "chevron_left" ,
+                        size: 0.75,
+                    })
+                ])
+                : null
+            ),
             AttachmentImageView({
-                src: doc._id ? doc.src : null,
+                src: _id ? doc().sizes.full : null,
                 style: imageStyle()
-            })
+            }),
+            (
+                nextLink()
+                ? nextClickZone({href: nextLink()}, [
+                    Icon({
+                        name: "chevron_right" ,
+                        size: 0.75,
+                    })
+                ])
+                : null
+            )
         ]);
     };
 }
+
+const WIDE = injectStyle({width: "100%"});
+const TALL = injectStyle({height: "100%"});
+const CSS_CLICK_ZONE = {
+    'position': 'absolute',
+    'width': '33%',
+    'height': '70%',
+    'display': 'flex',
+    'alignItems': 'center',
+    'padding': '2em',
+    'top': '15%',
+    'transition': 'opacity .13s cubic-bezier(0.0,0.0,0.2,1)',
+    'opacity': 0,
+    'cursor': 'pointer',
+    ':hover': {
+        opacity: 1
+    }
+};
 
 const trashButtonContainer = styled({
     marginRight: '1em',
@@ -118,5 +176,12 @@ const focusContainer = styled({
     overflow: 'hidden'
 });
 
-const WIDE = injectStyle({width: "100%"});
-const TALL = injectStyle({height: "100%"});
+const nextClickZone = styled('a', {
+    right: '0px',
+    justifyContent: 'flex-end'
+}, CSS_CLICK_ZONE);
+
+const prevClickZone = styled('a', {
+    left: '0px',
+    justifyContent: 'flex-start',
+}, CSS_CLICK_ZONE);
