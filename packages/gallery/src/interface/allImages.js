@@ -175,6 +175,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
 
     return function() {
         return scrollView({
+            class: 'allImages',
             onclick: {
                 '.photoSelect .icon svg path': toggleSelect,
                 '.photoSelect .icon': toggleSelect,

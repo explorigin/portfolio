@@ -26,7 +26,7 @@ export function AlbumPhotoTemplate(vm, { doc }) {
     return function render(vm, { isSelected, selectMode }) {
         return photoContainer({
             href,
-            class: 'photoContainer',
+            class: 'albumPhoto',
             onmouseenter: [hover, true],
             onmouseleave: [hover, false],
             css: {

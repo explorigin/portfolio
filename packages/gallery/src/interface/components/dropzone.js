@@ -28,7 +28,7 @@ export function Dropzone(vm, params) {
         dropEffect
     } = params;
 
-    const baseClassName = className || injectStyle(CSS_DROPZONE);
+    const baseClassName = `dropzone ${className || injectStyle(CSS_DROPZONE)}`;
     const activeClassName = `${baseClassName} ${hoverClassName || injectStyle(CSS_DROPZONE_ACTIVE)}`;
 
     const enterCounter = prop(0);

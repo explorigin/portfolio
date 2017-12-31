@@ -117,7 +117,7 @@ export function FocusView(vm, params, key, { appbar }) {
             return Overlay('Loading...');
         }
 
-        return focusContainer([
+        return focusContainer({ class: 'focus' }, [
             (
                 prevLink()
                 ? prevClickZone({href: prevLink()}, [
