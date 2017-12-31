@@ -45,13 +45,8 @@ export function FocusView(vm, params, key, { appbar }) {
         }
     }, [doc, windowSize]);
 
-    async function goBack() {
-        router.goto('home');
-    }
-
     function navBack() {
-        // appbar.popState();
-        goBack();
+        appbar.popState('home');
     }
 
     async function clickTrash() {
@@ -73,7 +68,14 @@ export function FocusView(vm, params, key, { appbar }) {
     }
 
     // Set the appbar title.
-    appbar.pushState({ title: '', buttons: renderAppBarButtons, style: {position: 'fixed'} });
+    appbar.pushState({
+        title: '',
+        actions: renderAppBarButtons,
+        style: {position: 'fixed'},
+        up: {
+            navigateTo: 'home'
+        }
+    });
 
     // Prime our window size
     extractWindowSize();
@@ -81,8 +83,6 @@ export function FocusView(vm, params, key, { appbar }) {
 
     // Subscribe to our changables.
     subscribeToRender(vm, [doc, imageStyle, nextLink, prevLink], [
-        appbar.subscribe(goBack),
-
         // Keep up with the window resizing
         () => window.removeEventListener('resize', extractWindowSize),
 

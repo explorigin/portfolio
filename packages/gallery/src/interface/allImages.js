@@ -27,7 +27,6 @@ export function uploadImages(evt, files) {
 
 export function AllImagesView(vm, params, key, { appbar }) {
     const model = prop({}, pouchDocHash);
-    const appbarState = prop({});
     const images = container([], pouchDocArrayHash);
 
     const selectedIds = container(new Set(), hashSet);
@@ -35,8 +34,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
         s => s.size > 0 ? `${s.size} selected` : 'Photos',
         [selectedIds]
     );
-    const hasSelectedIDs = computed(sIds => sIds.size > 0, [selectedIds]);
-    const selectMode = computed((s, abS) => s && abS.selectMode, [hasSelectedIDs, appbarState]);
+    const selectMode = computed(sIds => sIds.size > 0, [selectedIds]);
 
     const sections = computed(imageArr => {
         const sectionMap = imageArr.reduce((acc, i) => {
@@ -72,7 +70,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
                 name: 'uploadButton',
                 type: 'file',
                 multiple: true,
-                accept: '.png,.jpg,.jpeg', // no love for gifs yet
+                accept: '.jpg,.jpeg', // no love for gifs, pngs yet
                 onchange: uploadImages,
                 class: injectStyle({display: 'none'})
             })
@@ -126,11 +124,15 @@ export function AllImagesView(vm, params, key, { appbar }) {
     }
 
     function pushAppBarState() {
+        const up = selectMode() ? {
+            name: 'x',
+            onclick: () => selectedIds.clear()
+        } : undefined;
+
         appbar.pushState({
             title: appBarTitle,
-            buttons: renderAppBarButtons,
-            selectMode: hasSelectedIDs(),
-            backButton: 'x'
+            actions: renderAppBarButtons,
+            up
         });
     }
 
@@ -142,24 +144,15 @@ export function AllImagesView(vm, params, key, { appbar }) {
         ["sizes.thumbnail"]: {$exists: true}
     }, { live: true }).then(la => {
         pushAppBarState();
+        selectMode.subscribe(mode => {
+            popAppBarState();
+            pushAppBarState();
+        }),
         subscribeToRender(
             vm,
             [selectedIds, images, selectMode],
             [
-                la.subscribe(res => images.splice(0, images.length, ...res)),
-                appbar.subscribe(({newState, oldState}) => {
-                    appbarState(newState);
-                    if (!newState.selectMode && hasSelectedIDs()) {
-                        selectedIds.clear();
-                    }
-                }),
-                hasSelectedIDs.subscribe(selected => {
-                    if (selected && !selectMode()) {
-                        pushAppBarState();
-                    } else if (!selected && appbarState().selectMode) {
-                        popAppBarState();
-                    }
-                })
+                la.subscribe(res => images.splice(0, images.length, ...res))
             ]
         );
     });
