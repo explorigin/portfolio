@@ -10,7 +10,6 @@ import {
 } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
-import { ThumbnailTemplate } from './components/thumbnail.js';
 import { AllImagesView, uploadImages } from './allImages.js';
 import { FocusView } from './focus.js';
 import { Dropzone } from './components/dropzone.js';

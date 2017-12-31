@@ -6,15 +6,15 @@ import {
     patchRefStyleMap,
     patchNodeStyle,
     subscribeToRender
-} from '../../utils/domvm.js';
-import { router } from '../../services/router.js';
-import { injectStyle, styled } from '../../services/style.js';
-import { DEFAULT_TRANSITION, CSS_FULL_SIZE, IMAGE_MARGIN, CLICKABLE } from '../styles.js';
-import { Icon } from './icon.js';
-import { AttachmentImageView } from './attachmentImage.js';
+} from '../utils/domvm.js';
+import { router } from '../services/router.js';
+import { injectStyle, styled } from '../services/style.js';
+import { DEFAULT_TRANSITION, CSS_FULL_SIZE, IMAGE_MARGIN, CLICKABLE } from './styles.js';
+import { Icon } from './components/icon.js';
+import { AttachmentImageView } from './components/attachmentImage.js';
 
 
-export function AlbumPhotoTemplate(vm, { doc }) {
+export function SectionPhoto(vm, { doc }) {
     const photoSelectButtonRef = `pSB${doc._id}`;
     const photoOverlayRef = `pBkd${doc._id}`;
     const href = router.href('focus', {id: doc._id});
@@ -26,7 +26,7 @@ export function AlbumPhotoTemplate(vm, { doc }) {
     return function render(vm, { isSelected, selectMode }) {
         return photoContainer({
             href,
-            class: 'albumPhoto',
+            class: 'sectionPhoto',
             onmouseenter: [hover, true],
             onmouseleave: [hover, false],
             css: {

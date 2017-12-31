@@ -5,13 +5,14 @@ import {
     subscribeToRender,
     defineView,
     nodeParentWithType,
+    defineView as vw,
     defineElement as el
 } from '../utils/domvm.js';
 
 import { error } from '../services/console.js';
 import { ImageType } from '../data/image.js';
 import { pouchDocArrayHash, pouchDocHash, hashSet, extractID } from '../utils/conversion.js';
-import { AlbumTemplate } from './components/albumTemplate.js';
+import { SectionView } from './sectionView.js';
 import { Icon } from './components/icon.js';
 import { injectStyle, styled } from '../services/style.js';
 import { CLICKABLE } from './styles.js';
@@ -25,7 +26,8 @@ export function uploadImages(evt, files) {
     }
 }
 
-export function AllImagesView(vm, params, key, { appbar }) {
+export function AllImagesView(vm, params, key, context) {
+    const { appbar } = context;
     const model = prop({}, pouchDocHash);
     const images = container([], pouchDocArrayHash);
 
@@ -45,6 +47,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
             .sort((a, b) => (a[0].localeCompare(b[0])))
             .map(([date, _images]) => ({
                 title: format(date, 'MMMM D, YYYY'),
+                sectionId: date,
                 images: _images
             }));
     }, [images]);
@@ -163,14 +166,13 @@ export function AllImagesView(vm, params, key, { appbar }) {
         );
     });
 
-    function renderSection({title, images: _images}) {
-        return AlbumTemplate({
+    function renderSection({title, sectionId, images: _images}) {
+        return vw(SectionView, {
             title,
-            id: title,
             photos: _images,
             selectedIds,
             selectMode: selectMode()
-        });
+        }, sectionId, context);
     }
 
     return function() {
@@ -179,8 +181,8 @@ export function AllImagesView(vm, params, key, { appbar }) {
             onclick: {
                 '.photoSelect .icon svg path': toggleSelect,
                 '.photoSelect .icon': toggleSelect,
-                '.albumSelectButton .icon': toggleAll,
-                '.albumSelectButton .icon svg path': toggleAll,
+                '.sectionSelectButton .icon': toggleAll,
+                '.sectionSelectButton .icon svg path': toggleAll,
                 '.photoOverlay': photoClick
             },
             onscroll: handleContentScroll,
