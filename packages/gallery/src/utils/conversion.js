@@ -1,4 +1,6 @@
 import { readAsArrayBuffer } from 'pouchdb-binary-utils';
+import { pick } from 'frptools';
+
 import { isObject } from './comparators';
 
 export function bufferToHexString(buffer) {
@@ -44,8 +46,6 @@ export function deepAssign(to, ...rest) {
     }
     return to;
 }
-
-export const pick = (id, def) => doc => doc && doc.hasOwnProperty(id) ? doc[id] : def;
 
 export const extractID = pick('_id');
 export const extractREV = pick('_rev');

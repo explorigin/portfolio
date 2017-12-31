@@ -199,3 +199,24 @@ Call the `fire` method to send a value to each of the node's subscribers. This i
 const unsubscribe = inViewport.subscribe(console.log.bind(console))
 inViewport.fire(false); // "false" logged to console.
 ```
+
+# Utilities
+
+## id
+
+`id(anything) -> anything`
+
+`id` is a function that returns its first parameter.  It is used as the default hash function for each subscribable.
+
+## call
+
+`call(anything) -> void`
+
+`call` will call the first parameter if it is a function.  It is used for iterating over subscribables.
+
+## pick
+
+`pick(propName, default) -> (obj) -> any`
+
+`pick` returns a function that accepts an object and will return the object's property for the provided name or the default if one is supplied.  `pick` is not directly used with any subscribable but can be useful as the computed function when breaking down a `prop` that contains an object or a container.
+

@@ -1,8 +1,7 @@
-import { prop, computed, container } from 'frptools';
+import { prop, computed, container, pick } from 'frptools';
 
 import { Icon } from './icon.js';
 import { defineElement as el, subscribeToRender } from '../../utils/domvm.js';
-import { pick } from '../../utils/conversion.js';
 import { injectStyle, styled } from '../../services/style.js';
 import { CLICKABLE } from '../styles.js';
 
