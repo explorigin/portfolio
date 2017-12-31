@@ -41,10 +41,12 @@ export function AllImagesView(vm, params, key, { appbar }) {
             const date = i.originalDate.substr(0, 10);
             return Object.assign(acc, { [date]: (acc[date] || []).concat(i) });
         }, {});
-        const res = Object.entries(sectionMap).reduce((acc, [date, sectionImages]) => Object.assign(acc, {
-            [format(date, 'MMMM D, YYYY')]: sectionImages
-        }), {});
-        return res;
+        return Object.entries(sectionMap)
+            .sort((a, b) => (a[0].localeCompare(b[0])))
+            .map(([date, _images]) => ({
+                title: format(date, 'MMMM D, YYYY'),
+                images: _images
+            }));
     }, [images]);
 
     function renderAppBarButtons() {
@@ -157,7 +159,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
         );
     });
 
-    function renderSection([title, _images]) {
+    function renderSection({title, images: _images}) {
         return AlbumTemplate({
             title,
             id: title,
@@ -176,7 +178,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
                 '.albumSelectButton .icon svg path': toggleAll,
                 '.photoOverlay': photoClick
             },
-        }, Object.entries(sections()).map(renderSection));
+        }, sections().map(renderSection));
     };
 }
 
