@@ -33,10 +33,12 @@ export function AppBarView(vm, params, key, opts) {
     }
 
     function pushState(newState) {
+        companionScrollTop(0);
         stateStack.unshift(Object.assign({_seq: seq++}, newState));
     }
 
     function popState(navigateTo) {
+        companionScrollTop(0);
         stateStack.shift();
         if (navigateTo) {
             router.goto(navigateTo);

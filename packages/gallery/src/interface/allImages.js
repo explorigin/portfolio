@@ -125,6 +125,10 @@ export function AllImagesView(vm, params, key, { appbar }) {
         }
     }
 
+    function handleContentScroll(evt) {
+        appbar.companionScrollTop(evt.target.scrollTop);
+    }
+
     function pushAppBarState() {
         const up = selectMode() ? {
             name: 'x',
@@ -170,7 +174,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
     }
 
     return function() {
-        return el('div', {
+        return scrollView({
             onclick: {
                 '.photoSelect .icon svg path': toggleSelect,
                 '.photoSelect .icon': toggleSelect,
@@ -178,6 +182,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
                 '.albumSelectButton .icon svg path': toggleAll,
                 '.photoOverlay': photoClick
             },
+            onscroll: handleContentScroll,
         }, sections().map(renderSection));
     };
 }
@@ -185,3 +190,7 @@ export function AllImagesView(vm, params, key, { appbar }) {
 const trashButtonContainer = styled({
     marginRight: '1em',
 }, CLICKABLE);
+
+const scrollView = styled({
+    overflow: 'scroll',
+});

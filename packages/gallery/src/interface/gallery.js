@@ -40,13 +40,12 @@ export function GalleryView(vm) {
     function renderMain() {
         return [
             iv(appbar),
-            content(
-                { onscroll: handleContentScroll },
+            content([
                 renderSwitch({
                     photos: [AllImagesView, {}, 'allImages', context],
                     focus: [FocusView, routeParams(), `focus_${routeParams() && routeParams().id}`, context]
                 }, routeName())
-            )
+            ])
         ];
     }
 
