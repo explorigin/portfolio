@@ -67,8 +67,8 @@ export function AllImagesView(vm, params, key, context) {
         }
 
         return [
-            el('button', [
-                el('label', {"for": 'uploadButton'}, "Upload"),
+            uploadButton([
+                el('label', {"for": 'uploadButton', style: CLICKABLE}, "Upload"),
             ]),
             el('input', {
                 id: 'uploadButton',
@@ -191,6 +191,10 @@ export function AllImagesView(vm, params, key, context) {
 }
 
 const trashButtonContainer = styled({
+    marginRight: '1em',
+}, CLICKABLE);
+
+const uploadButton = styled({
     marginRight: '1em',
 }, CLICKABLE);
 
