@@ -68,7 +68,16 @@ export function AllImagesView(vm, params, key, context) {
 
         return [
             uploadButton([
-                el('label', {"for": 'uploadButton', style: CLICKABLE}, "Upload"),
+                el('label', {
+                    "for": 'uploadButton',
+                    style: CLICKABLE
+                }, [
+                    Icon({
+                        name: 'upload',
+                        size: 0.75,
+                        title: 'Upload'
+                    })
+                ]),
             ]),
             el('input', {
                 id: 'uploadButton',
