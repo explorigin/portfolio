@@ -18,6 +18,7 @@ import { AppBarView } from './components/appbar.js';
 import { Icon } from './components/icon.js';
 import { routeChanged } from '../services/router.js';
 import { injectStyle, styled } from '../services/style.js';
+import { FILL_STYLE } from './styles.js';
 
 
 export function GalleryView(vm) {
@@ -31,10 +32,6 @@ export function GalleryView(vm) {
         routeParams(params);
         vm.redraw();
     });
-
-    function handleContentScroll(evt) {
-        context.appbar.companionScrollTop(evt.target.scrollTop);
-    }
 
     function renderMain() {
         return [
@@ -61,7 +58,7 @@ export function GalleryView(vm) {
     }
 
     return function render() {
-        return el('.gallery', { class: fill }, [
+        return container({ class: 'gallery' }, [
             vw(Dropzone, {
                 className: fill,
                 dropEffect: 'copy',
@@ -73,13 +70,16 @@ export function GalleryView(vm) {
     }
 }
 
-const FILL_STYLE = {
-    display: 'flex',
-    flex: 1,
-    flexDirection: 'column',
-};
 const fill = injectStyle(FILL_STYLE);
+const container = styled({
+    overflow: 'hidden'
+}, FILL_STYLE);
 
 const content = styled({
+    position: 'absolute',
+    top: '58px',
+    bottom: 0,
+    left: 0,
+    right: 0,
     ['-webkit-transform']: 'translate3d(0,0,0);'  // http://blog.getpostman.com/2015/01/23/ui-repaint-issue-on-chrome/
-}, FILL_STYLE);
+});

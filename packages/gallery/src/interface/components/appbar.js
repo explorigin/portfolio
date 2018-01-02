@@ -21,7 +21,7 @@ export function AppBarView(vm, params, key, opts) {
     const stateStyle = computed(pick('style', {}), [currentState]);
 
     const boxShadowStyle = computed(t => (
-        t === 0 ? 'none' : `0px ${Math.min(t/10, 3)}px 3px rgba(0, 0, 0, .2)`
+        t === 0 ? 'none' : `0px 3px 3px rgba(0, 0, 0, .2)`
     ), [companionScrollTop]);
 
     const containerStyle = computed((boxShadow, style) => ({

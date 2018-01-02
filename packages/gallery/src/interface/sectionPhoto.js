@@ -9,7 +9,7 @@ import {
 } from '../utils/domvm.js';
 import { router } from '../services/router.js';
 import { injectStyle, styled } from '../services/style.js';
-import { DEFAULT_TRANSITION, CSS_FULL_SIZE, IMAGE_MARGIN, CLICKABLE } from './styles.js';
+import { DEFAULT_TRANSITION, FILL_STYLE, IMAGE_MARGIN, CLICKABLE } from './styles.js';
 import { Icon } from './components/icon.js';
 import { AttachmentImageView } from './components/attachmentImage.js';
 
@@ -23,14 +23,18 @@ export function SectionPhoto(vm, { doc }) {
 
     subscribeToRender(vm, [hover, hoverSelectButton]);
 
-    return function render(vm, { isSelected, selectMode }) {
+    return function render(vm, { isSelected, selectMode, width, height }) {
         return photoContainer({
             href,
             class: 'sectionPhoto',
             onmouseenter: [hover, true],
             onmouseleave: [hover, false],
             css: {
-                cursor: selectMode ? CLICKABLE.cursor : 'zoom-in'
+                cursor: selectMode ? CLICKABLE.cursor : 'zoom-in',
+            },
+            style: {
+                width,
+                height
             },
             _data: doc,
         }, [
@@ -38,7 +42,11 @@ export function SectionPhoto(vm, { doc }) {
                 src: doc.sizes.thumbnail || doc.sizes.full,
                 css: {
                     transform: isSelected ? 'translateZ(-50px)' : null
-                }
+                },
+                style: {
+                    width,
+                    height
+                },
             }),
             photoSelectButton({
                 _ref: photoSelectButtonRef,
@@ -62,7 +70,11 @@ export function SectionPhoto(vm, { doc }) {
                 css: {
                     transform: isSelected ? 'translateZ(-50px)' : null,
                     opacity: (selectMode || hover()) ? 0.7 : 0,
-                }
+                },
+                style: {
+                    width,
+                    height
+                },
             })
         ]);
     };
@@ -74,10 +86,11 @@ const photoContainer = styled('a', {
     perspective: '1000px',
     backgroundColor: '#eee',
     margin: `${IMAGE_MARGIN}px`,
-    cursor: 'zoom-in'
+    cursor: 'zoom-in',
+    display: 'inline-block'
 });
 
-const image = styled('img', CSS_FULL_SIZE, DEFAULT_TRANSITION, {
+const image = styled('img', FILL_STYLE, DEFAULT_TRANSITION, {
     position: 'absolute',
     top: 0,
     left: 0,
@@ -96,7 +109,7 @@ const photoSelectButton = styled(DEFAULT_TRANSITION, CLICKABLE,{
     opacity: 0,
 });
 
-const photoOverlay = styled(CSS_FULL_SIZE, DEFAULT_TRANSITION, {
+const photoOverlay = styled(FILL_STYLE, DEFAULT_TRANSITION, {
     position: 'absolute', // Unnecessary but helps with a rendering bug in Chrome. https://gitlab.com/explorigin/gallery/issues/1
     top: '0px',
     left: '0px',

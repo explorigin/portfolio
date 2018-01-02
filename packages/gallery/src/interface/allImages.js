@@ -15,7 +15,7 @@ import { pouchDocArrayHash, pouchDocHash, hashSet, extractID } from '../utils/co
 import { SectionView } from './sectionView.js';
 import { Icon } from './components/icon.js';
 import { injectStyle, styled } from '../services/style.js';
-import { CLICKABLE } from './styles.js';
+import { CLICKABLE, FILL_STYLE } from './styles.js';
 
 
 export function uploadImages(evt, files) {
@@ -185,17 +185,21 @@ export function AllImagesView(vm, params, key, context) {
     }
 
     return function() {
-        return scrollView({
+        return allImagesContainer({
             class: 'allImages',
-            onclick: {
-                '.photoSelect .icon svg path': toggleSelect,
-                '.photoSelect .icon': toggleSelect,
-                '.sectionSelectButton .icon': toggleAll,
-                '.sectionSelectButton .icon svg path': toggleAll,
-                '.photoOverlay': photoClick
-            },
             onscroll: handleContentScroll,
-        }, sections().map(renderSection));
+        }, [
+            allImagesContent({
+                onclick: {
+                    '.photoSelect .icon svg path': toggleSelect,
+                    '.photoSelect .icon': toggleSelect,
+                    '.sectionSelectButton .icon': toggleAll,
+                    '.sectionSelectButton .icon svg path': toggleAll,
+                    '.photoOverlay': photoClick
+                }
+            },
+            sections().map(renderSection))
+        ]);
     };
 }
 
@@ -207,6 +211,7 @@ const uploadButton = styled({
     marginRight: '1em',
 }, CLICKABLE);
 
-const scrollView = styled({
-    overflow: 'scroll',
-});
+const allImagesContainer = styled({
+    overflow: 'scroll'
+}, FILL_STYLE);
+const allImagesContent = styled({});

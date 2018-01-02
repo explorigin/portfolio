@@ -1,7 +1,7 @@
 // export * from 'domvm/dist/dev/domvm.dev.js';
 export * from 'domvm/dist/mini/domvm.mini.js';
 import { defineView } from 'domvm/dist/mini/domvm.mini.js';
-import { call } from 'frptools';
+import { prop, call } from 'frptools';
 import { deepAssign } from './conversion.js';
 import { error } from '../services/console.js';
 
@@ -50,3 +50,12 @@ export function renderSwitch(renderMap, switchValue) {
     const params = renderMap[switchValue];
     return params ? defineView.apply(null, params) : `VIEW ${switchValue} NOT FOUND`;
 }
+
+// Expose viewport size in a subscribable.
+const SCROLLBAR_SIZE = 20;
+export const viewportSize = prop({}, o => o ? `${o.width}x${o.height}`: '');
+const extractWindowSize = () => viewportSize({width: window.innerWidth - SCROLLBAR_SIZE, height: window.innerHeight - SCROLLBAR_SIZE});
+window.addEventListener('resize', extractWindowSize);
+// Prime our window size
+extractWindowSize();
+

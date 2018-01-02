@@ -4,6 +4,7 @@ import {
     subscribeToRender,
     defineView,
     nodeParentWithType,
+    viewportSize,
     defineElement as el
 } from '../utils/domvm.js';
 
@@ -22,11 +23,8 @@ export function FocusView(vm, params, key, { appbar }) {
     const id = prop();
     const doc = prop(null, pouchDocHash);
     const { body } = document;
-    const windowSize = prop({}, o => o ? `${o.width}x${o.height}`: '');
     const nextLink = prop();
     const prevLink = prop();
-
-    const extractWindowSize = () => windowSize({width: window.innerWidth, height: window.innerHeight});
 
     const imageStyle = computed(({ width: iw, height: ih }, { width: vw, height: vh }) => {
         const imageRatio = iw / ih;
@@ -43,7 +41,7 @@ export function FocusView(vm, params, key, { appbar }) {
                 width: vh * windowRatio
             }
         }
-    }, [doc, windowSize]);
+    }, [doc, viewportSize]);
 
     function navBack() {
         appbar.popState('home');
@@ -77,15 +75,8 @@ export function FocusView(vm, params, key, { appbar }) {
         }
     });
 
-    // Prime our window size
-    extractWindowSize();
-    window.addEventListener('resize', extractWindowSize);
-
     // Subscribe to our changables.
     subscribeToRender(vm, [doc, imageStyle, nextLink, prevLink], [
-        // Keep up with the window resizing
-        () => window.removeEventListener('resize', extractWindowSize),
-
         // Look for our image and set it.
         id.subscribe(async _id => {
             if (!_id) {
