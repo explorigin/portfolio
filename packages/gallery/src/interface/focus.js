@@ -4,7 +4,7 @@ import {
     subscribeToRender,
     defineView,
     nodeParentWithType,
-    availableViewportSize,
+    fullViewportSize,
     defineElement as el
 } from '../utils/domvm.js';
 
@@ -41,7 +41,7 @@ export function FocusView(vm, params, key, { appbar }) {
                 width: vh * windowRatio
             }
         }
-    }, [doc, availableViewportSize]);
+    }, [doc, fullViewportSize]);
 
     function navBack() {
         appbar.popState('home');

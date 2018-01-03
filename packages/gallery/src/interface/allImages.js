@@ -214,6 +214,7 @@ const uploadButton = styled({
 }, CLICKABLE);
 
 const allImagesContainer = styled({
-    overflow: 'scroll'
+    overflow: 'scroll',
+    marginTop: '58px'
 }, FILL_STYLE);
 const allImagesContent = styled({});
