@@ -1,7 +1,8 @@
 import { PouchDB, TypeSpec } from '../services/db.js';
-import { blobToArrayBuffer } from '../utils/conversion.js';
+import { blobToArrayBuffer, deepAssign } from '../utils/conversion.js';
 import { backgroundTask } from '../utils/event.js'
 import { FileType } from './file.js';
+import { error } from '../services/console.js';
 
 
 class ImageSpec extends TypeSpec {
@@ -31,7 +32,7 @@ class ImageSpec extends TypeSpec {
 
     async delete(cascade=true) {
         if (cascade) {
-            Object.keys(this.sizes).forEach(async key => {
+            new Set(Object.keys(this.sizes)).forEach(async key => {
                 const f = await FileType.getDocFromURL(this.sizes[key])
                 f.delete();
             });
@@ -77,42 +78,57 @@ class ImageSpec extends TypeSpec {
 }
 
 const processImportables = backgroundTask(async function _processImportables(image) {
-    const { _id, _rev } = image;
+    const { _id, _rev, sizes, digest } = image;
     const imageData = await FileType.getFromURL(image.sizes.full);
 
-    const ExifParser = await import('exif-parser');
+    const img = new Image();
+    const imageProps = await new Promise(resolve => {
+        img.onload = () => {
+            resolve({width: img.width, height: img.height});
+            URL.revokeObjectURL(img.src);
+        }
+        img.src = URL.createObjectURL(imageData);
+    });
 
-    const buffer = await blobToArrayBuffer(imageData);
 
-    const exifData = ExifParser.create(buffer).parse();
-    const { tags, imageSize } = exifData;
-    const { width, height } = imageSize;
-    const { sizes, digest } = image;
-    const originalDate = new Date(
-        tags.DateTimeOriginal
-        ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
-        : image.originalDate
-    ).toISOString();
+    if (new Set(['image/jpg', 'image/jpeg']).has(imageData.type)) {
+        const ExifParser = await import('exif-parser');
+        const buffer = await blobToArrayBuffer(imageData);
+
+        try {
+            const exifData = ExifParser.create(buffer).parse();
+            const { tags } = exifData;
+            const originalDate = new Date(
+                tags.DateTimeOriginal
+                ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
+                : image.originalDate
+            ).toISOString();
+
+            deepAssign(imageProps, {
+                originalDate,
+                width,
+                height,
+                orientation: tags.Orientation,
+                digest,
+                make: tags.Make,
+                model: tags.Model,
+                flash: !!tags.Flash,
+                iso: tags.ISO,
+                sizes,
+                gps: {
+                    latitude: tags.GPSLatitude,
+                    longitude: tags.GPSLongitude,
+                    altitude: tags.GPSAltitude,
+                    heading: tags.GPSImgDirection,
+                }
+            });
+        } catch(e) {
+            error(e);
+        }
+    }
 
     delete image.importing;
-    await image.update({
-        originalDate,
-        width,
-        height,
-        orientation: tags.Orientation,
-        digest,
-        make: tags.Make,
-        model: tags.Model,
-        flash: !!tags.Flash,
-        iso: tags.ISO,
-        sizes,
-        gps: {
-            latitude: tags.GPSLatitude,
-            longitude: tags.GPSLongitude,
-            altitude: tags.GPSAltitude,
-            heading: tags.GPSImgDirection,
-        }
-    });
+    image.update(imageProps);
 
     const module = await import('../context/generateThumbnails');
     module.generateThumbnailForImage(image);

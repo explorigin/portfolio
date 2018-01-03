@@ -2,6 +2,7 @@ import pica from 'pica/dist/pica';
 
 import { FileType } from '../data/file.js';
 
+const THUMBNAIL_MAX_DIMENSION = 320;
 
 export function maxLinearSize(width, height, max) {
     const ratio = width / height;
@@ -46,16 +47,27 @@ async function resizeImage(imageBlob, mimetype, width, height) {
 export async function generateThumbnailForImage(doc) {
     if (doc.sizes.thumbnail) { return; }
 
-    const attachment = (await FileType.getFromURL(doc.sizes.full))
-    const mimetype = attachment.content_type || attachment.type;
-    const { width, height } = maxLinearSize(doc.width, doc.height, 320);
-    const resizedBlob = await resizeImage(attachment, mimetype, width, height);
+    const { width, height } = maxLinearSize(doc.width, doc.height, THUMBNAIL_MAX_DIMENSION);
 
-    const thumbfile = await FileType.upload(resizedBlob);
-
-    await doc.update({
-        sizes: {
-            thumbnail: FileType.getURL(thumbfile)
-        }
-    });
+    if (width < doc.width && height < doc.height) {
+        console.log('generating thumbnail');
+        // Thumbnail would be smaller
+        const attachment = (await FileType.getFromURL(doc.sizes.full));
+        const mimetype = attachment.type;
+        const resizedBlob = await resizeImage(attachment, mimetype, width, height);
+        const thumbfile = await FileType.upload(resizedBlob);
+        await doc.update({
+            sizes: {
+                thumbnail: FileType.getURL(thumbfile)
+            }
+        });
+    } else {
+        console.log('using original as thumbnail');
+        // Thumbnail would be bigger so let's just use the original.
+        await doc.update({
+            sizes: {
+                thumbnail: doc.sizes.full
+            }
+        });
+    }
 }

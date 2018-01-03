@@ -84,7 +84,7 @@ export function AllImagesView(vm, params, key, context) {
                 name: 'uploadButton',
                 type: 'file',
                 multiple: true,
-                accept: '.jpg,.jpeg', // no love for gifs, pngs yet
+                accept: '.jpg,.jpeg,.png,.gif',
                 onchange: uploadImages,
                 class: injectStyle({display: 'none'})
             })
