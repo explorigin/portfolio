@@ -48,8 +48,10 @@ export function FocusView(vm, params, key, { appbar }) {
     }
 
     async function clickTrash() {
-        await ImageType.delete(id());
-        navBack();
+        if (confirm('Delete this image?')) {
+            await ImageType.delete(id());
+            navBack();
+        }
     }
 
     function renderAppBarButtons() {

@@ -92,8 +92,10 @@ export function AllImagesView(vm, params, key, context) {
     }
 
     function deleteSelectedImages() {
-        selectedIds.forEach(ImageType.delete)
-        selectedIds.clear();
+        if (confirm(`Delete ${selectedIds.size} image(s)?`)) {
+            selectedIds.forEach(ImageType.delete)
+            selectedIds.clear();
+        }
     }
 
     // function addAlbum() {
