@@ -6,7 +6,7 @@ import {
     patchRefStyle,
     patchNodeStyle,
     subscribeToRender,
-    viewportSize
+    availableViewportSize
 } from '../utils/domvm.js';
 import { injectStyle, styled } from '../services/style.js';
 import { DEFAULT_TRANSITION, CLICKABLE, IMAGE_MARGIN, CONTENT_MARGIN } from './styles.js';
@@ -18,8 +18,9 @@ const OPTIMAL_IMAGE_HEIGHT = 140;
 const ROW_HEIGHT_CUTOFF_MODIFIER = 2;
 
 const IMAGE_MARGIN_WIDTH = 2 * IMAGE_MARGIN;
+const CONTENT_MARGIN_WIDTH = 2 * CONTENT_MARGIN;
 
-const aspectRatio = (img, margin=0) => (img.width + margin) / (img.height + margin);
+const aspectRatio = img => img.width / img.height;
 
 export function SectionView(vm, params, key, context) {
     const { appbar } = context;
@@ -27,9 +28,9 @@ export function SectionView(vm, params, key, context) {
     const sectionSelectButtonRef = `secSel${key}`;
 
     function calculateSections(photos) {
-        const { width: vw } = viewportSize();
-        const availableWidth = vw - CONTENT_MARGIN;
-        const totalImageRatio = photos.reduce((acc, img) => acc + aspectRatio(img, IMAGE_MARGIN_WIDTH), 0);
+        const { width: vw } = availableViewportSize();
+        const availableWidth = vw - CONTENT_MARGIN_WIDTH;
+        const totalImageRatio = photos.reduce((acc, img) => acc + aspectRatio(img), 0);
         const rowCount = Math.ceil(totalImageRatio * OPTIMAL_IMAGE_HEIGHT / availableWidth);
         const rowRatios = partition(photos.map(aspectRatio), rowCount);
 
@@ -56,7 +57,7 @@ export function SectionView(vm, params, key, context) {
         return result;
     }
 
-    subscribeToRender(vm, [viewportSize]);
+    subscribeToRender(vm, [availableViewportSize]);
 
     return function render(vm, params) {
         const { selectedIds, selectMode } = params;
