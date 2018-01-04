@@ -9,7 +9,7 @@ import { CLICKABLE } from '../styles.js';
 let seq = 0;
 
 export function AppBarView(vm, params, key, opts) {
-    const stateStack = container([], arr => arr.length);
+    const stateStack = container([], arr => arr.length && arr[0]._seq);
     const companionScrollTop = prop(0);
 
     const currentState = computed(stack => stack[0] || {}, [stateStack]);
@@ -45,9 +45,16 @@ export function AppBarView(vm, params, key, opts) {
         }
     }
 
+    function replaceState(newState) {
+        companionScrollTop(0);
+        stateStack._.shift();
+        stateStack.unshift(Object.assign({_seq: seq++}, newState));
+    }
+
     opts.appbar = {
         pushState,
         popState,
+        replaceState,
         companionScrollTop
     };
 
@@ -82,6 +89,7 @@ const appBarContainer = styled({
     display: 'flex',
     alignItems: 'center',
     width: '100%',
+    transition: 'opacity .13s cubic-bezier(0.0,0.0,0.2,1)',
 });
 
 const upButtonContainer = styled({

@@ -26,6 +26,8 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
     const { body } = document;
     const nextLink = prop();
     const prevLink = prop();
+    const mouseActive = prop(true);
+    let mouseMoveTimeout = null;
 
     const imageStyle = computed(({ width: iw, height: ih }, { width: vw, height: vh }) => {
         const imageRatio = iw / ih;
@@ -47,6 +49,14 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
             width: vh * windowRatio
         }
     }, [doc, fullViewportSize]);
+    const appbarState = computed((mA) => ({
+        title: '',
+        actions: renderAppBarButtons,
+        style: { position: 'fixed', opacity: mA ? 1 : 0 },
+        up: {
+            navigateTo: 'home'
+        }
+    }), [mouseActive]);
 
     function navBack() {
         appbar.popState('home');
@@ -57,6 +67,25 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
             await ImageType.delete(id());
             navBack();
         }
+    }
+
+    const mouseLeave = () => {
+        mouseActive(false);
+    };
+
+    const mouseMove = () => {
+        if (mouseMoveTimeout !== null) {
+            clearTimeout(mouseMoveTimeout);
+        }
+        mouseMoveTimeout = setTimeout(mouseLeave, 3000);
+        mouseActive(true);
+    };
+
+    const mouseClick = () => {
+        if (mouseMoveTimeout !== null) {
+            clearTimeout(mouseMoveTimeout);
+        }
+        mouseActive(!mouseActive());
     }
 
     function renderAppBarButtons() {
@@ -73,10 +102,13 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
     }
 
     // Set the appbar title.
+
     appbar.pushState({
         title: '',
         actions: renderAppBarButtons,
-        style: {position: 'fixed'},
+        style: {
+            position: 'fixed'
+        },
         up: {
             navigateTo: 'home'
         }
@@ -87,6 +119,7 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
         doc,
         nextLink,
         prevLink,
+        () => appbarState.subscribe(appbar.replaceState),
         // Look for our image and set it.
         () => id.subscribe(async _id => {
             if (!_id) {
@@ -118,7 +151,12 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
             return Overlay('Loading...');
         }
 
-        return focusContainer({ class: 'focus' }, [
+        return focusContainer({
+            class: 'focus',
+            onmousemove: mouseMove,
+            onmouseleave: mouseLeave,
+            onclick: mouseClick,
+        }, [
             iv(appbarView),
             focusContent([
                 (
