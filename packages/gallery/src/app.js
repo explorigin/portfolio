@@ -20,7 +20,7 @@ function go() {
 	router.start('home');
 }
 
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && window.top === window) {
 	navigator.serviceWorker.register('/assets/sw.bundle.js', { scope: '/' }).then(go).catch(go);
 } else {
 	go();
