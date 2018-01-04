@@ -30,17 +30,21 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
     const imageStyle = computed(({ width: iw, height: ih }, { width: vw, height: vh }) => {
         const imageRatio = iw / ih;
         const windowRatio = vw / vh;
-
+        if (iw < vw && ih < vh) {
+            return {
+                height: ih,
+                width: iw
+            }
+        }
         if (windowRatio > imageRatio) {
             return {
                 height: vw / windowRatio,
                 width: vw / windowRatio * imageRatio
             }
-        } else {
-            return {
-                height: vh * windowRatio / imageRatio,
-                width: vh * windowRatio
-            }
+        }
+        return {
+            height: vh * windowRatio / imageRatio,
+            width: vh * windowRatio
         }
     }, [doc, fullViewportSize]);
 
