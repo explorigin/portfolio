@@ -169,13 +169,12 @@ export function AllImagesView(vm, params, key, context) {
             popAppBarState();
             pushAppBarState();
         }),
-        subscribeToRender(
-            vm,
-            [selectedIds, images, selectMode],
-            [
-                la.subscribe(res => images.splice(0, images.length, ...res))
-            ]
-        );
+        subscribeToRender(vm, [
+            selectedIds,
+            images,
+            selectMode,
+            () => la.subscribe(res => images.splice(0, images.length, ...res))
+        ]);
     });
 
     function renderSection({title, sectionId, images: _images}) {

@@ -4,15 +4,35 @@ import { defineView } from 'domvm/dist/mini/domvm.mini.js';
 import { prop, computed, call } from 'frptools';
 import { deepAssign } from './conversion.js';
 import { error } from '../services/console.js';
+import { streamConfig } from './event.js';
 
-export function subscribeToRender(vm, subscribables, subscriptions) {
+export function subscribeToRender(vm, subscribables, autoSub=false) {
     const redraw = () => vm.redraw();
-    const subList = subscribables
-        .map(s => s.subscribe(redraw));
+    const subAll = () => subList = subscribables.map(s => (
+        streamConfig.is(s)
+        ? streamConfig.sub(s, redraw)
+        : s()
+    ));
+    let subList = [];
 
     vm.config({ hooks: {
-        willUnmount: () => subList.concat(subscriptions).forEach(call)
+        willMount: () => {
+            if (!subList.length) {
+                subAll();
+            }
+        },
+        willUnmount: () => {
+            if (subList.length) {
+                subList.forEach(call);
+                subList = [];
+            }
+        }
     }});
+
+    // If the there is a node, we missed our opportunity to catch willMount.  Sometimes we just want to force it.
+    if (vm.node || autoSub) {
+        subAll();
+    }
 }
 
 

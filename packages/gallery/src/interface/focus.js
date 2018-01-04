@@ -22,7 +22,7 @@ import { CLICKABLE, FILL_STYLE } from './styles.js';
 
 export function FocusView(vm, params, key, { appbar, appbarView }) {
     const id = prop();
-    const doc = prop(null, pouchDocHash);
+    const doc = prop({}, pouchDocHash);
     const { body } = document;
     const nextLink = prop();
     const prevLink = prop();
@@ -83,9 +83,12 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
     });
 
     // Subscribe to our changables.
-    subscribeToRender(vm, [doc, imageStyle, nextLink, prevLink], [
+    subscribeToRender(vm, [
+        doc,
+        nextLink,
+        prevLink,
         // Look for our image and set it.
-        id.subscribe(async _id => {
+        () => id.subscribe(async _id => {
             if (!_id) {
                 return;
             }
@@ -100,7 +103,7 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
                 prevLink(prev.length ? router.href('focus', {id: prev[0]._id}) : null);
             });
         })
-    ]);
+    ], true);
 
     // Watch for focus changes
     vm.config({ hooks: { willUpdate: (vm, { vars }) => id(vars.id) }});
@@ -130,7 +133,7 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
                 ),
                 AttachmentImageView({
                     src: _id ? doc().sizes.full : null,
-                    style: imageStyle()
+                    style: imageStyle
                 }),
                 (
                     nextLink()
