@@ -6,7 +6,8 @@ import {
     defineView,
     nodeParentWithType,
     defineView as vw,
-    defineElement as el
+    defineElement as el,
+    injectView as iv,
 } from '../utils/domvm.js';
 
 import { error } from '../services/console.js';
@@ -27,7 +28,7 @@ export function uploadImages(evt, files) {
 }
 
 export function AllImagesView(vm, params, key, context) {
-    const { appbar } = context;
+    const { appbar, appbarView } = context;
     const model = prop({}, pouchDocHash);
     const images = container([], pouchDocArrayHash);
 
@@ -189,9 +190,10 @@ export function AllImagesView(vm, params, key, context) {
     return function() {
         return allImagesContainer({
             class: 'allImages',
-            onscroll: handleContentScroll,
         }, [
+            iv(appbarView),
             allImagesContent({
+                onscroll: handleContentScroll,
                 onclick: {
                     '.photoSelect .icon svg path': toggleSelect,
                     '.photoSelect .icon': toggleSelect,
@@ -213,8 +215,7 @@ const uploadButton = styled({
     marginRight: '1em',
 }, CLICKABLE);
 
-const allImagesContainer = styled({
-    overflow: 'scroll',
-    marginTop: '58px'
+const allImagesContainer = styled(FILL_STYLE);
+const allImagesContent = styled({
+    overflow: 'scroll'
 }, FILL_STYLE);
-const allImagesContent = styled({});

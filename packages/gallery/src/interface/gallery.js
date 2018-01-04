@@ -6,7 +6,6 @@ import {
     defineView as vw,
     createView as cv,
     defineElement as el,
-    injectView as iv
 } from '../utils/domvm.js';
 import { ImageType } from '../data/image.js';
 import { AlbumType } from '../data/album.js';
@@ -23,9 +22,10 @@ import { FILL_STYLE } from './styles.js';
 
 export function GalleryView(vm) {
     const context = {};
-    const appbar = cv(AppBarView, {}, 'appbar', context);
     const routeName = prop();
     const routeParams = prop();
+
+    context.appbarView = cv(AppBarView, {}, 'appbar', context);
 
     routeChanged.subscribe(function onRouteChange(name, params) {
         routeName(name);
@@ -35,7 +35,6 @@ export function GalleryView(vm) {
 
     function renderMain() {
         return [
-            iv(appbar),
             content([
                 renderSwitch({
                     photos: [AllImagesView, {}, 'allImages', context],

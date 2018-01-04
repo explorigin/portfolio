@@ -5,7 +5,8 @@ import {
     defineView,
     nodeParentWithType,
     fullViewportSize,
-    defineElement as el
+    defineElement as el,
+    injectView as iv
 } from '../utils/domvm.js';
 
 import { router } from '../services/router.js';
@@ -16,10 +17,10 @@ import { Overlay } from './components/overlay.js';
 import { Icon } from './components/icon.js';
 import { styled, injectStyle } from '../services/style.js';
 import { error } from '../services/console.js';
-import { CLICKABLE } from './styles.js';
+import { CLICKABLE, FILL_STYLE } from './styles.js';
 
 
-export function FocusView(vm, params, key, { appbar }) {
+export function FocusView(vm, params, key, { appbar, appbarView }) {
     const id = prop();
     const doc = prop(null, pouchDocHash);
     const { body } = document;
@@ -111,30 +112,33 @@ export function FocusView(vm, params, key, { appbar }) {
         }
 
         return focusContainer({ class: 'focus' }, [
-            (
-                prevLink()
-                ? prevClickZone({href: prevLink()}, [
-                    Icon({
-                        name: "chevron_left" ,
-                        size: 0.75,
-                    })
-                ])
-                : null
-            ),
-            AttachmentImageView({
-                src: _id ? doc().sizes.full : null,
-                style: imageStyle()
-            }),
-            (
-                nextLink()
-                ? nextClickZone({href: nextLink()}, [
-                    Icon({
-                        name: "chevron_right" ,
-                        size: 0.75,
-                    })
-                ])
-                : null
-            )
+            iv(appbarView),
+            focusContent([
+                (
+                    prevLink()
+                    ? prevClickZone({href: prevLink()}, [
+                        Icon({
+                            name: "chevron_left" ,
+                            size: 0.75,
+                        })
+                    ])
+                    : null
+                ),
+                AttachmentImageView({
+                    src: _id ? doc().sizes.full : null,
+                    style: imageStyle()
+                }),
+                (
+                    nextLink()
+                    ? nextClickZone({href: nextLink()}, [
+                        Icon({
+                            name: "chevron_right" ,
+                            size: 0.75,
+                        })
+                    ])
+                    : null
+                )
+            ])
         ]);
     };
 }
@@ -163,10 +167,17 @@ const trashButtonContainer = styled({
 
 const focusContainer = styled({
     display: 'flex',
+    overflow: 'hidden',
+    flexDirection: 'column',
+    alignItems: 'center'
+}, FILL_STYLE);
+
+const focusContent = styled({
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    overflow: 'hidden'
+    overflow: 'hidden',
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center'
 });
 
 const nextClickZone = styled('a', {
