@@ -15,8 +15,11 @@ const babelConfig = {
 
 export default {
     entry: 'src/index.js',
-    format: 'umd',
     moduleName: 'Router',
     plugins: [ json(), babel(babelConfig) ],
-    dest: 'dist/router.js'
+    output: {
+        format: 'umd',
+        file: 'dist/router.js'
+    }
+
 };

@@ -15,8 +15,10 @@ const babelConfig = {
 
 export default {
     entry: 'src/index.js',
-    format: 'umd',
     moduleName: 'Projector',
     plugins: [ json(), babel(babelConfig) ],
-    dest: 'dist/projector.js'
+    output: {
+        format: 'umd',
+        file: 'dist/projector.js'
+    }
 };

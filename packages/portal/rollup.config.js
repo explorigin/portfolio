@@ -15,8 +15,10 @@ const babelConfig = {
 
 export default {
     entry: 'src/index.js',
-    format: 'umd',
     moduleName: 'WorkerPortal',
     plugins: [ json(), babel(babelConfig) ],
-    dest: 'dist/worker-portal.js'
+    output: {
+        format: 'umd',
+        file: 'dist/worker-portal.js'
+    }
 };

@@ -15,8 +15,10 @@ const babelConfig = {
 
 export default {
     entry: 'src/index.js',
-    format: 'umd',
     moduleName: 'frptools',
     plugins: [ json(), babel(babelConfig) ],
-    dest: 'dist/frptools.js'
+    output: {
+        format: 'umd',
+        file: 'dist/frptools.js'
+    }
 };
