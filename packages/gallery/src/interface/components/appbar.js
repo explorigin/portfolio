@@ -1,86 +1,41 @@
 import { prop, computed, container, pick } from 'frptools';
 
 import { Icon } from './icon.js';
-import { router } from '../../services/router.js';
-import { defineElement as el, subscribeToRender } from '../../utils/domvm.js';
+import { defineElement as el } from '../../utils/domvm.js';
 import { injectStyle, styled } from '../../services/style.js';
 import { CLICKABLE } from '../styles.js';
 
-let seq = 0;
+export function AppBar(params) {
+    const { title, up, actions } = params;
+    const props = Object.assign({}, params);
 
-export function AppBarView(vm, params, key, opts) {
-    const stateStack = container([], arr => arr.length && arr[0]._seq);
-    const companionScrollTop = prop(0);
+    delete props.title;
+    delete props.up;
+    delete props.actions;
 
-    const currentState = computed(stack => stack[0] || {}, [stateStack]);
-    const title = computed(pick('title', ''), [currentState]);
-    const renderActions = computed(pick('actions'), [currentState]);
-    const up = computed(pick('up'), [currentState]);
-    const upButton = computed(pick('name', 'arrow_left'), [up]);
-    const upAction = computed(upState => upState.onclick ? upState.onclick : [popState, upState.navigateTo], [up]);
-    const stateStyle = computed(pick('style', {}), [currentState]);
+    const upProps = Object.assign({}, up || {})
+    const { button, action } = upProps;
 
-    const boxShadowStyle = computed(t => (
-        t === 0 ? 'none' : `0px 3px 3px rgba(0, 0, 0, .2)`
-    ), [companionScrollTop]);
+    delete upProps.button;
+    delete upProps.action;
 
-    const containerStyle = computed((boxShadow, style) => ({
-            css: Object.assign({ boxShadow }, style)
-        }), [boxShadowStyle, stateStyle])
-
-    if (opts.appbar) {
-        throw new Error('Cannot have more than one AppBar.');
-    }
-
-    function pushState(newState) {
-        companionScrollTop(0);
-        stateStack.unshift(Object.assign({_seq: seq++}, newState));
-    }
-
-    function popState(navigateTo) {
-        companionScrollTop(0);
-        stateStack.shift();
-        if (navigateTo) {
-            router.goto(navigateTo);
-        }
-    }
-
-    function replaceState(newState) {
-        companionScrollTop(0);
-        stateStack._.shift();
-        stateStack.unshift(Object.assign({_seq: seq++}, newState));
-    }
-
-    opts.appbar = {
-        pushState,
-        popState,
-        replaceState,
-        companionScrollTop
-    };
-
-    subscribeToRender(vm, [containerStyle, renderActions, up, title]);
-
-    return (vm, params) => {
-        const _buttons = renderActions() || (() => {});
-
-        return appBarContainer(containerStyle(), [
-            (
-                up()
-                ? upButtonContainer({
-                    onclick: upAction()
-                }, [
-                    Icon({
-                        name: upButton(),
-                        size: 0.75,
-                    })
-                ])
-                : null
-            ),
-            titleContainer(title()),
-            headerRight(_buttons())
-        ]);
-    };
-}
+    return appBarContainer(props, [
+        (
+            up
+            ? upButtonContainer({
+                onclick: up.action
+            }, [
+                Icon(Object.assign({
+                    name: up.button || 'arrow_left',
+                    size: 0.75,
+                }, upProps))
+            ])
+            : null
+        ),
+        titleContainer(title),
+        actionContainer(actions)
+    ]);
+};
 
 const appBarContainer = styled({
     justifyContent: 'space-between',
@@ -89,14 +44,14 @@ const appBarContainer = styled({
     display: 'flex',
     alignItems: 'center',
     width: '100%',
-    transition: 'opacity .13s cubic-bezier(0.0,0.0,0.2,1)',
+    transition: 'opacity .5s cubic-bezier(0.0,0.0,0.2,1)',
 });
 
 const upButtonContainer = styled({
     marginRight: '1em',
 }, CLICKABLE);
 
-const headerRight = styled({
+const actionContainer = styled({
     display: 'flex',
     alignItems: 'center'
 });

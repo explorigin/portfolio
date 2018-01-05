@@ -13,7 +13,6 @@ import { AllImagesView, uploadImages } from './allImages.js';
 import { FocusView } from './focus.js';
 import { Dropzone } from './components/dropzone.js';
 import { Overlay } from './components/overlay.js';
-import { AppBarView } from './components/appbar.js';
 import { Icon } from './components/icon.js';
 import { routeChanged } from '../services/router.js';
 import { injectStyle, styled } from '../services/style.js';
@@ -21,11 +20,8 @@ import { FILL_STYLE } from './styles.js';
 
 
 export function GalleryView(vm) {
-    const context = {};
     const routeName = prop();
     const routeParams = prop();
-
-    context.appbarView = cv(AppBarView, {}, 'appbar', context);
 
     routeChanged.subscribe(function onRouteChange(name, params) {
         routeName(name);
@@ -37,8 +33,8 @@ export function GalleryView(vm) {
         return [
             content([
                 renderSwitch({
-                    photos: [AllImagesView, {}, 'allImages', context],
-                    focus: [FocusView, routeParams(), `focus_${routeParams() && routeParams().id}`, context]
+                    photos: [AllImagesView, {}, 'allImages'],
+                    focus: [FocusView, routeParams(), `focus_${routeParams() && routeParams().id}`]
                 }, routeName())
             ])
         ];

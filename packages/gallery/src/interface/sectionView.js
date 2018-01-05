@@ -22,8 +22,7 @@ const CONTENT_MARGIN_WIDTH = 2 * CONTENT_MARGIN;
 
 const aspectRatio = img => img.width / img.height;
 
-export function SectionView(vm, params, key, context) {
-    const { appbar } = context;
+export function SectionView(vm, params, key) {
     const { title, photos } = params;
     const sectionSelectButtonRef = `secSel${key}`;
 
@@ -69,7 +68,7 @@ export function SectionView(vm, params, key, context) {
                 selectMode,
                 width,
                 height
-            }, photo._hash(), context);
+            }, photo._hash());
         }
 
         function sectionRowTemplate(photos) {

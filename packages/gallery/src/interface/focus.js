@@ -15,20 +15,29 @@ import { pouchDocHash, pick } from '../utils/conversion.js';
 import { AttachmentImageView } from './components/attachmentImage.js';
 import { Overlay } from './components/overlay.js';
 import { Icon } from './components/icon.js';
+import { AppBar } from './components/appbar.js';
 import { styled, injectStyle } from '../services/style.js';
 import { error } from '../services/console.js';
 import { CLICKABLE, FILL_STYLE } from './styles.js';
 
 
-export function FocusView(vm, params, key, { appbar, appbarView }) {
+export function FocusView(vm, params) {
     const id = prop();
     const doc = prop({}, pouchDocHash);
-    const { body } = document;
     const nextLink = prop();
     const prevLink = prop();
     const mouseActive = prop(true);
     let mouseMoveTimeout = null;
 
+    const appBarStyle = computed(
+        mA => ({
+            position: 'fixed',
+            opacity: mA ? 1 : 0,
+            backgroundImage: 'linear-gradient(0deg,rgba(0,0,0,0),rgba(0,0,0,0.4))'
+        }),
+        [mouseActive],
+        s => s.opacity
+    );
     const imageStyle = computed(({ width: iw, height: ih }, { width: vw, height: vh }) => {
         const imageRatio = iw / ih;
         const windowRatio = vw / vh;
@@ -49,17 +58,9 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
             width: vh * windowRatio
         }
     }, [doc, fullViewportSize]);
-    const appbarState = computed((mA) => ({
-        title: '',
-        actions: renderAppBarButtons,
-        style: { position: 'fixed', opacity: mA ? 1 : 0 },
-        up: {
-            navigateTo: 'home'
-        }
-    }), [mouseActive]);
 
     function navBack() {
-        appbar.popState('home');
+        router.goto('home');
     }
 
     async function clickTrash() {
@@ -88,45 +89,18 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
         mouseActive(!mouseActive());
     }
 
-    function renderAppBarButtons() {
-        return [
-            trashButtonContainer({
-                onclick: clickTrash
-            }, [
-                Icon({
-                    name: "trash" ,
-                    size: 0.75,
-                })
-            ])
-        ];
-    }
-
-    // Set the appbar title.
-
-    appbar.pushState({
-        title: '',
-        actions: renderAppBarButtons,
-        style: {
-            position: 'fixed'
-        },
-        up: {
-            navigateTo: 'home'
-        }
-    });
-
     // Subscribe to our changables.
     subscribeToRender(vm, [
         doc,
         nextLink,
         prevLink,
-        () => appbarState.subscribe(appbar.replaceState),
+        appBarStyle,
         // Look for our image and set it.
         () => id.subscribe(async _id => {
             if (!_id) {
                 return;
             }
-            const image = await ImageType.find(_id)
-            doc(image);
+            doc(await ImageType.find(_id));
 
             Promise.all([
                 ImageType.find({"_id": {$lt: _id}}, {limit: 2, sort: [{_id: 'desc'}]}),
@@ -143,6 +117,7 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
 
     // Start navigation
     id(params.vars.id);
+    mouseMove();
 
     return function() {
         const _id = doc() && doc()._id;
@@ -157,7 +132,22 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
             onmouseleave: mouseLeave,
             onclick: mouseClick,
         }, [
-            iv(appbarView),
+            AppBar({
+                style: appBarStyle(),
+                title: '',
+                up: { action: navBack, fill: 'white' },
+                actions: [
+                    trashButtonContainer({
+                        onclick: clickTrash
+                    }, [
+                        Icon({
+                            name: "trash" ,
+                            size: 0.75,
+                            fill: 'white'
+                        })
+                    ])
+                ]
+            }),
             focusContent([
                 (
                     prevLink()
@@ -165,6 +155,7 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
                         Icon({
                             name: "chevron_left" ,
                             size: 0.75,
+                            fill: 'white'
                         })
                     ])
                     : null
@@ -179,6 +170,7 @@ export function FocusView(vm, params, key, { appbar, appbarView }) {
                         Icon({
                             name: "chevron_right" ,
                             size: 0.75,
+                            fill: 'white',
                         })
                     ])
                     : null
@@ -214,7 +206,8 @@ const focusContainer = styled({
     display: 'flex',
     overflow: 'hidden',
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
+    backgroundColor: 'black'
 }, FILL_STYLE);
 
 const focusContent = styled({

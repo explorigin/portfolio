@@ -15,6 +15,7 @@ import { ImageType } from '../data/image.js';
 import { pouchDocArrayHash, pouchDocHash, hashSet, extractID } from '../utils/conversion.js';
 import { SectionView } from './sectionView.js';
 import { Icon } from './components/icon.js';
+import { AppBar } from './components/appbar.js';
 import { injectStyle, styled } from '../services/style.js';
 import { CLICKABLE, FILL_STYLE } from './styles.js';
 
@@ -27,47 +28,38 @@ export function uploadImages(evt, files) {
     }
 }
 
-export function AllImagesView(vm, params, key, context) {
-    const { appbar, appbarView } = context;
+export function AllImagesView(vm, params) {
     const model = prop({}, pouchDocHash);
     const images = container([], pouchDocArrayHash);
+    const containerScrollTop = prop(0);
 
     const selectedIds = container(new Set(), hashSet);
+    const selectMode = computed(sIds => sIds.size > 0, [selectedIds]);
+
     const appBarTitle = computed(
         s => s.size > 0 ? `${s.size} selected` : 'Photos',
         [selectedIds]
     );
-    const selectMode = computed(sIds => sIds.size > 0, [selectedIds]);
-
-    const sections = computed(imageArr => {
-        const sectionMap = imageArr.reduce((acc, i) => {
-            const date = i.originalDate.substr(0, 10);
-            return Object.assign(acc, { [date]: (acc[date] || []).concat(i) });
-        }, {});
-        return Object.entries(sectionMap)
-            .sort((a, b) => (a[0].localeCompare(b[0])))
-            .map(([date, _images]) => ({
-                title: format(date, 'MMMM D, YYYY'),
-                sectionId: date,
-                images: _images
-            }));
-    }, [images]);
-
-    function renderAppBarButtons() {
-        if (selectMode()) {
-            return [
-                trashButtonContainer({
-                    onclick: deleteSelectedImages
-                }, [
-                    Icon({
-                        name: "trash" ,
-                        size: 0.75,
-                    })
-                ])
-            ];
-        }
-
-        return [
+    const appBarStyle = computed(
+        t => ({
+            boxShadow: t === 0 ? 'none' : `0px 3px 3px rgba(0, 0, 0, .2)`
+        }),
+        [containerScrollTop]
+    );
+    const appBarUp = computed(s => (s ? { name: 'x', action: deSelect } : undefined), [selectMode]);
+    const appBarActions = computed(s => (
+        s
+        ? [
+            trashButtonContainer({
+                onclick: deleteSelectedImages
+            }, [
+                Icon({
+                    name: "trash" ,
+                    size: 0.75,
+                })
+            ])
+        ]
+        : [
             uploadButton([
                 el('label', {
                     "for": 'uploadButton',
@@ -89,7 +81,25 @@ export function AllImagesView(vm, params, key, context) {
                 onchange: uploadImages,
                 class: injectStyle({display: 'none'})
             })
-        ];
+        ]
+    ), [selectMode]);
+
+    const sections = computed(imageArr => {
+        const sectionMap = imageArr.reduce((acc, i) => {
+            const date = i.originalDate.substr(0, 10);
+            return Object.assign(acc, { [date]: (acc[date] || []).concat(i) });
+        }, {});
+        return Object.entries(sectionMap)
+            .sort((a, b) => (a[0].localeCompare(b[0])))
+            .map(([date, _images]) => ({
+                title: format(date, 'MMMM D, YYYY'),
+                sectionId: date,
+                images: _images
+            }));
+    }, [images]);
+
+    function deSelect() {
+        selectedIds.clear();
     }
 
     function deleteSelectedImages() {
@@ -141,38 +151,17 @@ export function AllImagesView(vm, params, key, context) {
     }
 
     function handleContentScroll(evt) {
-        appbar.companionScrollTop(evt.target.scrollTop);
-    }
-
-    function pushAppBarState() {
-        const up = selectMode() ? {
-            name: 'x',
-            onclick: () => selectedIds.clear()
-        } : undefined;
-
-        appbar.pushState({
-            title: appBarTitle,
-            actions: renderAppBarButtons,
-            up
-        });
-    }
-
-    function popAppBarState() {
-        appbar.popState();
+        containerScrollTop(evt.target.scrollTop);
     }
 
     ImageType.find({
         ["sizes.thumbnail"]: {$exists: true}
     }, { live: true }).then(la => {
-        pushAppBarState();
-        selectMode.subscribe(mode => {
-            popAppBarState();
-            pushAppBarState();
-        }),
         subscribeToRender(vm, [
             selectedIds,
             images,
             selectMode,
+            appBarStyle,
             () => la.subscribe(res => images.splice(0, images.length, ...res))
         ]);
     });
@@ -183,14 +172,19 @@ export function AllImagesView(vm, params, key, context) {
             photos: _images,
             selectedIds,
             selectMode: selectMode()
-        }, sectionId, context);
+        }, sectionId);
     }
 
     return function() {
         return allImagesContainer({
             class: 'allImages',
         }, [
-            iv(appbarView),
+            AppBar({
+                style: appBarStyle(),
+                title: appBarTitle(),
+                actions: appBarActions(),
+                up: appBarUp()
+            }),
             allImagesContent({
                 onscroll: handleContentScroll,
                 onclick: {
