@@ -1,4 +1,5 @@
 import partition from 'linear-partitioning';
+import { prop, computed, container } from 'frptools';
 
 import {
     defineView as vw,
@@ -12,7 +13,7 @@ import { injectStyle, styled } from '../services/style.js';
 import { DEFAULT_TRANSITION, CLICKABLE, IMAGE_MARGIN, CONTENT_MARGIN } from './styles.js';
 import { Icon } from './components/icon.js';
 import { SectionPhoto } from './sectionPhoto.js';
-import { extractID } from '../utils/conversion.js';
+import { extractID, sum } from '../utils/conversion.js';
 
 const OPTIMAL_IMAGE_HEIGHT = 140;
 const ROW_HEIGHT_CUTOFF_MODIFIER = 2;
@@ -25,38 +26,41 @@ const aspectRatio = img => img.width / img.height;
 export function SectionView(vm, params, key) {
     const { title, photos } = params;
     const sectionSelectButtonRef = `secSel${key}`;
+    const photoArray = container(photos || [], pArr => pArr.map(extractID).join(','));
+    const sections = computed(
+        (pArr, { width: vw }) => {
+            const availableWidth = vw - CONTENT_MARGIN_WIDTH;
+            const aspectRatios = pArr.map(aspectRatio);
+            const totalImageRatio = sum(aspectRatios);
+            const rowCount = Math.ceil(totalImageRatio * OPTIMAL_IMAGE_HEIGHT / availableWidth);
+            const rowRatios = partition(aspectRatios, rowCount);
 
-    function calculateSections(photos) {
-        const { width: vw } = availableViewportSize();
-        const availableWidth = vw - CONTENT_MARGIN_WIDTH;
-        const totalImageRatio = photos.reduce((acc, img) => acc + aspectRatio(img), 0);
-        const rowCount = Math.ceil(totalImageRatio * OPTIMAL_IMAGE_HEIGHT / availableWidth);
-        const rowRatios = partition(photos.map(aspectRatio), rowCount);
+            let index = 0;
 
-        let index = 0;
+            const result = rowRatios.map(row => {
+                const rowTotal = sum(row);
+                const imageRatio = row[0];
+                const portion = imageRatio / rowTotal;
+                let rowHeight = availableWidth * portion / aspectRatio(pArr[index]);
+                if (rowHeight > OPTIMAL_IMAGE_HEIGHT * ROW_HEIGHT_CUTOFF_MODIFIER) {
+                    rowHeight = OPTIMAL_IMAGE_HEIGHT * ROW_HEIGHT_CUTOFF_MODIFIER;
+                }
 
-        const result = rowRatios.map(row => {
-            const rowTotal = row.reduce((acc, r) => (acc + r), 0);
-            const imageRatio = row[0];
-            const portion = imageRatio / rowTotal;
-            let rowHeight = availableWidth * portion / aspectRatio(photos[index]);
-            if (rowHeight > OPTIMAL_IMAGE_HEIGHT * ROW_HEIGHT_CUTOFF_MODIFIER) {
-                rowHeight = OPTIMAL_IMAGE_HEIGHT * ROW_HEIGHT_CUTOFF_MODIFIER;
-            }
+                const rowResult = row.map((imageRatio, imgIndex) => ({
+                    photo: pArr[imgIndex + index],
+                    width: imageRatio * rowHeight - IMAGE_MARGIN_WIDTH,
+                    height: rowHeight
+                }));
 
-            const rowResult = row.map((imageRatio, imgIndex) => ({
-                photo: photos[imgIndex + index],
-                width: imageRatio * rowHeight - IMAGE_MARGIN_WIDTH,
-                height: rowHeight
-            }));
+                index += row.length;
+                return rowResult;
+            });
+            return result;
+        },
+        [photoArray, availableViewportSize],
+    )
 
-            index += row.length;
-            return rowResult;
-        });
-        return result;
-    }
-
-    subscribeToRender(vm, [availableViewportSize]);
+    subscribeToRender(vm, [sections]);
 
     return function render(vm, params) {
         const { selectedIds, selectMode } = params;
@@ -68,11 +72,11 @@ export function SectionView(vm, params, key) {
                 selectMode,
                 width,
                 height
-            }, photo._hash());
+            });
         }
 
-        function sectionRowTemplate(photos) {
-            return sectionRow(photos.map(photoTemplate));
+        function sectionRowTemplate(pArr) {
+            return sectionRow(pArr.map(photoTemplate));
         }
 
         return sectionContainer({
@@ -99,7 +103,7 @@ export function SectionView(vm, params, key) {
                 ])
             ]),
             sectionContent(
-                calculateSections(photos).map(sectionRowTemplate)
+                sections().map(sectionRowTemplate)
             )
         ]);
     };

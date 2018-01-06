@@ -47,6 +47,8 @@ export function deepAssign(to, ...rest) {
     return to;
 }
 
+export const sum = arr => arr.reduce((acc, i) => acc + i, 0);
+
 export const extractID = pick('_id');
 export const extractREV = pick('_rev');
 
