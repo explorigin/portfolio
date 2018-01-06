@@ -63,13 +63,15 @@ export function SectionView(vm, params, key) {
     subscribeToRender(vm, [sections]);
 
     return function render(vm, params) {
-        const { selectedIds, selectMode } = params;
+        const { selectedIds, selectMode, hover, hoverSelectButton } = params;
 
         function photoTemplate({ photo, width, height }) {
-            return vw(SectionPhoto, {
+            return SectionPhoto({
                 doc: photo,
                 isSelected: selectedIds.has(photo._id),
                 selectMode,
+                hover,
+                hoverSelectButton,
                 width,
                 height
             });
@@ -102,9 +104,7 @@ export function SectionView(vm, params, key) {
                     Icon({ name: "check_circle", size: 0.25 })
                 ])
             ]),
-            sectionContent(
-                sections().map(sectionRowTemplate)
-            )
+            sectionContent(sections().map(sectionRowTemplate))
         ]);
     };
 }

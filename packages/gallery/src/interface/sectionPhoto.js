@@ -14,70 +14,69 @@ import { Icon } from './components/icon.js';
 import { AttachmentImageView } from './components/attachmentImage.js';
 
 
-export function SectionPhoto(vm, { doc }) {
-    const photoSelectButtonRef = `pSB${doc._id}`;
-    const photoOverlayRef = `pBkd${doc._id}`;
-    const href = router.href('focus', {id: doc._id});
-    const hover = prop(false);
-    const hoverSelectButton = prop(false);
+export function SectionPhoto({ doc, isSelected, selectMode, width, height, hover, hoverSelectButton }) {
+    const { _id: id } = doc;
+    const href = router.href('focus', { id });
+    const hovered = hover() === id;
+    const selectHovered = hoverSelectButton() === id;
 
-    subscribeToRender(vm, [hover, hoverSelectButton]);
 
-    return function render(vm, { isSelected, selectMode, width, height }) {
-        return photoContainer({
-            href,
-            class: 'sectionPhoto',
-            onmouseenter: [hover, true],
-            onmouseleave: [hover, false],
+    if (hover()) {
+        console.log(id, isSelected, selectMode, width, height, hovered, selectHovered);
+    }
+
+
+    return photoContainer({
+        href,
+        class: 'sectionPhoto',
+        onmouseenter: [hover, id],
+        onmouseleave: [hover, null],
+        css: {
+            cursor: selectMode ? CLICKABLE.cursor : 'zoom-in',
+        },
+        style: {
+            width,
+            height
+        },
+        _data: doc,
+    }, [
+        AttachmentImageView({
+            src: doc.sizes.thumbnail || doc.sizes.full,
             css: {
-                cursor: selectMode ? CLICKABLE.cursor : 'zoom-in',
+                transform: isSelected ? 'translateZ(-50px)' : null
             },
             style: {
                 width,
                 height
             },
-            _data: doc,
+        }),
+        photoSelectButton({
+            class: 'photoSelect',
+            css: {
+                backgroundColor: isSelected ? 'white' : 'transparent',
+                opacity: (isSelected || selectHovered) ? 1 : selectMode || hovered ? 0.7 : 0,
+            },
+            onmouseenter: [hoverSelectButton, id],
+            onmouseleave: [hoverSelectButton, null],
         }, [
-            AttachmentImageView({
-                src: doc.sizes.thumbnail || doc.sizes.full,
-                css: {
-                    transform: isSelected ? 'translateZ(-50px)' : null
-                },
-                style: {
-                    width,
-                    height
-                },
-            }),
-            photoSelectButton({
-                _ref: photoSelectButtonRef,
-                class: 'photoSelect',
-                css: {
-                    backgroundColor: isSelected ? 'white' : 'transparent',
-                    opacity: (isSelected || hoverSelectButton()) ? 1 : selectMode || hover() ? 0.7 : 0,
-                },
-                onmouseenter: [hoverSelectButton, true],
-                onmouseleave: [hoverSelectButton, false],
-            }, [
-                Icon({
-                    name: selectMode && !isSelected && !hover() ? "circle_o" : "check_circle" ,
-                    size: 0.75,
-                    fill: isSelected ? '#00C800' : '#fff',
-                })
-            ]),
-            photoOverlay({
-                _ref: photoOverlayRef,
-                class: 'photoOverlay',
-                css: {
-                    transform: isSelected ? 'translateZ(-50px)' : null,
-                    opacity: (selectMode || hover()) ? 0.7 : 0,
-                },
-                style: {
-                    width,
-                    height
-                },
+            Icon({
+                name: selectMode && !isSelected && !hovered ? "circle_o" : "check_circle" ,
+                size: 0.75,
+                fill: isSelected ? '#00C800' : '#fff',
             })
-        ]);
-    };
+        ]),
+        photoOverlay({
+            class: 'photoOverlay',
+            css: {
+                transform: isSelected ? 'translateZ(-50px)' : null,
+                opacity: (selectMode || hovered) ? 0.7 : 0,
+            },
+            style: {
+                width,
+                height
+            },
+        })
+    ]);
 }
 
 
@@ -101,7 +100,7 @@ const photoSelectButton = styled(DEFAULT_TRANSITION, CLICKABLE,{
     position: 'absolute',
     top: '4%',
     left: '4%',
-    zIndex: 2,
+    zIndex: 3,
     display: 'flex',
     borderRadius: '50%',
     padding: '2px',
@@ -113,6 +112,6 @@ const photoOverlay = styled(FILL_STYLE, DEFAULT_TRANSITION, {
     position: 'absolute', // Unnecessary but helps with a rendering bug in Chrome. https://gitlab.com/explorigin/gallery/issues/1
     top: '0px',
     left: '0px',
-    zIndex: 1,
+    zIndex: 2,
     backgroundImage: 'linear-gradient(to bottom,rgba(0,0,0,0.26),transparent 56px,transparent)',
 });

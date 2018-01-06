@@ -33,6 +33,8 @@ export function AllImagesView(vm, params) {
     const images = container([], pouchDocArrayHash);
     const containerScrollTop = prop(0);
 
+    const hover = prop(null);
+    const hoverSelectButton = prop(null);
     const selectedIds = container(new Set(), hashSet);
     const selectMode = computed(sIds => sIds.size > 0, [selectedIds]);
 
@@ -162,6 +164,8 @@ export function AllImagesView(vm, params) {
             images,
             selectMode,
             appBarStyle,
+            hover,
+            hoverSelectButton,
             () => la.subscribe(res => images.splice(0, images.length, ...res))
         ]);
     });
@@ -171,7 +175,9 @@ export function AllImagesView(vm, params) {
             title,
             photos: _images,
             selectedIds,
-            selectMode: selectMode()
+            selectMode: selectMode(),
+            hover,
+            hoverSelectButton
         }, sectionId);
     }
 
