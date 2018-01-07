@@ -88,6 +88,7 @@ export function PouchORM(PouchDB) {
     PouchDB.registerType = (name, cls, db) => {
         const prefix = name.toLowerCase();
         const _db = db || PouchDB(prefix);
+        _db.setMaxListeners(1000);
         const _baseSelector = Object.freeze({
             _id: {$gt: `${prefix}_0`, $lt: `${prefix}_\ufff0`,}
         });

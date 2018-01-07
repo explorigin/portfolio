@@ -6,9 +6,6 @@ import { router } from './services/router.js';
 import { streamConfig } from './utils/event.js';
 import { log } from './services/console.js';
 
-import { EventEmitter } from 'events';
-
-EventEmitter.defaultMaxListeners = 1000;  // https://github.com/pouchdb/pouchdb/issues/6123
 
 config({ stream: streamConfig });
 
