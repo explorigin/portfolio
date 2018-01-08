@@ -20,12 +20,6 @@ export function SectionPhoto({ doc, isSelected, selectMode, width, height, hover
     const hovered = hover() === id;
     const selectHovered = hoverSelectButton() === id;
 
-
-    if (hover()) {
-        console.log(id, isSelected, selectMode, width, height, hovered, selectHovered);
-    }
-
-
     return photoContainer({
         href,
         class: 'sectionPhoto',
