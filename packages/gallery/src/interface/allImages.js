@@ -16,6 +16,7 @@ import { pouchDocArrayHash, pouchDocHash, hashSet, extractID } from '../utils/co
 import { SectionView } from './sectionView.js';
 import { Icon } from './components/icon.js';
 import { AppBar } from './components/appbar.js';
+import { Overlay } from './components/overlay.js';
 import { injectStyle, styled } from '../services/style.js';
 import { CLICKABLE, FILL_STYLE } from './styles.js';
 
@@ -170,6 +171,9 @@ export function AllImagesView(vm, params) {
     }
 
     return function() {
+        const _sections = sections();
+        const hasPhotos = !!_sections.length;
+
         return allImagesContainer({
             class: 'allImages',
         }, [
@@ -189,7 +193,25 @@ export function AllImagesView(vm, params) {
                     '.photoOverlay': photoClick
                 }
             },
-            sections().map(renderSection))
+            (
+                hasPhotos
+                ? _sections.map(renderSection)
+                : [Overlay([
+                    el('h1', 'Welcome'),
+                    el('p', [
+                        'To get started, drag some photos from your desktop or click on the ',
+                        el('label', {
+                            "for": 'uploadButton',
+                            style: Object.assign({verticalAlign: 'top', margin: '0px 3px'}, CLICKABLE)
+                        }, [Icon({
+                            name: 'upload',
+                            size: 0.75,
+                            title: 'Upload'
+                        })]),
+                        'button.'
+                    ])
+                ])]
+            ))
         ]);
     };
 }
