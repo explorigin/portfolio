@@ -79,7 +79,7 @@ class ImageSpec extends TypeSpec {
 
 const processImportables = backgroundTask(async function _processImportables(image) {
     const { _id, _rev, sizes, digest } = image;
-    const imageData = await FileType.getFromURL(image.sizes.full);
+    const imageData = await FileType.getFromURL(sizes.full);
 
     const img = new Image();
     const imageProps = await new Promise(resolve => {
@@ -95,36 +95,30 @@ const processImportables = backgroundTask(async function _processImportables(ima
         const ExifParser = await import('exif-parser');
         const buffer = await blobToArrayBuffer(imageData);
 
-        try {
-            const exifData = ExifParser.create(buffer).parse();
-            const { tags } = exifData;
-            const originalDate = new Date(
-                tags.DateTimeOriginal
-                ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
-                : image.originalDate
-            ).toISOString();
+        const exifData = ExifParser.create(buffer).parse();
+        const { tags } = exifData;
+        const originalDate = new Date(
+            tags.DateTimeOriginal
+            ? (new Date(tags.DateTimeOriginal * 1000)).toISOString()
+            : image.originalDate
+        ).toISOString();
 
-            deepAssign(imageProps, {
-                originalDate,
-                width,
-                height,
-                orientation: tags.Orientation,
-                digest,
-                make: tags.Make,
-                model: tags.Model,
-                flash: !!tags.Flash,
-                iso: tags.ISO,
-                sizes,
-                gps: {
-                    latitude: tags.GPSLatitude,
-                    longitude: tags.GPSLongitude,
-                    altitude: tags.GPSAltitude,
-                    heading: tags.GPSImgDirection,
-                }
-            });
-        } catch(e) {
-            error(e);
-        }
+        deepAssign(imageProps, {
+            originalDate,
+            orientation: tags.Orientation,
+            digest,
+            make: tags.Make,
+            model: tags.Model,
+            flash: !!tags.Flash,
+            iso: tags.ISO,
+            sizes,
+            gps: {
+                latitude: tags.GPSLatitude,
+                longitude: tags.GPSLongitude,
+                altitude: tags.GPSAltitude,
+                heading: tags.GPSImgDirection,
+            }
+        });
     }
 
     delete image.importing;
