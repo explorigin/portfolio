@@ -151,6 +151,17 @@ export function PouchORM(PouchDB) {
             }
         }
 
+        async function next(key, previous=false, limit=1, inclusive=false) {
+            const res = await _db.allDocs({
+                startkey: key,
+                descending: previous,
+                sort: ['id'],
+                skip: inclusive ? 0 : 1,
+                limit
+            });
+            return res.rows;
+        }
+
         Object.defineProperties(cls.prototype, {
             _name: { value: name },
             _prefix: { value: prefix },
@@ -162,6 +173,7 @@ export function PouchORM(PouchDB) {
         Object.defineProperties(cls, {
             getOrCreate: { value: getOrCreate },
             find: { value: find },
+            next: { value: next },
             delete: { value: _delete },
             subscribe: { value: watch },
             db: { value: _db },

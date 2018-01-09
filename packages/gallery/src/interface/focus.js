@@ -102,13 +102,10 @@ export function FocusView(vm, params) {
             }
             doc(await ImageType.find(_id));
 
-            Promise.all([
-                ImageType.find({"_id": {$lt: _id}}, {limit: 2, sort: [{_id: 'desc'}]}),
-                ImageType.find({"_id": {$gt: _id}}, {limit: 2})
-            ]).then(([prev, next]) => {
-                nextLink(next.length ? router.href('focus', {id: next[0]._id}) : null);
-                prevLink(prev.length ? router.href('focus', {id: prev[0]._id}) : null);
-            });
+            const n = await ImageType.next(_id);
+            nextLink(n.length ? router.href('focus', {id: n[0].id}) : null);
+            const p = await ImageType.next(_id, true);
+            prevLink(p.length ? router.href('focus', {id: p[0].id}) : null);
         })
     ], true);
 
