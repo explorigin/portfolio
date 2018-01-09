@@ -111,18 +111,6 @@ export function AllImagesView(vm, params) {
         }
     }
 
-    // function addAlbum() {
-    //     const albumName = prompt("Album Name");
-    //     if (albumName && albumName.trim()) {
-    //         const a = new AlbumType({
-    //             title: albumName.trim(),
-    //             count: 0
-    //         });
-    //         a.save();
-    //     }
-    // }
-
-
     function photoClick(evt, node, vm) {
         if (selectMode()) {
             toggleSelect(evt, node, vm);
