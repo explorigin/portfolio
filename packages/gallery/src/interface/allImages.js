@@ -18,7 +18,7 @@ import { Icon } from './components/icon.js';
 import { AppBar } from './components/appbar.js';
 import { Overlay } from './components/overlay.js';
 import { injectStyle, styled } from '../services/style.js';
-import { CLICKABLE, FILL_STYLE } from './styles.js';
+import { CLICKABLE } from './styles.js';
 
 
 export function uploadImages(evt, files) {
@@ -224,7 +224,12 @@ const uploadButton = styled({
     marginRight: '1em',
 }, CLICKABLE);
 
-const allImagesContainer = styled(FILL_STYLE);
+const allImagesContainer = styled({
+    display: 'flex',
+    flexDirection: 'column',
+    flex: 1
+});
 const allImagesContent = styled({
-    overflow: 'scroll'
-}, FILL_STYLE);
+    overflowY: 'scroll',
+    flex: 1
+});
