@@ -28,6 +28,7 @@ export function AppBar(params) {
                 Icon(Object.assign({
                     name: up.button || 'arrow_left',
                     size: 0.75,
+                    style: {verticalAlign: 'middle'}
                 }, upProps))
             ])
             : null

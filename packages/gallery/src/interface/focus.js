@@ -140,7 +140,8 @@ export function FocusView(vm, params) {
                         Icon({
                             name: "trash" ,
                             size: 0.75,
-                            fill: 'white'
+                            fill: 'white',
+                            style: {verticalAlign: 'middle'}
                         })
                     ])
                 ]

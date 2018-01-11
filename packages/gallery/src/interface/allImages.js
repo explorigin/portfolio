@@ -202,11 +202,12 @@ export function AllImagesView(vm, params) {
                         'To get started, drag some photos from your desktop or click on the ',
                         el('label', {
                             "for": 'uploadButton',
-                            style: Object.assign({verticalAlign: 'top', margin: '0px 3px'}, CLICKABLE)
+                            style: Object.assign({margin: '0px 3px'}, CLICKABLE)
                         }, [Icon({
                             name: 'upload',
                             size: 0.75,
-                            title: 'Upload'
+                            title: 'Upload',
+                            style: {verticalAlign: 'middle'}
                         })]),
                         'button.'
                     ])
