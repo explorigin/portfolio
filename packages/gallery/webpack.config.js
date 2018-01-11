@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     context: path.resolve(__dirname, './src'),
@@ -31,10 +32,12 @@ module.exports = {
         ],
     },
     plugins: [
-        new webpack.DefinePlugin({
-            __DEV__: true,
-        }),
+        new webpack.DefinePlugin({ __DEV__: true }),
         new ExtractTextPlugin('app.css', { allChunks: true }),
+        new HtmlWebpackPlugin({
+            template: 'index.template.html',
+            inject: 'body',
+        })
     ],
     devtool: 'source-map',
 };
