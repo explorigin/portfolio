@@ -11,7 +11,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, './dist'),
         filename: '[name].bundle.js',
-        publicPath: '/assets',
+        publicPath: '/',
     },
     devServer: {
         contentBase: path.resolve(__dirname, './src'),
@@ -34,7 +34,7 @@ module.exports = {
         new webpack.DefinePlugin({
             __DEV__: true,
         }),
-        new ExtractTextPlugin('app.css', { allChunks: true })
+        new ExtractTextPlugin('app.css', { allChunks: true }),
     ],
     devtool: 'source-map',
 };
