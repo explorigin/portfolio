@@ -102,10 +102,26 @@ export function FocusView(vm, params) {
             }
             doc(await ImageType.find(_id));
 
-            const n = await ImageType.next(_id);
-            nextLink(n.length ? router.href('focus', {id: n[0].id}) : null);
-            const p = await ImageType.next(_id, true);
-            prevLink(p.length ? router.href('focus', {id: p[0].id}) : null);
+            const n = await ImageType.find({
+                originalDate: {$gte: doc().originalDate}
+            }, {
+                limit: 1,
+                skip: 1,
+                index: 'originalDate',
+                sort: [{'originalDate': 'asc'}]
+            });
+
+            const p = await ImageType.find({
+                originalDate: {$lte: doc().originalDate}
+            }, {
+                limit: 1,
+                skip: 1,
+                index: 'originalDate',
+                sort: [{'originalDate': 'desc'}]
+            });
+
+            nextLink(n.length ? router.href('focus', {id: n[0]._id}) : null);
+            prevLink(p.length ? router.href('focus', {id: p[0]._id}) : null);
         })
     ], true);
 

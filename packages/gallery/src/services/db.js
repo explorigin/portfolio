@@ -23,8 +23,6 @@ export class TypeSpec {
         Object.assign(this, { $links: {} }, props, { type: this._prefix });
     }
 
-    static getSequence(doc) { return ''; }
-
     static getUniqueID(doc) { throw "NotImplemented"; }
 
     static validate(doc) { }
@@ -35,7 +33,7 @@ export class TypeSpec {
 
     _populateId(doc) {
         if (!doc._id) {
-            doc._id = `${this._prefix}_${this._cls.getSequence(doc)}_${this._cls.getUniqueID(doc)}`;
+            doc._id = `${this._prefix}_${this._cls.getUniqueID(doc)}`;
         }
         return doc;
     }
@@ -119,6 +117,10 @@ export function PouchORM(PouchDB) {
                     : _baseSelector
                 )
             );
+            if (opts.index) {
+                opts.use_index = [prefix, opts.index];
+                delete opts.index;
+            }
             if (opts.live) {
                 opts.mapper = instantiate;
                 return LiveArray(_db, idOrSelector, opts);
@@ -151,15 +153,14 @@ export function PouchORM(PouchDB) {
             }
         }
 
-        async function next(key, previous=false, limit=1, inclusive=false) {
-            const res = await _db.allDocs({
-                startkey: key,
-                descending: previous,
-                sort: ['id'],
-                skip: inclusive ? 0 : 1,
-                limit
+        async function _index(name, fields) {
+            return _db.createIndex({
+                index: {
+                    ddoc: prefix,
+                    fields,
+                    name
+                }
             });
-            return res.rows;
         }
 
         Object.defineProperties(cls.prototype, {
@@ -173,7 +174,7 @@ export function PouchORM(PouchDB) {
         Object.defineProperties(cls, {
             getOrCreate: { value: getOrCreate },
             find: { value: find },
-            next: { value: next },
+            index: { value: _index },
             delete: { value: _delete },
             subscribe: { value: watch },
             db: { value: _db },

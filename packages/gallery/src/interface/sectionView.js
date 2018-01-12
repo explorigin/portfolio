@@ -60,6 +60,8 @@ export function SectionView(vm, params, key) {
         [photoArray, availableViewportSize],
     )
 
+    photos.sort((a, b) => (a.originalDate.localeCompare(b.originalDate)));
+
     subscribeToRender(vm, [sections]);
 
     return function render(vm, params) {

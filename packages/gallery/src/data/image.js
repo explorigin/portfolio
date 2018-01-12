@@ -26,10 +26,6 @@ class ImageSpec extends TypeSpec {
         return doc.digest.substr(0, 16);
     }
 
-    static getSequence(doc) {
-        return new Date(doc.originalDate).getTime();
-    }
-
     async delete(cascade=true) {
         if (cascade) {
             new Set(Object.keys(this.sizes)).forEach(async key => {
@@ -129,6 +125,8 @@ const processImportables = backgroundTask(async function _processImportables(ima
 }, false);
 
 export const ImageType = PouchDB.registerType("Image", ImageSpec);
+
+ImageType.index('originalDate', ['originalDate', 'id']);
 
 ImageType.find({importing: true})
     .then(results => results.forEach(processImportables));
