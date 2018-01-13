@@ -191,12 +191,16 @@ export function AllImagesView(vm, params) {
                     '.sectionSelectButton .icon': toggleAll,
                     '.sectionSelectButton .icon svg path': toggleAll,
                     '.photoOverlay': photoClick
-                }
+                },
+                style: {overflowY: hasPhotos ? 'scroll' : 'hidden'}
             },
             (
                 hasPhotos
                 ? _sections.map(renderSection)
-                : [Overlay([
+                : [Overlay({
+                    textAlign: 'center',
+                    padding: '5%'
+                }, [
                     el('h1', 'Welcome'),
                     el('p', [
                         'To get started, drag some photos from your desktop or click on the ',
@@ -231,6 +235,5 @@ const allImagesContainer = styled({
     flex: 1
 });
 const allImagesContent = styled({
-    overflowY: 'scroll',
     flex: 1
 });
