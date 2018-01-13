@@ -10,7 +10,6 @@
   "author": "Timothy Farrell <tim@thecookiejar.me> (https://github.com/explorigin)",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "webpack --config webpack.config.js",
     "dev": "webpack-dev-server"
   },
   "dependencies": {

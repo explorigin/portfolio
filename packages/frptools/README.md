@@ -220,3 +220,11 @@ inViewport.fire(false); // "false" logged to console.
 
 `pick` returns a function that accepts an object and will return the object's property for the provided name or the default if one is supplied.  `pick` is not directly used with any subscribable but can be useful as the computed function when breaking down a `prop` that contains an object or a container.
 
+# Inspiration
+
+FRPTools is the result of years of learning from the following projects:
+
+ - [KnockoutJS](http://knockoutjs.com/)
+ - [Overture](https://github.com/fastmail/overture)
+ - [Redux](https://redux.js.org/)
+ - [Mithril](https://mithril.js.org/)

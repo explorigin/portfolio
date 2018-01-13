@@ -15,6 +15,7 @@ import { ImageType } from '../data/image.js';
 import { pouchDocArrayHash, pouchDocHash, hashSet, extractID } from '../utils/conversion.js';
 import { SectionView } from './sectionView.js';
 import { Icon } from './components/icon.js';
+import { GithubCorner } from './components/githubCorner.js';
 import { AppBar } from './components/appbar.js';
 import { Overlay } from './components/overlay.js';
 import { injectStyle, styled } from '../services/style.js';
@@ -45,11 +46,17 @@ export function AllImagesView(vm, params) {
     );
     const appBarStyle = computed(
         t => ({
+            width: 'inherit',
+            marginRight: '40px',
             boxShadow: t === 0 ? 'none' : `0px 3px 3px rgba(0, 0, 0, .2)`
         }),
         [containerScrollTop]
     );
-    const appBarUp = computed(s => (s ? { name: 'x', action: deSelect } : undefined), [selectMode]);
+    const appBarUp = computed(s => (
+        s
+        ? { name: 'x', action: deSelect }
+        : undefined
+    ), [selectMode]);
     const appBarActions = computed(s => (
         s
         ? [
@@ -216,7 +223,8 @@ export function AllImagesView(vm, params) {
                         'button.'
                     ])
                 ])]
-            ))
+            )),
+            GithubCorner('https://github.com/explorigin/portfolio/tree/master/packages/gallery')
         ]);
     };
 }
