@@ -63,6 +63,7 @@ export function SectionView(vm, params, key) {
     photos.sort((a, b) => (a.originalDate.localeCompare(b.originalDate)));
 
     subscribeToRender(vm, [sections]);
+    vm.config({ hooks: { willUpdate: (vm, { photos }) => photoArray.splice(0, photoArray.length, ...photos) }});
 
     return function render(vm, params) {
         const { selectedIds, selectMode, hover, hoverSelectButton } = params;
