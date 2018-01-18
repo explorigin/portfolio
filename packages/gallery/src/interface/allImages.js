@@ -62,7 +62,7 @@ export function AllImagesView(vm, params) {
         (t, s) => ({
             width: 'inherit',
             marginRight: '40px',
-            boxShadow: t === 0 || s.length === 0 ? 'none' : `0px 3px 3px rgba(0, 0, 0, .2)`
+            boxShadow: t === 0 || s.length === 0 ? 'none' : `-3px 3px 3px rgba(0, 0, 0, .2)`
         }),
         [containerScrollTop, sections]
     );
