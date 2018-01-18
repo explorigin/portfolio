@@ -17,7 +17,13 @@ function go() {
 	router.start('home');
 }
 
-if ('serviceWorker' in navigator && window.top === window) {
+const url = `https://${location.host}${location.pathname}${location.hash}`;
+const msg = `This photo gallery will not work properly unless accessed securely.  Connect to ${url} instead?`;
+
+// We use subtleCrypto which is only available from secure domains and localhost.
+if (location.protocol !== 'https:' && (!crypto.subtle || !crypto.subtle.digest) && confirm(msg)) {
+	location.assign(url);
+} else if ('serviceWorker' in navigator && window.top === window) {
 	navigator.serviceWorker.register('/assets/sw.bundle.js', { scope: '/' }).then(go).catch(go);
 } else {
 	go();
