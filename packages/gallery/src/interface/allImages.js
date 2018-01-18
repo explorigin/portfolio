@@ -40,17 +40,31 @@ export function AllImagesView(vm, params) {
     const selectedIds = container(new Set(), hashSet);
     const selectMode = computed(sIds => sIds.size > 0, [selectedIds]);
 
+    const sections = computed(imageArr => {
+        const sectionMap = imageArr.reduce((acc, i) => {
+            const date = i.originalDate.substr(0, 10);
+            return Object.assign(acc, { [date]: (acc[date] || []).concat(i) });
+        }, {});
+        return Object.entries(sectionMap)
+            .sort((a, b) => (a[0].localeCompare(b[0])))
+            .map(([date, _images]) => ({
+                title: format(date, 'MMMM D, YYYY'),
+                sectionId: date,
+                images: _images
+            }));
+    }, [images]);
+
     const appBarTitle = computed(
         s => s.size > 0 ? `${s.size} selected` : 'Photos',
         [selectedIds]
     );
     const appBarStyle = computed(
-        t => ({
+        (t, s) => ({
             width: 'inherit',
             marginRight: '40px',
-            boxShadow: t === 0 ? 'none' : `0px 3px 3px rgba(0, 0, 0, .2)`
+            boxShadow: t === 0 || s.length === 0 ? 'none' : `0px 3px 3px rgba(0, 0, 0, .2)`
         }),
-        [containerScrollTop]
+        [containerScrollTop, sections]
     );
     const appBarUp = computed(s => (
         s
@@ -93,20 +107,6 @@ export function AllImagesView(vm, params) {
             })
         ]
     ), [selectMode]);
-
-    const sections = computed(imageArr => {
-        const sectionMap = imageArr.reduce((acc, i) => {
-            const date = i.originalDate.substr(0, 10);
-            return Object.assign(acc, { [date]: (acc[date] || []).concat(i) });
-        }, {});
-        return Object.entries(sectionMap)
-            .sort((a, b) => (a[0].localeCompare(b[0])))
-            .map(([date, _images]) => ({
-                title: format(date, 'MMMM D, YYYY'),
-                sectionId: date,
-                images: _images
-            }));
-    }, [images]);
 
     function deSelect() {
         selectedIds.clear();
