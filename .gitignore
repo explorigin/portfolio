@@ -1,5 +1,6 @@
-packages/**/node_modules
+node_modules
 packages/**/dist
 packages/**/lib
+package-lock.json
 *.sublime-project
 *.sublime-workspace

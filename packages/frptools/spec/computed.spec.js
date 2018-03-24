@@ -1,7 +1,7 @@
-const { prop, computed } = require('../lib/index.js');
-const { dirtyMock, hashSet } = require('../lib/testUtil.js');
+import { prop, computed } from '../src/index.js';
+import { dirtyMock, hashSet } from '../src/testUtil.js';
 
-describe('computed', () => {
+describe('A computed', () => {
     const add = (a, b) => a + b;
     const square = a => a * a;
 

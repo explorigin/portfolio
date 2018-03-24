@@ -1,4 +1,4 @@
-export { prop } from './property';
-export { computed } from './computed';
-export { container } from './container';
+export { prop } from './property.js';
+export { computed } from './computed.js';
+export { container } from './container.js';
 export { call, id, pick } from './util.js';

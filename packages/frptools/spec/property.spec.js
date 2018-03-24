@@ -1,5 +1,5 @@
-const { prop } = require('../lib/index.js');
-const { dirtyMock, hashSet } = require('../lib/testUtil.js');
+import { prop } from '../src/index.js';
+import { dirtyMock, hashSet } from '../src/testUtil.js';
 
 describe('A property', () => {
     it('returns its initialized value', () => {

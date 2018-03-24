@@ -49,14 +49,19 @@
     getWindowLocation: function() { return window.location; }
   });
 
-  var catchingExceptions = queryString.getParam("catch");
-  env.catchExceptions(typeof catchingExceptions === "undefined" ? true : catchingExceptions);
+  var filterSpecs = !!queryString.getParam("spec");
+
+  var stoppingOnSpecFailure = queryString.getParam("failFast");
+  env.stopOnSpecFailure(stoppingOnSpecFailure);
 
   var throwingExpectationFailures = queryString.getParam("throwFailures");
   env.throwOnExpectationFailure(throwingExpectationFailures);
 
   var random = queryString.getParam("random");
-  env.randomizeTests(random);
+
+  if (random !== undefined && random !== "") {
+    env.randomizeTests(random);
+  }
 
   var seed = queryString.getParam("seed");
   if (seed) {
@@ -67,22 +72,40 @@
    * ## Reporters
    * The `HtmlReporter` builds all of the HTML UI for the runner page. This reporter paints the dots, stars, and x's for specs, as well as all spec names and all failures (if any).
    */
+  const timer = new jasmine.Timer();
   var htmlReporter = new jasmine.HtmlReporter({
     env: env,
-    onRaiseExceptionsClick: function() { queryString.navigateWithNewParam("catch", !env.catchingExceptions()); },
-    onThrowExpectationsClick: function() { queryString.navigateWithNewParam("throwFailures", !env.throwingExpectationFailures()); },
-    onRandomClick: function() { queryString.navigateWithNewParam("random", !env.randomTests()); },
+    navigateWithNewParam: function(key, value) { return queryString.navigateWithNewParam(key, value); },
     addToExistingQueryString: function(key, value) { return queryString.fullStringWithNewParam(key, value); },
     getContainer: function() { return document.body; },
     createElement: function() { return document.createElement.apply(document, arguments); },
     createTextNode: function() { return document.createTextNode.apply(document, arguments); },
-    timer: new jasmine.Timer()
+    timer,
+    filterSpecs: filterSpecs
   });
 
   /**
    * The `jsApiReporter` also receives spec results, and is used by any environment that needs to extract the results  from JavaScript.
    */
   env.addReporter(jasmineInterface.jsApiReporter);
+
+  const report = method => result => {
+    // console[method](result.description);
+    console.log(JSON.stringify(Object.assign({method}, result)));
+  }
+  
+  env.addReporter({
+    jasmineStarted: function(result) {
+      console.log(`${result.totalSpecsDefined} specs${result.order.random ? `, randomized with seed ${result.order.seed}` : ''}`);
+    },
+    suiteStarted: report('group'),
+    specDone: report('log'),
+    suiteDone: report('groupEnd'),
+    jasmineDone: function(result) {
+      console.log(`${result.overallStatus} after ${timer.elapsed() / 1000}s`);
+    },
+  });
+
   env.addReporter(htmlReporter);
 
   /**

@@ -1,4 +1,4 @@
-const { CreateDocument } = require('../lib/document.js');
+import { CreateDocument } from '../src/document.js';
 
 describe('Document', () => {
     let doc;

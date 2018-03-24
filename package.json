@@ -1,5 +1,7 @@
 {
   "devDependencies": {
+    "chrome-launcher": "^0.10.2",
+    "chrome-remote-interface": "^0.25.5",
     "lerna": "2.0.0-beta.32"
   }
 }

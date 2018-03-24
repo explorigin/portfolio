@@ -1,4 +1,4 @@
-const { Router } = require('../lib/index.js');
+import { Router } from '../src/index.js';
 
 
 describe('router.href builds urls', () => {

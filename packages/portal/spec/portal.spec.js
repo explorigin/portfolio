@@ -1,4 +1,4 @@
-const { WorkerPortal } = require('../lib/index.js');
+import { WorkerPortal } from '../src/index.js';
 
 function FakeWorkerPair() {
     let cbA = null;

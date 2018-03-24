@@ -1,43 +1,20 @@
 {
   "name": "router",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "A slim and unopinionated router",
-  "main": "lib/index.js",
-  "jsnext:main": "src/index.js",
+  "main": "src/index.js",
   "files": [
-    "dist",
-    "lib",
     "src"
   ],
   "scripts": {
-    "lint": "eslint src",
-    "clean": "rimraf dist lib",
-    "build:lib": "NODE_ENV=production babel src --presets=\"stage-0,es2015\" --out-dir lib",
-    "build:umd": "npm run build:lib && NODE_ENV=production rollup -c",
-    "build:umd:min": "npm run build:umd && uglifyjs -m --screw-ie8 -c -o dist/router.min.js dist/router.js",
-    "build:umd:gzip": "npm run build:umd:min && gzip -c9 dist/router.min.js > dist/router.min.js.gz",
-    "build": "npm run build:umd:gzip && ls -l dist/",
-    "prepublish": "npm run clean && npm run build",
-    "test": "npm run build:lib && jasmine --verbose"
+    "test": "node ../../bin/runTests.js ./"
   },
   "keywords": [
     "router"
   ],
   "author": "Timothy Farrell <tim@thecookiejar.me> (https://github.com/explorigin)",
   "license": "Apache-2.0",
-  "devDependencies": {
-    "babel-cli": "6.18.0",
-    "babel-core": "6.21.0",
-    "babel-preset-es2015": "6.18.0",
-    "babel-preset-es2015-rollup": "3.0.0",
-    "babel-preset-stage-0": "6.16.0",
-    "jasmine": "^2.5.3",
-    "rimraf": "2.5.4",
-    "rollup-plugin-json": "2.1.0",
-    "rollup-plugin-babel": "^2.7.1",
-    "uglifyjs": "2.4.10"
-  },
   "dependencies": {
-    "trimkit": "^1.0.2"
+    "trimkit": "^1.1.0"
   }
 }

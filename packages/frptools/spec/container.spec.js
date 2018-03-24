@@ -1,5 +1,5 @@
-const { container, computed } = require('../lib/index.js');
-const { dirtyMock, hashSet } = require('../lib/testUtil.js');
+import { container, computed } from '../src/index.js';
+import { dirtyMock, hashSet } from '../src/testUtil.js';
 
 describe('A container', () => {
     it('notifies dependents of updates', () => {

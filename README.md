@@ -29,12 +29,13 @@ Javascript API abstractions to enhance minification by substituting variables.  
 These are `npm --global` dependencies:
 
 - [Lerna 2.0.0](https://lernajs.io/)
-- [Rollup 0.53.3](https://rollupjs.org/)
 
 # Installation
 
-1. Install global dependencies
-2. `git clone` the repository
-3. `lerna bootstrap`
+ 1. Install global dependencies
+ 2. `git clone` the repository
+ 3. `lerna bootstrap`
 
-Now each package is built and ready for use.  Stay tuned for working examples.
+# Run Tests
+
+ `lerna run test`

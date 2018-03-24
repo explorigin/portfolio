@@ -1,4 +1,4 @@
-import { isFunction, isUndefined, Null, ObjectKeys } from 'trimkit';
+import { isFunction, isUndefined, Null, ObjectKeys } from '../node_modules/trimkit/src/index.js';
 
 const VARMATCH_RE = /:([^\/]+)/g;
 const ROUTEELEMENT_RE = /^[^\/]+$/;

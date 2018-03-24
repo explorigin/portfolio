@@ -1,4 +1,4 @@
-import { isFunction } from 'trimkit';
+import { isFunction } from '../node_modules/trimkit/src/index.js';
 
 import { supportsPassive } from './utils.js';
 import {
